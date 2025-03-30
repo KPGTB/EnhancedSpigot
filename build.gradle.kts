@@ -36,90 +36,92 @@ subprojects {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
-
-    tasks.shadowJar {
-        archiveFileName.set("${project.name}-${project.version}.jar")
-        finalizedBy(tasks.javadoc)
-        finalizedBy(tasks.named("sourcesJar"))
-    }
-
-    publishing {
-        repositories {
-            maven {
-                if (project.version.toString().endsWith("-SNAPSHOT")) {
-                    credentials {
-                        username = rootProject.findProperty("nexusUsername") as String?
-                        password = rootProject.findProperty("nexusPassword") as String?
-                    }
-
-                    url = uri("https://nexus.projectenhanced.dev/repository/maven-snapshots")
-                } else {
-                    url =  uri(layout.buildDirectory.dir("staging-deploy").get())
-                }
-            }
+    afterEvaluate({
+        tasks.shadowJar {
+            archiveFileName.set("${project.name}-${project.version}.jar")
+            finalizedBy(tasks.javadoc)
+            finalizedBy(tasks.named("sourcesJar"))
         }
 
-        publications {
-            create<MavenPublication>("maven") {
-                groupId = project.group as String?
-                artifactId = project.name
+        publishing {
+            repositories {
+                maven {
+                    if (project.version.toString().endsWith("-SNAPSHOT")) {
+                        credentials {
+                            username = rootProject.findProperty("nexusUsername") as String?
+                            password = rootProject.findProperty("nexusPassword") as String?
+                        }
 
-                from(components["java"])
+                        url = uri("https://nexus.projectenhanced.dev/repository/maven-snapshots")
+                    } else {
+                        url =  uri(layout.buildDirectory.dir("staging-deploy").get())
+                        mkdir(url)
+                    }
+                }
+            }
 
-                pom {
-                    name.set(project.name)
-                    description.set(project.description)
-                    url.set("https://projectenhanced.dev")
-                    inceptionYear.set("2025")
+            publications {
+                create<MavenPublication>("maven") {
+                    groupId = project.group as String?
+                    artifactId = project.name
 
-                    licenses {
-                        license {
-                            name.set("Apache-2.0")
-                            url.set("https://spdx.org/licenses/Apache-2.0.html")
+                    from(components["java"])
+
+                    pom {
+                        name.set(project.name)
+                        description.set(project.description)
+                        url.set("https://projectenhanced.dev")
+                        inceptionYear.set("2025")
+
+                        licenses {
+                            license {
+                                name.set("Apache-2.0")
+                                url.set("https://spdx.org/licenses/Apache-2.0.html")
+                            }
+                        }
+
+                        developers {
+                            developer {
+                                id.set("kpgtb")
+                                name.set("KPG-TB")
+                            }
+                        }
+
+                        scm {
+                            connection.set("scm:git:https://github.com/KPGTB/EnhancedSpigot.git")
+                            developerConnection.set("scm:git:ssh://github.com/KPGTB/EnhancedSpigot.git")
+                            url.set("https://github.com/KPGTB/EnhancedSpigot")
                         }
                     }
+                }
+            }
+        }
 
-                    developers {
-                        developer {
-                            id.set("kpgtb")
-                            name.set("KPG-TB")
+        jreleaser {
+            release {
+                github {
+                    skipRelease.set(true)
+                    skipTag.set(true)
+                }
+            }
+            signing {
+                active.set(Active.ALWAYS)
+                armored.set(true)
+                mode.set(Signing.Mode.FILE)
+                publicKey.set(rootProject.findProperty("publicKey") as String?)
+                secretKey.set(rootProject.findProperty("privateKey") as String?)
+            }
+            deploy {
+                maven {
+                    mavenCentral {
+                        create("sonatype") {
+                            active.set(Active.ALWAYS)
+                            url.set("https://central.sonatype.com/api/v1/publisher")
+                            stagingRepository("build/staging-deploy")
                         }
                     }
-
-                    scm {
-                        connection.set("scm:git:https://github.com/KPGTB/EnhancedSpigot.git")
-                        developerConnection.set("scm:git:ssh://github.com/KPGTB/EnhancedSpigot.git")
-                        url.set("https://github.com/KPGTB/EnhancedSpigot")
-                    }
                 }
             }
         }
-    }
-
-    jreleaser {
-        release {
-            github {
-                skipRelease.set(true)
-                skipTag.set(true)
-            }
-        }
-        signing {
-            active.set(Active.ALWAYS)
-            armored.set(true)
-            mode.set(Signing.Mode.FILE)
-            publicKey.set(rootProject.findProperty("publicKey") as String?)
-            secretKey.set(rootProject.findProperty("privateKey") as String?)
-        }
-        deploy {
-            maven {
-                mavenCentral {
-                    create("sonatype") {
-                        active.set(Active.ALWAYS)
-                        url.set("https://central.sonatype.com/api/v1/publisher")
-                        stagingRepository("build/staging-deploy")
-                    }
-                }
-            }
-        }
-    }
+    })
 }
