@@ -1,0 +1,122 @@
+plugins {
+    id "java-library"
+    id "com.github.johnrengelman.shadow" version "8.1.1"
+    id "io.freefair.lombok" version "8.11"
+
+    id "maven-publish"
+    id "org.jreleaser" version "1.16.0"
+}
+
+group = "dev.projectenhanced"
+version = "1.0.0-SNAPSHOT"
+description = "EnhancedSpigot is an advanced library that enhances the Spigot API for creating powerful Minecraft plugins"
+
+repositories {
+    mavenCentral()
+}
+
+subprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'com.github.johnrengelman.shadow'
+    apply plugin: 'io.freefair.lombok'
+    apply plugin: 'maven-publish'
+    apply plugin: 'org.jreleaser'
+
+    group = 'dev.projectenhanced'
+
+    java {
+        withSourcesJar()
+        withJavadocJar()
+
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    }
+
+    afterEvaluate {
+        shadowJar {
+            archiveFileName = project.name + "-" + project.version + ".jar"
+        }
+
+        shadowJar.finalizedBy javadoc
+        shadowJar.finalizedBy sourcesJar
+
+        publishing {
+            repositories {
+                maven {
+                    if (project.version.endsWith("-SNAPSHOT")) {
+                        credentials {
+                            username project.nexusUsername
+                            password project.nexusPassword
+                        }
+                        url "https://nexus.projectenhanced.dev/repository/maven-snapshots"
+                    } else {
+                        url layout.buildDirectory.dir('staging-deploy')
+                    }
+                }
+            }
+
+            publications {
+                maven(MavenPublication) {
+                    groupId = project.group
+                    artifactId = project.name
+
+                    from components.java
+
+                    pom {
+                        name = project.name
+                        description = project.description
+                        url = 'https://projectenhanced.dev'
+                        inceptionYear = '2025'
+
+                        licenses {
+                            license {
+                                name = 'Apache-2.0'
+                                url = 'https://spdx.org/licenses/Apache-2.0.html'
+                            }
+                        }
+
+                        developers {
+                            developer {
+                                id = 'kpgtb'
+                                name = 'KPG-TB'
+                            }
+                        }
+
+                        scm {
+                            connection = 'scm:git:https://github.com/KPGTB/EnhancedSpigot.git'
+                            developerConnection = 'scm:git:ssh://github.com/KPGTB/EnhancedSpigot.git'
+                            url = 'https://github.com/KPGTB/EnhancedSpigot'
+                        }
+                    }
+                }
+            }
+        }
+
+        jreleaser {
+            release {
+                github {
+                    skipRelease = true
+                    skipTag = true
+                }
+            }
+            signing {
+                active = 'ALWAYS'
+                armored = true
+                mode = 'FILE'
+                publicKey = rootProject.publicKey
+                secretKey = rootProject.privateKey
+            }
+            deploy {
+                maven {
+                    mavenCentral {
+                        sonatype {
+                            active = 'ALWAYS'
+                            url = 'https://central.sonatype.com/api/v1/publisher'
+                            stagingRepository('build/staging-deploy')
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
