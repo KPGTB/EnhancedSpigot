@@ -1,10 +1,11 @@
-package dev.projectenhanced.enhancedspigot.data.cache;
+package dev.projectenhanced.enhancedspigot.data.cache.iface;
 
+import java.util.Set;
 import java.util.function.Consumer;
 
 public interface ISaveable<K,V> {
     V load(K key);
-    void loadAll();
+    Set<V> loadAll();
 
     void modify(K key, Consumer<V> action);
     void modifyAll(Consumer<V> action);

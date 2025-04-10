@@ -2,14 +2,13 @@ package dev.projectenhanced.enhancedspigot.data.cache;
 
 import com.j256.ormlite.dao.Dao;
 import dev.projectenhanced.enhancedspigot.data.DatabaseController;
+import dev.projectenhanced.enhancedspigot.data.cache.iface.ICache;
+import dev.projectenhanced.enhancedspigot.data.cache.iface.ISaveable;
 import dev.projectenhanced.enhancedspigot.util.internal.trycatch.TryUtil;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class DataCache<K,V> implements ICache<K,V>, ISaveable<K,V> {
@@ -31,7 +30,7 @@ public class DataCache<K,V> implements ICache<K,V>, ISaveable<K,V> {
 
     @Override
     public V get(K key) {
-        return this.cache.containsKey(key) ?
+        return this.contains(key) ?
                 this.cache.get(key) : this.load(key);
     }
 
@@ -51,13 +50,13 @@ public class DataCache<K,V> implements ICache<K,V>, ISaveable<K,V> {
     }
 
     @Override
-    public void remove(K key) {
-        TryUtil.tryRun(() -> this.dao.deleteById(key));
+    public boolean contains(K key) {
+        return this.cache.containsKey(key);
     }
 
     @Override
-    public boolean contains(K key) {
-        return this.cache.containsKey(key);
+    public void remove(K key) {
+        TryUtil.tryRun(() -> this.dao.deleteById(key));
     }
 
     @Override
@@ -69,12 +68,13 @@ public class DataCache<K,V> implements ICache<K,V>, ISaveable<K,V> {
     }
 
     @Override
-    public void loadAll() {
+    public Set<V> loadAll() {
         TryUtil.tryOrDefault(this.dao::queryForAll, new ArrayList<V>())
                 .forEach(value -> this.cache.put(
                         TryUtil.tryAndReturn(() -> this.dao.extractId(value)),
                         value
                 ));
+        return new HashSet<>(this.cache.values());
     }
 
     @Override

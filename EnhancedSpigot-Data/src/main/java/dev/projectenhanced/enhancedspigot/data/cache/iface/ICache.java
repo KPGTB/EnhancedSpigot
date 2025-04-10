@@ -1,4 +1,4 @@
-package dev.projectenhanced.enhancedspigot.data.cache;
+package dev.projectenhanced.enhancedspigot.data.cache.iface;
 
 public interface ICache<K,V> {
     V get(K key);
