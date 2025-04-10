@@ -35,10 +35,9 @@ subprojects {
     afterEvaluate {
         shadowJar {
             archiveFileName = project.name + "-" + project.version + ".jar"
+            finalizedBy javadoc;
+            finalizedBy sourcesJar;
         }
-
-        shadowJar.finalizedBy javadoc
-        shadowJar.finalizedBy sourcesJar
 
         publishing {
             repositories {
