@@ -1,4 +1,4 @@
-package dev.projectenhanced.enhancedspigot.util.internal;
+package dev.projectenhanced.enhancedspigot.util;
 
 import java.io.File;
 import java.util.Enumeration;

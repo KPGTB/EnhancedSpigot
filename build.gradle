@@ -32,6 +32,10 @@ subprojects {
         targetCompatibility = 1.8
     }
 
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+
     afterEvaluate {
         shadowJar {
             archiveFileName = project.name + "-" + project.version + ".jar"
@@ -39,6 +43,7 @@ subprojects {
             finalizedBy sourcesJar;
         }
 
+        /*
         publishing {
             repositories {
                 maven {
@@ -117,5 +122,6 @@ subprojects {
                 }
             }
         }
+         */
     }
 }

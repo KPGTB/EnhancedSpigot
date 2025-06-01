@@ -4,7 +4,7 @@ import com.j256.ormlite.dao.Dao;
 import dev.projectenhanced.enhancedspigot.data.DatabaseController;
 import dev.projectenhanced.enhancedspigot.data.cache.iface.ICache;
 import dev.projectenhanced.enhancedspigot.data.cache.iface.ISaveable;
-import dev.projectenhanced.enhancedspigot.util.internal.trycatch.TryUtil;
+import dev.projectenhanced.enhancedspigot.util.trycatch.TryUtil;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;

@@ -15,7 +15,7 @@ import dev.projectenhanced.enhancedspigot.data.connection.ConnectionType;
 import dev.projectenhanced.enhancedspigot.data.connection.IConnectionHandler;
 import dev.projectenhanced.enhancedspigot.data.connection.MySQLConnectionHandler;
 import dev.projectenhanced.enhancedspigot.data.connection.SQLiteConnectionHandler;
-import dev.projectenhanced.enhancedspigot.util.internal.ReflectionUtil;
+import dev.projectenhanced.enhancedspigot.util.ReflectionUtil;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;

@@ -3,12 +3,11 @@ package dev.projectenhanced.enhancedspigot.data.cache;
 import dev.projectenhanced.enhancedspigot.data.DatabaseController;
 import dev.projectenhanced.enhancedspigot.data.cache.iface.IAsyncCache;
 import dev.projectenhanced.enhancedspigot.data.cache.iface.IAsyncSaveable;
-import dev.projectenhanced.enhancedspigot.util.internal.SchedulerUtil;
+import dev.projectenhanced.enhancedspigot.util.SchedulerUtil;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class AsyncDataCache<K,V> extends DataCache<K,V> implements IAsyncCache<K,V>, IAsyncSaveable<K,V> {
     private final JavaPlugin plugin;

@@ -1,0 +1,19 @@
+group = 'dev.projectenhanced'
+version = '1.0.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation(project(":EnhancedSpigot-Data"))
+    implementation(project(":EnhancedSpigot-Utils"))
+}
+
+shadowJar {
+    relocate("dev.projectenhanced.enhancedspigot", "dev.projectenhanced.impl")
+
+    dependencies {
+        exclude(dependency("com.j256.ormlite:ormlite-jdbc"))
+    }
+}

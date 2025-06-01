@@ -9,11 +9,8 @@ repositories {
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.17-R0.1-SNAPSHOT'
     compileOnly 'org.xerial:sqlite-jdbc:3.49.1.0'
-    compileOnly 'com.j256.ormlite:ormlite-jdbc:6.1'
 
-    implementation project(':EnhancedSpigot-Utils-Internal')
-}
+    api 'com.j256.ormlite:ormlite-jdbc:6.1'
 
-shadowJar {
-    relocate 'dev.projectenhanced.enhancedspigot.util.internal', 'dev.projectenhanced.enhancedspigot.data.util'
+    implementation project(':EnhancedSpigot-Utils')
 }

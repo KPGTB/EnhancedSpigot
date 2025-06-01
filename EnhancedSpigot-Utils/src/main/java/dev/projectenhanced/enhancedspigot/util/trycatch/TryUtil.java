@@ -1,4 +1,4 @@
-package dev.projectenhanced.enhancedspigot.util.internal.trycatch;
+package dev.projectenhanced.enhancedspigot.util.trycatch;
 
 import java.util.function.Consumer;
 
