@@ -4,7 +4,7 @@ import com.j256.ormlite.dao.Dao;
 import dev.projectenhanced.enhancedspigot.data.DatabaseController;
 import dev.projectenhanced.enhancedspigot.data.cache.iface.ICache;
 import dev.projectenhanced.enhancedspigot.data.cache.iface.ISaveable;
-import dev.projectenhanced.enhancedspigot.util.trycatch.TryUtil;
+import dev.projectenhanced.enhancedspigot.util.trycatch.TryCatchUtil;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -56,12 +56,12 @@ public class DataCache<K,V> implements ICache<K,V>, ISaveable<K,V> {
 
     @Override
     public void remove(K key) {
-        TryUtil.tryRun(() -> this.dao.deleteById(key));
+        TryCatchUtil.tryRun(() -> this.dao.deleteById(key));
     }
 
     @Override
     public V load(K key) {
-        V value = TryUtil.tryAndReturn(() -> this.dao.queryForId(key));
+        V value = TryCatchUtil.tryAndReturn(() -> this.dao.queryForId(key));
         if(value == null) return null;
         this.cache.put(key,value);
         return value;
@@ -69,9 +69,9 @@ public class DataCache<K,V> implements ICache<K,V>, ISaveable<K,V> {
 
     @Override
     public Set<V> loadAll() {
-        TryUtil.tryOrDefault(this.dao::queryForAll, new ArrayList<V>())
+        TryCatchUtil.tryOrDefault(this.dao::queryForAll, new ArrayList<V>())
                 .forEach(value -> this.cache.put(
-                        TryUtil.tryAndReturn(() -> this.dao.extractId(value)),
+                        TryCatchUtil.tryAndReturn(() -> this.dao.extractId(value)),
                         value
                 ));
         return new HashSet<>(this.cache.values());
@@ -93,10 +93,10 @@ public class DataCache<K,V> implements ICache<K,V>, ISaveable<K,V> {
     public void modifyAll(Consumer<V> action) {
         this.cache.values().forEach(action);
 
-        TryUtil.tryOrDefault(this.dao::queryForAll, new ArrayList<V>())
+        TryCatchUtil.tryOrDefault(this.dao::queryForAll, new ArrayList<V>())
                 .stream()
                 .map(value -> new AbstractMap.SimpleEntry<K,V>(
-                        TryUtil.tryAndReturn(() -> this.dao.extractId(value)),
+                        TryCatchUtil.tryAndReturn(() -> this.dao.extractId(value)),
                         value
                 ))
                 .filter(entry -> !this.contains(entry.getKey()))
@@ -110,7 +110,7 @@ public class DataCache<K,V> implements ICache<K,V>, ISaveable<K,V> {
     @Override
     public void save(K key) {
         if(!contains(key)) return;
-        TryUtil.tryRun(() -> this.dao.createOrUpdate(this.cache.get(key)));
+        TryCatchUtil.tryRun(() -> this.dao.createOrUpdate(this.cache.get(key)));
     }
 
     @Override
@@ -121,6 +121,6 @@ public class DataCache<K,V> implements ICache<K,V>, ISaveable<K,V> {
     @Override
     public boolean exists(K key) {
         if(this.contains(key)) return true;
-        return TryUtil.tryOrDefault(() -> this.dao.idExists(key),false);
+        return TryCatchUtil.tryOrDefault(() -> this.dao.idExists(key),false);
     }
 }
