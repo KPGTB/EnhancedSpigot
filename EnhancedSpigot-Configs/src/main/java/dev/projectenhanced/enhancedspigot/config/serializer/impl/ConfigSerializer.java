@@ -1,9 +1,11 @@
-package dev.projectenhanced.enhancedspigot.config.serializer;
+package dev.projectenhanced.enhancedspigot.config.serializer.impl;
 
 import dev.projectenhanced.enhancedspigot.config.EnhancedConfig;
 import dev.projectenhanced.enhancedspigot.config.annotation.Comment;
 import dev.projectenhanced.enhancedspigot.config.annotation.Ignore;
 import dev.projectenhanced.enhancedspigot.config.annotation.Serializer;
+import dev.projectenhanced.enhancedspigot.config.serializer.ConfigSerializerManager;
+import dev.projectenhanced.enhancedspigot.config.serializer.ISerializer;
 import dev.projectenhanced.enhancedspigot.config.util.SectionUtil;
 import dev.projectenhanced.enhancedspigot.util.trycatch.TryCatchUtil;
 import org.bukkit.configuration.ConfigurationSection;
@@ -16,7 +18,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class ConfigSerializer implements ISerializer<Object>{
+public class ConfigSerializer implements ISerializer<Object> {
     @Override
     public Object serialize(Object object, JavaPlugin plugin) {
         ConfigurationSection section = SectionUtil.createEmpty();

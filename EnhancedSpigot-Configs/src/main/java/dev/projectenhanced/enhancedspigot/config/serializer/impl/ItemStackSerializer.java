@@ -1,5 +1,6 @@
-package dev.projectenhanced.enhancedspigot.config.serializer;
+package dev.projectenhanced.enhancedspigot.config.serializer.impl;
 
+import dev.projectenhanced.enhancedspigot.config.serializer.ISerializer;
 import dev.projectenhanced.enhancedspigot.config.util.SectionUtil;
 import dev.projectenhanced.enhancedspigot.util.item.EnhancedItemBuilder;
 import org.bukkit.configuration.ConfigurationSection;

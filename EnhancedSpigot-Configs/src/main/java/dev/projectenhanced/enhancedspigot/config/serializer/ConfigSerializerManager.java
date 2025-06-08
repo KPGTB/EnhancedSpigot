@@ -1,6 +1,8 @@
 package dev.projectenhanced.enhancedspigot.config.serializer;
 
+import dev.projectenhanced.enhancedspigot.config.serializer.impl.*;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
@@ -16,6 +18,7 @@ public class ConfigSerializerManager {
 
         this.registerSerializer(new LocationSerializer(), Location.class);
         this.registerSerializer(new ItemStackSerializer(), ItemStack.class);
+        this.registerSerializer(new WorldSerializer(), World.class);
     }
 
     @SafeVarargs
