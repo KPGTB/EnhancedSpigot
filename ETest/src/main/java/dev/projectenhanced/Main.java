@@ -1,6 +1,5 @@
 package dev.projectenhanced;
 
-import dev.projectenhanced.enhancedspigot.util.rest.client.BodyBuilder;
 import dev.projectenhanced.enhancedspigot.util.rest.client.HttpMethod;
 import dev.projectenhanced.enhancedspigot.util.rest.client.EnhancedResponse;
 import dev.projectenhanced.enhancedspigot.util.rest.client.EnhancedRequest;
@@ -10,7 +9,9 @@ import java.net.HttpCookie;
 
 public class Main {
     public static void main(String[] args) {
-        EnhancedResponse tokenResponse = TryCatchUtil.tryAndReturn(() -> EnhancedRequest.builder()
+        System.out.println("Sending token request");
+
+        EnhancedRequest.builder()
                 .url("https://restful-booker.herokuapp.com/auth")
                 .method(HttpMethod.POST)
                 .body(
@@ -19,10 +20,15 @@ public class Main {
                                 .set("password", "password123")
                 )
                 .build()
-                .send());
+                .sendAsync()
+                .thenAccept(response -> {
+                    String token = response.getAsJson().get("token").getAsString();
+                    System.out.println("Token: " + token);
+                });
 
-        String token = tokenResponse.getAsJson().get("token").getAsString();
+        System.out.println("Next");
 
+        String token = "";
         EnhancedResponse create = TryCatchUtil.tryAndReturn(() -> EnhancedRequest.builder()
                 .url("https://restful-booker.herokuapp.com/booking")
                 .method(HttpMethod.POST)
@@ -32,7 +38,7 @@ public class Main {
                                 .set("lastname", "Wyzinsky")
                                 .set("totalprice", 10)
                                 .set("depositpaid", true)
-                                .set("bookingdates", BodyBuilder.builder()
+                                .set("bookingdates", EnhancedRequest.Body.builder()
                                         .set("checkin", "2025-01-01")
                                         .set("checkout", "2026-01-01")
                                 )
@@ -54,7 +60,7 @@ public class Main {
                                 .set("lastname", "Wizinski")
                                 .set("totalprice", 10)
                                 .set("depositpaid", true)
-                                .set("bookingdates", BodyBuilder.builder()
+                                .set("bookingdates", EnhancedRequest.Body.builder()
                                         .set("checkin", "2025-01-01")
                                         .set("checkout", "2026-01-01")
                                 )

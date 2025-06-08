@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Builder
@@ -100,6 +101,10 @@ public class EnhancedRequest {
 
         connection.disconnect();
         return new EnhancedResponse(status,message,responseHeaders,responseBuilder.toString());
+    }
+
+    public CompletableFuture<EnhancedResponse> sendAsync() {
+        return CompletableFuture.supplyAsync(() -> TryCatchUtil.tryAndReturn(this::send));
     }
 
     public static class Body {
