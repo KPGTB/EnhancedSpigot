@@ -1,6 +1,4 @@
 rootProject.name = "EnhancedSpigot"
-include("EnhancedSpigot-Data")
-include("EnhancedSpigot-Utils")
-
-
-include 'ETest'
+include "EnhancedSpigot-Utils"
+include "EnhancedSpigot-Data"
+include 'EnhancedSpigot-Configs'

@@ -3,6 +3,7 @@ package dev.projectenhanced.enhancedspigot.util.item;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import dev.projectenhanced.enhancedspigot.util.SemanticVersion;
+import dev.projectenhanced.enhancedspigot.util.VanillaEnchantment;
 import lombok.NonNull;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
@@ -151,7 +152,7 @@ public class EnhancedItemBuilder {
     }
 
     public EnhancedItemBuilder glow() {
-        this.enchant(this.itemStack.getType() == Material.BOW ? Enchantment.LUCK : Enchantment.ARROW_INFINITE, 1);
+        this.enchant(this.itemStack.getType() == Material.BOW ? VanillaEnchantment.LUCK_OF_THE_SEA.getEnchantment() : VanillaEnchantment.INFINITY.getEnchantment(), 1);
         this.flag(ItemFlag.HIDE_ENCHANTS);
         return this;
     }
@@ -246,7 +247,7 @@ public class EnhancedItemBuilder {
                     .collect(Collectors.toList())
             );
             result.put("glow",
-                    itemStack.getType() == Material.BOW ? itemMeta.hasEnchant(Enchantment.LUCK) : itemMeta.hasEnchant(Enchantment.ARROW_INFINITE)
+                    itemStack.getType() == Material.BOW ? itemMeta.hasEnchant(VanillaEnchantment.LUCK_OF_THE_SEA.getEnchantment()) : itemMeta.hasEnchant(VanillaEnchantment.INFINITY.getEnchantment())
             );
             result.put("item-flags", itemMeta.getItemFlags()
                     .stream()

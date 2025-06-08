@@ -43,8 +43,9 @@ subprojects {
             finalizedBy sourcesJar;
         }
 
-        /*
+
         publishing {
+            /*
             repositories {
                 maven {
                     if (project.version.endsWith("-SNAPSHOT")) {
@@ -58,6 +59,7 @@ subprojects {
                     }
                 }
             }
+             */
 
             publications {
                 maven(MavenPublication) {
@@ -96,6 +98,7 @@ subprojects {
             }
         }
 
+        /*
         jreleaser {
             release {
                 github {
