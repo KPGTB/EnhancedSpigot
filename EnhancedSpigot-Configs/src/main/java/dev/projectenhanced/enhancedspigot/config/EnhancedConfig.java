@@ -1,5 +1,6 @@
 package dev.projectenhanced.enhancedspigot.config;
 
+import dev.projectenhanced.enhancedspigot.config.annotation.Comment;
 import dev.projectenhanced.enhancedspigot.config.serializer.ConfigSerializerManager;
 import dev.projectenhanced.enhancedspigot.util.trycatch.TryCatchUtil;
 import lombok.Getter;
@@ -8,7 +9,9 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Getter
 public abstract class EnhancedConfig {
@@ -47,6 +50,16 @@ public abstract class EnhancedConfig {
     public void save() {
         ConfigSerializerManager.SpecialSerializers.CONFIG
                 .serializeTo(this,this.plugin,this.configuration);
+
+        Comment commentAnn = getClass().getDeclaredAnnotation(Comment.class);
+        if(commentAnn != null) {
+            String header = String.join("\n", commentAnn.value());
+            for (Map.Entry<String, String> entry : getCommentPlaceholders().entrySet()) {
+                header = header.replace(entry.getKey(), entry.getValue());
+            }
+            this.configuration.options().header(header);
+        }
+
         TryCatchUtil.tryRun(() -> this.configuration.save(this.configFile));
     }
 }
