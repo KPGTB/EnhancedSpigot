@@ -4,7 +4,7 @@ plugins {
     id "io.freefair.lombok" version "8.11"
 
     id "maven-publish"
-    id "org.jreleaser" version "1.16.0"
+    id "org.jreleaser" version "1.18.0"
 }
 
 group = "dev.projectenhanced"
@@ -45,7 +45,6 @@ subprojects {
 
 
         publishing {
-            /*
             repositories {
                 maven {
                     if (project.version.endsWith("-SNAPSHOT")) {
@@ -59,7 +58,6 @@ subprojects {
                     }
                 }
             }
-             */
 
             publications {
                 maven(MavenPublication) {
@@ -98,8 +96,8 @@ subprojects {
             }
         }
 
-        /*
         jreleaser {
+            gitRootSearch = true
             release {
                 github {
                     skipRelease = true
@@ -125,6 +123,5 @@ subprojects {
                 }
             }
         }
-         */
     }
 }

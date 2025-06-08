@@ -1,9 +1,9 @@
-version = "1.0.0-SNAPSHOT"
+version = "0.1.0-SNAPSHOT"
 description = "EnhancedSpigot Data module adds database management & cache"
 
 repositories {
     mavenCentral()
-    maven {url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/"}
+    maven {url "https://hub.spigotmc.org/nexus/content/repositories/snapshots/"}
 }
 
 dependencies {
@@ -13,4 +13,8 @@ dependencies {
     api 'com.j256.ormlite:ormlite-jdbc:6.1'
 
     implementation project(':EnhancedSpigot-Utils')
+}
+
+shadowJar {
+    dependsOn ':EnhancedSpigot-Utils:shadowJar'
 }

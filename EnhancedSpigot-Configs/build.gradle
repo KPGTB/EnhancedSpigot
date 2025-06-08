@@ -1,13 +1,17 @@
-version = "1.0.0-SNAPSHOT"
+version = "0.1.0-SNAPSHOT"
 description = "EnhancedSpigot Configs module adds configuration management basing on POJO"
 
 repositories {
     mavenCentral()
-    maven {url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/"}
+    maven {url "https://hub.spigotmc.org/nexus/content/repositories/snapshots/"}
 }
 
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.19-R0.1-SNAPSHOT'
 
     implementation project(':EnhancedSpigot-Utils')
+}
+
+shadowJar {
+    dependsOn ':EnhancedSpigot-Utils:shadowJar'
 }
