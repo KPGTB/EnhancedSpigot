@@ -9,7 +9,7 @@ import dev.projectenhanced.enhancedspigot.config.serializer.ConfigSerializerRegi
 import dev.projectenhanced.enhancedspigot.config.serializer.ISerializer;
 import dev.projectenhanced.enhancedspigot.config.util.SectionUtil;
 import dev.projectenhanced.enhancedspigot.util.TextCase;
-import dev.projectenhanced.enhancedspigot.util.trycatch.TryCatchUtil;
+import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemorySection;
 

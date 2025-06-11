@@ -4,7 +4,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import dev.projectenhanced.enhancedspigot.util.SemanticVersion;
 import dev.projectenhanced.enhancedspigot.util.VanillaEnchantment;
-import lombok.NonNull;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
@@ -33,7 +32,7 @@ public class EnhancedItemBuilder {
     private final ItemMeta itemMeta;
     private int amount;
 
-    public EnhancedItemBuilder(@NonNull ItemStack itemStack) {
+    public EnhancedItemBuilder(ItemStack itemStack) {
         this.itemStack = itemStack;
         this.amount = itemStack.getAmount();
 

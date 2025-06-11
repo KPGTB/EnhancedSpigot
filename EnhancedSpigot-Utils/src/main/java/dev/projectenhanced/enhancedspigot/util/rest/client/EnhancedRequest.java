@@ -3,7 +3,7 @@ package dev.projectenhanced.enhancedspigot.util.rest.client;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import dev.projectenhanced.enhancedspigot.util.trycatch.TryCatchUtil;
+import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
 import lombok.Builder;
 import lombok.Singular;
 

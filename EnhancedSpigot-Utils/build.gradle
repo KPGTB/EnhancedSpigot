@@ -8,4 +8,10 @@ repositories {
 
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.20-R0.1-SNAPSHOT'
+
+    implementation 'org.bstats:bstats-bukkit:3.0.2'
+}
+
+shadowJar {
+    relocate 'org.bstats', 'dev.projectenhanced.enhancedspigot.util.bstats'
 }

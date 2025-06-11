@@ -1,6 +1,5 @@
 package dev.projectenhanced.enhancedspigot.util;
 
-import dev.projectenhanced.enhancedspigot.util.trycatch.TryCatchUtil;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.bukkit.Bukkit;

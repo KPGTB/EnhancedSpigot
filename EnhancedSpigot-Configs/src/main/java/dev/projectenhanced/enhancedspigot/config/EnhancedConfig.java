@@ -2,7 +2,7 @@ package dev.projectenhanced.enhancedspigot.config;
 
 import dev.projectenhanced.enhancedspigot.config.annotation.Comment;
 import dev.projectenhanced.enhancedspigot.config.serializer.ConfigSerializerRegistry;
-import dev.projectenhanced.enhancedspigot.util.trycatch.TryCatchUtil;
+import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
 import lombok.Getter;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
