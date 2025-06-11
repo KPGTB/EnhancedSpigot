@@ -1,19 +1,30 @@
 package dev.projectenhanced.enhancedspigot.config.serializer.impl;
 
+import dev.projectenhanced.enhancedspigot.config.EnhancedConfig;
 import dev.projectenhanced.enhancedspigot.config.serializer.ISerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.plugin.java.JavaPlugin;
 
 public class WorldSerializer implements ISerializer<World> {
+
     @Override
-    public Object serialize(World object, JavaPlugin plugin) {
+    public Object serialize(World object, Class<? extends World> objectClass, EnhancedConfig config) {
         return object.getName();
     }
 
     @Override
-    public World deserialize(Object configValue, JavaPlugin plugin) {
-        return Bukkit.getWorld(String.valueOf(configValue));
+    public void serializeTo(World object, Class<? extends World> objectClass, EnhancedConfig config, Object to) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public World deserialize(Object serialized, Class<? extends World> targetClass, EnhancedConfig config) {
+        return Bukkit.getWorld(String.valueOf(serialized));
+    }
+
+    @Override
+    public void deserializeTo(Object serialized, Class<? extends World> targetClass, EnhancedConfig config, Object to) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

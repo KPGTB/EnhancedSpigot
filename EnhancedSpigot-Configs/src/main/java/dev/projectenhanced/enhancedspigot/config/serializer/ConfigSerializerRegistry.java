@@ -8,12 +8,17 @@ import org.bukkit.inventory.ItemStack;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ConfigSerializerManager {
-    private static ConfigSerializerManager INSTANCE;
+/**
+ * Registry of serializers used in EnhancedConfig
+ */
+public class ConfigSerializerRegistry {
+    private static final class Holder {
+        static final ConfigSerializerRegistry INSTANCE = new ConfigSerializerRegistry();
+    }
 
     private final Map<Class<?>, ISerializer<?>> serializers;
 
-    protected ConfigSerializerManager() {
+    protected ConfigSerializerRegistry() {
         this.serializers = new HashMap<>();
 
         this.registerSerializer(new LocationSerializer(), Location.class);
@@ -21,6 +26,16 @@ public class ConfigSerializerManager {
         this.registerSerializer(new WorldSerializer(), World.class);
     }
 
+    public static ConfigSerializerRegistry getInstance() {
+        return Holder.INSTANCE;
+    }
+
+    /**
+     * Registers serializer
+     * @param serializer Serializer instance
+     * @param classes Classes for which is that serializer
+     * @param <T>
+     */
     @SafeVarargs
     public final <T> void registerSerializer(ISerializer<T> serializer, Class<? extends T>... classes) {
         for (Class<? extends T> clazz : classes) {
@@ -28,18 +43,25 @@ public class ConfigSerializerManager {
         }
     }
 
+    /**
+     * Gets registered serializer
+     * @param clazz Class for which is that serializer
+     * @return Serializer or null
+     * @param <T>
+     */
     @SuppressWarnings("unchecked")
     public <T> ISerializer<T> getSerializer(Class<? extends T> clazz) {
         return (ISerializer<T>) this.serializers.get(clazz);
     }
 
-    public static ConfigSerializerManager getInstance() {
-        if(INSTANCE == null) INSTANCE = new ConfigSerializerManager();
-        return INSTANCE;
-    }
-
-    public static class SpecialSerializers {
+    public static class CustomSerializers {
+        /**
+         * Base serializer used for serializing simple objects (requires empty constructor)
+         */
+        public static final ISerializer<Object> BASE = new BaseSerializer();
+        /**
+         * Serializer for exact item stack copies - uses Base64 to serialize ItemStack
+         */
         public static final ISerializer<ItemStack> EXACT_ITEMSTACK = new ExactItemStackSerializer();
-        public static final ConfigSerializer CONFIG = new ConfigSerializer();
     }
 }

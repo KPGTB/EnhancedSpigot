@@ -5,9 +5,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.TYPE})
+/**
+ * This annotation represents a field which shouldn't be recovered after removing from config file
+ */
+@Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ConfigVersion {
-    int value();
-}
+public @interface DoNotRecover { }
 

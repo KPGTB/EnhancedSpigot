@@ -1,5 +1,6 @@
 package dev.projectenhanced.enhancedspigot.config.serializer.impl;
 
+import dev.projectenhanced.enhancedspigot.config.EnhancedConfig;
 import dev.projectenhanced.enhancedspigot.config.serializer.ISerializer;
 import dev.projectenhanced.enhancedspigot.config.util.SectionUtil;
 import org.bukkit.Bukkit;
@@ -8,21 +9,28 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class LocationSerializer implements ISerializer<Location> {
+
     @Override
-    public Object serialize(Location object, JavaPlugin plugin) {
+    public Object serialize(Location object, Class<? extends Location> objectClass, EnhancedConfig config) {
         ConfigurationSection section = SectionUtil.createEmpty();
+        this.serializeTo(object,objectClass,config,section);
+        return section;
+    }
+
+    @Override
+    public void serializeTo(Location object, Class<? extends Location> objectClass, EnhancedConfig config, Object to) {
+        ConfigurationSection section = (ConfigurationSection) to;
         section.set("world", object.getWorld().getName());
         section.set("x", object.getX());
         section.set("y", object.getY());
         section.set("z", object.getZ());
         section.set("yaw", object.getYaw());
         section.set("pitch", object.getPitch());
-        return section;
     }
 
     @Override
-    public Location deserialize(Object configValue, JavaPlugin plugin) {
-        ConfigurationSection section = (ConfigurationSection) configValue;
+    public Location deserialize(Object serialized, Class<? extends Location> targetClass, EnhancedConfig config) {
+        ConfigurationSection section = (ConfigurationSection) serialized;
         return new Location(
                 Bukkit.getWorld(section.getString("world")),
                 section.getDouble("x"),
@@ -31,6 +39,19 @@ public class LocationSerializer implements ISerializer<Location> {
                 (float) section.getDouble("yaw"),
                 (float) section.getDouble("pitch")
         );
+    }
+
+    @Override
+    public void deserializeTo(Object serialized, Class<? extends Location> targetClass, EnhancedConfig config, Object to) {
+        Location location = (Location) to;
+        ConfigurationSection section = (ConfigurationSection) serialized;
+
+        location.setWorld(Bukkit.getWorld(section.getString("world")));
+        location.setX(section.getDouble("x"));
+        location.setY(section.getDouble("y"));
+        location.setZ(section.getDouble("z"));
+        location.setYaw((float) section.getDouble("yaw"));
+        location.setPitch((float) section.getDouble("pitch"));
     }
 
     @Override
