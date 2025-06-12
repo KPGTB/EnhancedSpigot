@@ -1,4 +1,4 @@
-version = "0.1.0-SNAPSHOT"
+version = "1.0.0-SNAPSHOT"
 description = "EnhancedSpigot Data module adds database management & cache"
 
 repositories {
@@ -8,13 +8,16 @@ repositories {
 
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.17-R0.1-SNAPSHOT'
-    compileOnly 'org.xerial:sqlite-jdbc:3.49.1.0'
 
+    compileOnly 'org.xerial:sqlite-jdbc:3.49.1.0'
+    implementation 'org.postgresql:postgresql:42.7.5'
     api 'com.j256.ormlite:ormlite-jdbc:6.1'
 
     implementation project(':EnhancedSpigot-Utils')
+    implementation project(':EnhancedSpigot-Configs')
 }
 
 shadowJar {
     dependsOn ':EnhancedSpigot-Utils:shadowJar'
+    dependsOn ':EnhancedSpigot-Configs:shadowJar'
 }

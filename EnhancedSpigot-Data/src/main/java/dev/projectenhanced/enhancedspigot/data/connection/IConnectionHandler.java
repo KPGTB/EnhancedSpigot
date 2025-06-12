@@ -8,6 +8,6 @@ import java.sql.SQLException;
 
 public interface IConnectionHandler {
     ConnectionType getConnectionType();
-    void retrieveCredentials(ConfigurationSection credentialsSection);
+    void retrieveCredentials(DatabaseOptions options);
     JdbcPooledConnectionSource connect() throws IOException, SQLException;
 }

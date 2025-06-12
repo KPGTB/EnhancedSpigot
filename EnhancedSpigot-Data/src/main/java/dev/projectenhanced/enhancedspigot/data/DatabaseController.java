@@ -11,15 +11,13 @@ import com.j256.ormlite.logger.LogBackendType;
 import com.j256.ormlite.logger.LoggerFactory;
 import com.j256.ormlite.table.DatabaseTable;
 import com.j256.ormlite.table.TableUtils;
-import dev.projectenhanced.enhancedspigot.data.connection.ConnectionType;
-import dev.projectenhanced.enhancedspigot.data.connection.IConnectionHandler;
-import dev.projectenhanced.enhancedspigot.data.connection.MySQLConnectionHandler;
-import dev.projectenhanced.enhancedspigot.data.connection.SQLiteConnectionHandler;
+import dev.projectenhanced.enhancedspigot.data.connection.*;
+import dev.projectenhanced.enhancedspigot.data.persister.base.*;
 import dev.projectenhanced.enhancedspigot.util.ReflectionUtil;
+import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -31,22 +29,23 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Getter @Setter
 public class DatabaseController {
     private final JavaPlugin plugin;
     private final File jarFile;
-    private final ConnectionType connectionType;
-    private final ConfigurationSection options;
+    private final DatabaseOptions options;
+    private ExecutorService executor;
 
     private boolean debug;
     private JdbcPooledConnectionSource source;
     private Map<Class<?>, Dao<?,?>> daoMap;
 
-    public DatabaseController(JavaPlugin plugin, File jarFile, ConnectionType connectionType, ConfigurationSection options) {
+    public DatabaseController(JavaPlugin plugin, File jarFile, DatabaseOptions options) {
         this.plugin = plugin;
         this.jarFile = jarFile;
-        this.connectionType = connectionType;
         this.options = options;
 
         this.debug = false;
@@ -55,30 +54,39 @@ public class DatabaseController {
 
     public void connect() {
         IConnectionHandler handler = null;
-        switch (this.connectionType) {
+        switch (this.options.getType()) {
             case MYSQL:
                 handler = new MySQLConnectionHandler();
+                this.executor = Executors.newFixedThreadPool(10);
+                break;
+            case POSTGRESQL:
+                handler = new PostgreSQLConnectionHandler();
+                this.executor = Executors.newFixedThreadPool(10);
                 break;
             case SQLITE:
                 handler = new SQLiteConnectionHandler(this.plugin.getDataFolder());
+                this.executor = Executors.newSingleThreadExecutor();
                 break;
             default:
-                throw new UnsupportedOperationException("Unsupported connection type: " + this.connectionType.name());
+                throw new UnsupportedOperationException("Unsupported connection type: " + this.options.getType().name());
         }
         handler.retrieveCredentials(this.options);
-        try {
-            this.source = handler.connect();
-        } catch (IOException | SQLException e) {
-            throw new RuntimeException(e);
-        }
+        this.source = TryCatchUtil.tryAndReturn(handler::connect);
+        this.registerDefaultPersisters();
 
         if(!this.debug) LoggerFactory.setLogBackendFactory(LogBackendType.NULL);
     }
 
+    /**
+     * Close database connection
+     */
     @SneakyThrows
     public void close() {
+        if(this.executor != null) this.executor.shutdownNow();
         if(this.source == null) return;
         this.source.close();
+        this.source = null;
+        this.daoMap = new HashMap<>();
     }
 
     public void registerEntities(String packageName) {
@@ -107,7 +115,7 @@ public class DatabaseController {
             Dao<?,?> dao;
             try {
                 dao = DaoManager.createDao(this.source, clazz);
-                int cache = this.options.getInt("cache",0);
+                int cache = this.options.getCacheCapacity();
                 switch (cache) {
                     case -1:
                         break;
@@ -143,16 +151,27 @@ public class DatabaseController {
         ReflectionUtil.getAllClassesInPackage(this.jarFile, packageName)
                 .stream()
                 .filter(DataPersister.class::isAssignableFrom)
-                .map(clazz -> {
-                    try {
-                        return (DataPersister) clazz.getDeclaredConstructor().newInstance();
-                    } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                             NoSuchMethodException e) {
-                        e.printStackTrace();
-                        return null;
-                    }
-                })
+                .map(clazz -> TryCatchUtil.tryAndReturn(() -> (DataPersister) clazz.getDeclaredConstructor().newInstance()))
                 .filter(Objects::nonNull)
                 .forEach(DataPersisterManager::registerDataPersisters);
+    }
+
+    /**
+     * Register persisters
+     * @param persisters Persisters instance
+     */
+    public void registerPersisters(DataPersister... persisters) {
+        DataPersisterManager.registerDataPersisters(persisters);
+    }
+
+    private void registerDefaultPersisters() {
+        registerPersisters(
+                new ItemStackPersister(),
+                new ListPersister(),
+                new LocationPersister(),
+                new MapPersister(),
+                new OfflinePlayerPersister(),
+                new WorldPersister()
+        );
     }
 }

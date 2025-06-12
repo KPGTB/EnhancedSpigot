@@ -2,12 +2,12 @@ package dev.projectenhanced.enhancedspigot.data.connection;
 
 import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
 import com.j256.ormlite.jdbc.db.MysqlDatabaseType;
-import org.bukkit.configuration.ConfigurationSection;
+import com.j256.ormlite.jdbc.db.PostgresDatabaseType;
 
 import java.io.IOException;
 import java.sql.SQLException;
 
-public class MySQLConnectionHandler implements IConnectionHandler{
+public class PostgreSQLConnectionHandler implements IConnectionHandler{
 
     private DatabaseOptions.Credentials credentials;
 
@@ -23,7 +23,7 @@ public class MySQLConnectionHandler implements IConnectionHandler{
 
     @Override
     public JdbcPooledConnectionSource connect() throws IOException, SQLException {
-        String url = "jdbc:mysql://"+this.credentials.getHost()+":"+this.credentials.getPort()+"/"+this.credentials.getDatabase();
-        return new JdbcPooledConnectionSource(url,this.credentials.getUsername(),this.credentials.getPassword(),new MysqlDatabaseType());
+        String url = "jdbc:postgresql://"+this.credentials.getHost()+":"+this.credentials.getPort()+"/"+this.credentials.getDatabase();
+        return new JdbcPooledConnectionSource(url,this.credentials.getUsername(),this.credentials.getPassword(),new PostgresDatabaseType());
     }
 }

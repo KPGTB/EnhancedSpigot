@@ -1,6 +1,7 @@
 package dev.projectenhanced.enhancedspigot.config.serializer;
 
 import dev.projectenhanced.enhancedspigot.config.serializer.impl.*;
+import dev.projectenhanced.enhancedspigot.util.time.EnhancedTime;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
@@ -21,9 +22,11 @@ public class ConfigSerializerRegistry {
     protected ConfigSerializerRegistry() {
         this.serializers = new HashMap<>();
 
+        this.registerSerializer(new WorldSerializer(), World.class);
         this.registerSerializer(new LocationSerializer(), Location.class);
         this.registerSerializer(new ItemStackSerializer(), ItemStack.class);
-        this.registerSerializer(new WorldSerializer(), World.class);
+        this.registerSerializer(new EnhancedTimeSerializer(), EnhancedTime.class);
+        this.registerSerializer(new EnumSerializer(), Enum.class);
     }
 
     public static ConfigSerializerRegistry getInstance() {
@@ -51,7 +54,14 @@ public class ConfigSerializerRegistry {
      */
     @SuppressWarnings("unchecked")
     public <T> ISerializer<T> getSerializer(Class<? extends T> clazz) {
-        return (ISerializer<T>) this.serializers.get(clazz);
+        ISerializer<T> serializer = (ISerializer<T>) this.serializers.get(clazz);
+        if(serializer != null) return serializer;
+        return this.serializers.entrySet()
+                .stream()
+                .filter(entry -> Enum.class.isAssignableFrom(entry.getKey()))
+                .map(Map.Entry::getValue)
+                .map(s -> (ISerializer<T>) s)
+                .findAny().orElse(null);
     }
 
     public static class CustomSerializers {

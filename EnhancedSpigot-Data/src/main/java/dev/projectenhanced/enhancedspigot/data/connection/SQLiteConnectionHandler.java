@@ -23,7 +23,7 @@ public class SQLiteConnectionHandler implements IConnectionHandler{
     }
 
     @Override
-    public void retrieveCredentials(ConfigurationSection credentialsSection) {return;}
+    public void retrieveCredentials(DatabaseOptions options) {return;}
 
     @Override
     public JdbcPooledConnectionSource connect() throws IOException, SQLException {
