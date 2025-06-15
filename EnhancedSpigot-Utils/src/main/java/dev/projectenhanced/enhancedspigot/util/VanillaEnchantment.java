@@ -4,9 +4,6 @@ import lombok.Getter;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Getter
 public enum VanillaEnchantment {
     PROTECTION("protection", "PROTECTION_ENVIRONMENTAL", "1.0.0"),

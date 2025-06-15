@@ -61,7 +61,7 @@ public class SectionUtil {
      * @param comments Comment
      */
     public static void addComments(ConfigurationSection section, String path, List<String> comments) {
-        if(!SemanticVersion.getMinecraftVersion().isNewerOrEqual("1.19.0")) return; // TODO: Add support on lower versions
+        if(!SemanticVersion.getMinecraftVersion().isNewerOrEqual("1.19")) return; // TODO: Add support on lower versions
         section.setComments(path,comments);
     }
 }

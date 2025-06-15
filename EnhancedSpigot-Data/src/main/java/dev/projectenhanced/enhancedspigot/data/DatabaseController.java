@@ -13,6 +13,7 @@ import com.j256.ormlite.table.DatabaseTable;
 import com.j256.ormlite.table.TableUtils;
 import dev.projectenhanced.enhancedspigot.data.connection.*;
 import dev.projectenhanced.enhancedspigot.data.persister.base.*;
+import dev.projectenhanced.enhancedspigot.util.IClosable;
 import dev.projectenhanced.enhancedspigot.util.ReflectionUtil;
 import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
 import lombok.Getter;
@@ -21,9 +22,7 @@ import lombok.SneakyThrows;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,7 +32,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Getter @Setter
-public class DatabaseController {
+public class DatabaseController implements IClosable {
     private final JavaPlugin plugin;
     private final File jarFile;
     private final DatabaseOptions options;
@@ -81,6 +80,7 @@ public class DatabaseController {
      * Close database connection
      */
     @SneakyThrows
+    @Override
     public void close() {
         if(this.executor != null) this.executor.shutdownNow();
         if(this.source == null) return;

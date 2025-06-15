@@ -29,4 +29,11 @@ public class DependencyProvider {
     public <T> T provide(Class<T> clazz) {
         return (T) this.dependencies.get(clazz);
     }
+
+    public void closeAll() {
+        dependencies.values().stream()
+                .filter(obj -> obj instanceof IClosable)
+                .map(obj -> (IClosable) obj)
+                .forEach(IClosable::close);
+    }
 }

@@ -18,6 +18,7 @@ public abstract class EnhancedPlugin extends JavaPlugin {
     @Override
     public final void onDisable() {
         unload();
+        this.dependencyProvider.closeAll();
     }
 
     public abstract void load();

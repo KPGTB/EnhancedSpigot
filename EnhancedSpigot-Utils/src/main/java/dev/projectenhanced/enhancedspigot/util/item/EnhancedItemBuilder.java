@@ -192,27 +192,27 @@ public class EnhancedItemBuilder {
    }
 
     public static boolean hasTrimSupport() {
-        return SemanticVersion.getMinecraftVersion().isNewerOrEqual("1.20.0");
+        return SemanticVersion.getMinecraftVersion().isNewerOrEqual("1.20");
     }
 
     public static boolean hasAttributeSupport() {
-        return SemanticVersion.getMinecraftVersion().isNewerOrEqual("1.14.0");
+        return SemanticVersion.getMinecraftVersion().isNewerOrEqual("1.14");
     }
 
     public static boolean hasModelSupport() {
-        return SemanticVersion.getMinecraftVersion().isNewerOrEqual("1.14.0");
+        return SemanticVersion.getMinecraftVersion().isNewerOrEqual("1.14");
     }
 
     public static boolean isUsingNewDamage() {
-        return SemanticVersion.getMinecraftVersion().isNewerOrEqual("1.13.0");
+        return SemanticVersion.getMinecraftVersion().isNewerOrEqual("1.13");
     }
 
     public static boolean isUsingNewHead() {
-        return SemanticVersion.getMinecraftVersion().isNewerOrEqual("1.13.0");
+        return SemanticVersion.getMinecraftVersion().isNewerOrEqual("1.13");
     }
 
     public static boolean hasUnbreakableSupport() {
-        return SemanticVersion.getMinecraftVersion().isNewerOrEqual("1.13.0");
+        return SemanticVersion.getMinecraftVersion().isNewerOrEqual("1.13");
     }
 
     public static class Serializer {

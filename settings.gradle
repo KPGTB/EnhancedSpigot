@@ -2,3 +2,4 @@ rootProject.name = "EnhancedSpigot"
 include "EnhancedSpigot-Utils"
 include "EnhancedSpigot-Data"
 include 'EnhancedSpigot-Configs'
+include 'EnhancedSpigot-Locale'

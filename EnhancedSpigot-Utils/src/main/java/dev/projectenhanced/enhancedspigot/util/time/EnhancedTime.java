@@ -40,7 +40,7 @@ public class EnhancedTime {
 
     /**
      * Get time as text in specified format
-     * @param format format of text. Placeholders: <days> <hours> <minutes> <seconds>
+     * @param format format of text. Placeholders: &lt;days&gt; &lt;hours&gt; &lt;minutes&gt; &lt;seconds&gt;
      * @param hideZero Hide elements with "0" like 0 seconds
      * @param splitSeq String which is a seq of chars between elements
      * @param replaceSplitSeq string that should be replacement for splitSeq or null when it should be like splitSeq
