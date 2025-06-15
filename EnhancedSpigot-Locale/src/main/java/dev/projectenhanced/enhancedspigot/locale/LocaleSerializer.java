@@ -35,7 +35,7 @@ public class LocaleSerializer {
 
                     field.setAccessible(true);
                     Object value = TryCatchUtil.tryAndReturn(() -> field.get(object));
-                    if(value == null && LocaleObject.class.isAssignableFrom(objectClass)) value = new LocaleObject(
+                    if(value == null && LocaleObject.class.isAssignableFrom(field.getType())) value = new LocaleObject(
                             locale.getBridge(), def != null ? def.def() : new String[]{}
                     );
                     field.setAccessible(false);
@@ -68,8 +68,8 @@ public class LocaleSerializer {
                     TryCatchUtil.tryRun(() -> field.set(
                             to,
                             configValue != null ?
-                                    deserializationHandler.handleObject((ConfigurationSection) configValue, field.getType(), locale)
-                                    : LocaleObject.class.isAssignableFrom(targetClass) ?
+                                    deserializationHandler.handleObject(configValue, field.getType(), locale)
+                                    : LocaleObject.class.isAssignableFrom(field.getType()) ?
                                         new LocaleObject(locale.getBridge(), def != null ? def.def() : new String[]{})
                                     : deserializationHandler.handleObject(new MemoryConfiguration(), field.getType(), locale)
                     ));
@@ -87,13 +87,13 @@ public class LocaleSerializer {
 
     class DeserializationHandler {
         @SuppressWarnings("unchecked")
-        private Object handleObject(ConfigurationSection configValue, Class<?> clazz, EnhancedLocale locale) {
+        private Object handleObject(Object configValue, Class<?> clazz, EnhancedLocale locale) {
             if(configValue == null) return null;
             if(LocaleObject.class.isAssignableFrom(clazz)) {
                 if(configValue instanceof List) return new LocaleObject(locale.getBridge(), (List<String>) configValue);
                 return new LocaleObject(locale.getBridge(), String.valueOf(configValue));
             }
-            return deserialize(configValue,clazz,locale);
+            return deserialize((ConfigurationSection) configValue,clazz,locale);
         }
     }
 

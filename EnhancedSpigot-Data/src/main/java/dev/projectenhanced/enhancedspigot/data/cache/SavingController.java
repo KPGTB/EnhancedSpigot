@@ -32,7 +32,7 @@ public class SavingController {
 
         public SaveTask(Plugin plugin, ISavable<?,?> savable, int interval) {
             this.savable = savable;
-            this.bukkitTask = SchedulerUtil.runTaskTimerAsynchronously(plugin, this.savable::saveAll,interval, interval);
+            this.bukkitTask = SchedulerUtil.runTaskTimerAsynchronously(plugin, task -> this.savable.saveAll(),interval, interval);
         }
 
         public void stop() {

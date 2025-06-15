@@ -26,7 +26,6 @@ public class ConfigSerializerRegistry {
         this.registerSerializer(new LocationSerializer(), Location.class);
         this.registerSerializer(new ItemStackSerializer(), ItemStack.class);
         this.registerSerializer(new EnhancedTimeSerializer(), EnhancedTime.class);
-        this.registerSerializer(new EnumSerializer(), Enum.class);
     }
 
     public static ConfigSerializerRegistry getInstance() {
@@ -56,12 +55,8 @@ public class ConfigSerializerRegistry {
     public <T> ISerializer<T> getSerializer(Class<? extends T> clazz) {
         ISerializer<T> serializer = (ISerializer<T>) this.serializers.get(clazz);
         if(serializer != null) return serializer;
-        return this.serializers.entrySet()
-                .stream()
-                .filter(entry -> Enum.class.isAssignableFrom(entry.getKey()))
-                .map(Map.Entry::getValue)
-                .map(s -> (ISerializer<T>) s)
-                .findAny().orElse(null);
+        if(Enum.class.isAssignableFrom(clazz)) return (ISerializer<T>) CustomSerializers.ENUM;
+        return null;
     }
 
     public static class CustomSerializers {
@@ -73,5 +68,9 @@ public class ConfigSerializerRegistry {
          * Serializer for exact item stack copies - uses Base64 to serialize ItemStack
          */
         public static final ISerializer<ItemStack> EXACT_ITEMSTACK = new ExactItemStackSerializer();
+        /**
+         * Enum serializer
+         */
+        public static final ISerializer<Enum<?>> ENUM = new EnumSerializer();
     }
 }
