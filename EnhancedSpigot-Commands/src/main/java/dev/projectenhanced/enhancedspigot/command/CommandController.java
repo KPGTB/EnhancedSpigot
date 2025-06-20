@@ -67,44 +67,42 @@ public class CommandController {
 	 */
 	public void registerCommands(String commandsPackage) {
 		Field f = TryCatchUtil.tryAndReturn(() -> Bukkit.getServer()
-														.getClass()
-														.getDeclaredField(
-															"commandMap"));
-		CommandMap commandMap = (CommandMap) TryCatchUtil.tryAndReturn(() -> f.get(
-			Bukkit.getServer()));
+			.getClass()
+			.getDeclaredField("commandMap"));
+		f.setAccessible(true);
+		CommandMap commandMap = (CommandMap) TryCatchUtil.tryAndReturn(
+			() -> f.get(Bukkit.getServer()));
 
 		ReflectionUtil.getAllClassesInPackage(
-						  jarFile,
-						  commandsPackage,
-						  EnhancedCommand.class
-					  )
-					  .forEach(clazz -> {
-						  String[] groupPath = clazz.getName()
-													.split("\\.");
-						  StringBuilder finalPath = new StringBuilder();
+				jarFile, commandsPackage,
+				EnhancedCommand.class
+			)
+			.forEach(clazz -> {
+				String[] groupPath = clazz.getName()
+					.split("\\.");
+				StringBuilder finalPath = new StringBuilder();
 
-						  for (int i = commandsPackage.split("\\.").length; i < (groupPath.length - 1); i++) {
-							  finalPath.append(groupPath[i])
-									   .append(".");
-						  }
+				for (int i = commandsPackage.split(
+					"\\.").length; i < (groupPath.length - 1); i++) {
+					finalPath.append(groupPath[i])
+						.append(".");
+				}
 
-						  if (finalPath.length() > 0)
-							  finalPath.deleteCharAt(finalPath.length() - 1);
+				if (finalPath.length() > 0) finalPath.deleteCharAt(
+					finalPath.length() - 1);
 
-						  EnhancedCommand command = (EnhancedCommand) TryCatchUtil.tryAndReturn(
-							  () -> clazz.getDeclaredConstructor(
-											 JavaPlugin.class,
-											 CommandLocale.class,
-											 String.class
-										 )
-										 .newInstance(
-											 plugin,
-											 this.locale,
-											 finalPath.toString()
-										 ));
-						  TryCatchUtil.tryRun(command::prepareCommand);
-						  commandMap.register(pluginTag, command);
-					  });
+				EnhancedCommand command = (EnhancedCommand) TryCatchUtil.tryAndReturn(
+					() -> clazz.getDeclaredConstructor(
+							JavaPlugin.class,
+							CommandLocale.class, String.class
+						)
+						.newInstance(
+							plugin, this.locale,
+							finalPath.toString()
+						));
+				TryCatchUtil.tryRun(command::prepareCommand);
+				commandMap.register(pluginTag, command);
+			});
 
 		f.setAccessible(false);
 	}
