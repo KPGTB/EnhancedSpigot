@@ -107,8 +107,8 @@ public class CommandArgumentRegistry {
 	public <T> void registerParsers(String parsersPackage, File jarFile) {
 		ReflectionUtil.getAllClassesInPackage(jarFile, parsersPackage)
 			.stream()
-			.filter(clazz -> !IArgumentParser.class.isAssignableFrom(
-				clazz) || IArgumentParser.class.equals(clazz) || clazz.equals(
+			.filter(clazz -> IArgumentParser.class.isAssignableFrom(
+				clazz) && !IArgumentParser.class.equals(clazz) && !clazz.equals(
 				EnumParser.class))
 			.forEach(clazz -> {
 				ParameterizedType type = (ParameterizedType) clazz.getGenericInterfaces()[0];
