@@ -1,5 +1,5 @@
 /*
- *    Copyright 2023 KPG-TB
+ * Copyright 2025 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -29,30 +29,32 @@ import java.io.IOException;
 import java.util.UUID;
 
 public class OfflinePlayerAdapter extends TypeAdapter<OfflinePlayer> {
-    public static class Factory implements TypeAdapterFactory {
-        @Override
-        public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-            if (!OfflinePlayer.class.isAssignableFrom(type.getRawType())) return null;
-            return (TypeAdapter<T>) new OfflinePlayerAdapter();
-        }
-    }
+	@Override
+	public void write(JsonWriter out, OfflinePlayer value) throws IOException {
+		out.beginObject();
+		out.name("uuid")
+		   .value(value.getUniqueId()
+					   .toString());
+		out.endObject();
+	}
 
-    @Override
-    public void write(JsonWriter out, OfflinePlayer value) throws IOException {
-        out.beginObject();
-        out.name("uuid").value(value.getUniqueId().toString());
-        out.endObject();
-    }
+	@Override
+	public OfflinePlayer read(JsonReader in) throws IOException {
+		in.beginObject();
+		OfflinePlayer result = null;
+		if (in.hasNext()) {
+			in.nextName();
+			result = Bukkit.getOfflinePlayer(UUID.fromString(in.nextString()));
+		}
+		in.endObject();
+		return result;
+	}
 
-    @Override
-    public OfflinePlayer read(JsonReader in) throws IOException {
-        in.beginObject();
-        OfflinePlayer result = null;
-        if(in.hasNext()) {
-            in.nextName();
-            result = Bukkit.getOfflinePlayer(UUID.fromString(in.nextString()));
-        }
-        in.endObject();
-        return result;
-    }
+	public static class Factory implements TypeAdapterFactory {
+		@Override
+		public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
+			if (!OfflinePlayer.class.isAssignableFrom(type.getRawType())) return null;
+			return (TypeAdapter<T>) new OfflinePlayerAdapter();
+		}
+	}
 }

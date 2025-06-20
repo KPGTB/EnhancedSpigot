@@ -1,5 +1,5 @@
 /*
- *    Copyright 2023 KPG-TB
+ * Copyright 2025 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -26,23 +26,23 @@ import java.sql.SQLException;
 import java.util.UUID;
 
 public class OfflinePlayerPersister extends StringType {
-    private static final OfflinePlayerPersister SINGLETON = new OfflinePlayerPersister();
+	private static final OfflinePlayerPersister SINGLETON = new OfflinePlayerPersister();
 
-    public OfflinePlayerPersister() {
-        super(SqlType.STRING, new Class[]{OfflinePlayer.class});
-    }
+	public OfflinePlayerPersister() {
+		super(SqlType.STRING, new Class[]{OfflinePlayer.class});
+	}
 
-    public static OfflinePlayerPersister getSingleton() {
-        return SINGLETON;
-    }
+	public static OfflinePlayerPersister getSingleton() {
+		return SINGLETON;
+	}
 
-    @Override
-    public Object javaToSqlArg(FieldType fieldType, Object javaObject) throws SQLException {
-        return ((OfflinePlayer)javaObject).getUniqueId();
-    }
+	@Override
+	public Object javaToSqlArg(FieldType fieldType, Object javaObject) throws SQLException {
+		return ((OfflinePlayer) javaObject).getUniqueId();
+	}
 
-    @Override
-    public Object sqlArgToJava(FieldType fieldType, Object sqlArg, int columnPos) throws SQLException {
-        return Bukkit.getOfflinePlayer(UUID.fromString(String.valueOf(sqlArg)));
-    }
+	@Override
+	public Object sqlArgToJava(FieldType fieldType, Object sqlArg, int columnPos) throws SQLException {
+		return Bukkit.getOfflinePlayer(UUID.fromString(String.valueOf(sqlArg)));
+	}
 }

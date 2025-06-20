@@ -1,5 +1,5 @@
 /*
- *    Copyright 2023 KPG-TB
+ * Copyright 2025 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -25,23 +25,23 @@ import org.bukkit.World;
 import java.sql.SQLException;
 
 public class WorldPersister extends StringType {
-    private static final WorldPersister SINGLETON = new WorldPersister();
+	private static final WorldPersister SINGLETON = new WorldPersister();
 
-    public WorldPersister() {
-        super(SqlType.STRING, new Class[]{World.class});
-    }
+	public WorldPersister() {
+		super(SqlType.STRING, new Class[]{World.class});
+	}
 
-    public static WorldPersister getSingleton() {
-        return SINGLETON;
-    }
+	public static WorldPersister getSingleton() {
+		return SINGLETON;
+	}
 
-    @Override
-    public Object javaToSqlArg(FieldType fieldType, Object javaObject) throws SQLException {
-        return ((World)javaObject).getName();
-    }
+	@Override
+	public Object javaToSqlArg(FieldType fieldType, Object javaObject) throws SQLException {
+		return ((World) javaObject).getName();
+	}
 
-    @Override
-    public Object sqlArgToJava(FieldType fieldType, Object sqlArg, int columnPos) throws SQLException {
-        return Bukkit.getWorld(String.valueOf(sqlArg));
-    }
+	@Override
+	public Object sqlArgToJava(FieldType fieldType, Object sqlArg, int columnPos) throws SQLException {
+		return Bukkit.getWorld(String.valueOf(sqlArg));
+	}
 }

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2023 KPG-TB
+ * Copyright 2025 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -26,25 +26,25 @@ import org.bukkit.inventory.ItemStack;
 import java.sql.SQLException;
 
 public class ItemStackPersister extends LongStringType {
-    private static final ItemStackPersister SINGLETON = new ItemStackPersister();
+	private static final ItemStackPersister SINGLETON = new ItemStackPersister();
 
-    public ItemStackPersister() {
-        super(SqlType.LONG_STRING, new Class[]{ItemStack.class});
-    }
+	public ItemStackPersister() {
+		super(SqlType.LONG_STRING, new Class[]{ItemStack.class});
+	}
 
-    public static ItemStackPersister getSingleton() {
-        return SINGLETON;
-    }
+	public static ItemStackPersister getSingleton() {
+		return SINGLETON;
+	}
 
-    @SneakyThrows
-    @Override
-    public Object javaToSqlArg(FieldType fieldType, Object javaObject) throws SQLException {
-        return EnhancedItemBuilder.Serializer.serializeToBase64((ItemStack) javaObject);
-    }
+	@SneakyThrows
+	@Override
+	public Object javaToSqlArg(FieldType fieldType, Object javaObject) throws SQLException {
+		return EnhancedItemBuilder.Serializer.serializeToBase64((ItemStack) javaObject);
+	}
 
-    @SneakyThrows
-    @Override
-    public Object sqlArgToJava(FieldType fieldType, Object sqlArg, int columnPos) throws SQLException {
-        return EnhancedItemBuilder.Serializer.deserializeFromBase64(String.valueOf(sqlArg));
-    }
+	@SneakyThrows
+	@Override
+	public Object sqlArgToJava(FieldType fieldType, Object sqlArg, int columnPos) throws SQLException {
+		return EnhancedItemBuilder.Serializer.deserializeFromBase64(String.valueOf(sqlArg));
+	}
 }

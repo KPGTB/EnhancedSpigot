@@ -1,5 +1,5 @@
 /*
- *    Copyright 2023 KPG-TB
+ * Copyright 2025 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -28,30 +28,31 @@ import org.bukkit.World;
 import java.io.IOException;
 
 public class WorldAdapter extends TypeAdapter<World> {
-    public static class Factory implements TypeAdapterFactory {
-        @Override
-        public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
-            if (!World.class.isAssignableFrom(type.getRawType())) return null;
-            return (TypeAdapter<T>) new WorldAdapter();
-        }
-    }
+	@Override
+	public void write(JsonWriter out, World value) throws IOException {
+		out.beginObject();
+		out.name("world")
+		   .value(value.getName());
+		out.endObject();
+	}
 
-    @Override
-    public void write(JsonWriter out, World value) throws IOException {
-        out.beginObject();
-        out.name("world").value(value.getName());
-        out.endObject();
-    }
+	@Override
+	public World read(JsonReader in) throws IOException {
+		in.beginObject();
+		World result = null;
+		if (in.hasNext()) {
+			in.nextName();
+			result = Bukkit.getWorld(in.nextString());
+		}
+		in.endObject();
+		return result;
+	}
 
-    @Override
-    public World read(JsonReader in) throws IOException {
-        in.beginObject();
-        World result = null;
-        if(in.hasNext()) {
-            in.nextName();
-            result = Bukkit.getWorld(in.nextString());
-        }
-        in.endObject();
-        return result;
-    }
+	public static class Factory implements TypeAdapterFactory {
+		@Override
+		public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
+			if (!World.class.isAssignableFrom(type.getRawType())) return null;
+			return (TypeAdapter<T>) new WorldAdapter();
+		}
+	}
 }

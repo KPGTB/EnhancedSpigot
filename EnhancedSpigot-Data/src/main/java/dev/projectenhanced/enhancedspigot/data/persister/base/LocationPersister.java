@@ -1,5 +1,5 @@
 /*
- *    Copyright 2023 KPG-TB
+ * Copyright 2025 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -25,27 +25,27 @@ import org.bukkit.Location;
 import java.sql.SQLException;
 
 public class LocationPersister extends StringType {
-    private static final LocationPersister SINGLETON = new LocationPersister();
+	private static final LocationPersister SINGLETON = new LocationPersister();
 
-    public LocationPersister() {
-        super(SqlType.STRING, new Class[]{Location.class});
-    }
+	public LocationPersister() {
+		super(SqlType.STRING, new Class[]{Location.class});
+	}
 
-    public static LocationPersister getSingleton() {
-        return SINGLETON;
-    }
+	public static LocationPersister getSingleton() {
+		return SINGLETON;
+	}
 
-    @Override
-    public Object javaToSqlArg(FieldType fieldType, Object javaObject) throws SQLException {
-        return GsonAdapterRegistry.getInstance()
-                .getGson()
-                .toJson(javaObject);
-    }
+	@Override
+	public Object javaToSqlArg(FieldType fieldType, Object javaObject) throws SQLException {
+		return GsonAdapterRegistry.getInstance()
+								  .getGson()
+								  .toJson(javaObject);
+	}
 
-    @Override
-    public Object sqlArgToJava(FieldType fieldType, Object sqlArg, int columnPos) throws SQLException {
-        return GsonAdapterRegistry.getInstance()
-                .getGson()
-                .fromJson((String) sqlArg, Location.class);
-    }
+	@Override
+	public Object sqlArgToJava(FieldType fieldType, Object sqlArg, int columnPos) throws SQLException {
+		return GsonAdapterRegistry.getInstance()
+								  .getGson()
+								  .fromJson((String) sqlArg, Location.class);
+	}
 }

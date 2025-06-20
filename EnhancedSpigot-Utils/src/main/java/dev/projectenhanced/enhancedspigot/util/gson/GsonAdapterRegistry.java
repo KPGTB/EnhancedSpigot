@@ -1,5 +1,5 @@
 /*
- *    Copyright 2023 KPG-TB
+ * Copyright 2025 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -24,44 +24,40 @@ import dev.projectenhanced.enhancedspigot.util.gson.adapter.ItemStackAdapter;
 import dev.projectenhanced.enhancedspigot.util.gson.adapter.LocationAdapter;
 import dev.projectenhanced.enhancedspigot.util.gson.adapter.OfflinePlayerAdapter;
 import dev.projectenhanced.enhancedspigot.util.gson.adapter.WorldAdapter;
-import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
-import org.bukkit.inventory.ItemStack;
 
 import java.lang.reflect.Type;
 
 public class GsonAdapterRegistry {
-    private static final GsonAdapterRegistry INSTANCE = new GsonAdapterRegistry();
-    private final GsonBuilder gsonBuilder;
+	private static final GsonAdapterRegistry INSTANCE = new GsonAdapterRegistry();
+	private final GsonBuilder gsonBuilder;
 
-    private GsonAdapterRegistry() {
-        gsonBuilder = new GsonBuilder();
-        registerDefaultAdapters();
-    }
+	private GsonAdapterRegistry() {
+		gsonBuilder = new GsonBuilder();
+		registerDefaultAdapters();
+	}
 
-    private void registerDefaultAdapters() {
-        registerAdapterFactory(new ItemStackAdapter.Factory());
-        registerAdapterFactory(new LocationAdapter.Factory());
-        registerAdapterFactory(new OfflinePlayerAdapter.Factory());
-        registerAdapterFactory(new WorldAdapter.Factory());
-    }
+	public static GsonAdapterRegistry getInstance() {
+		return INSTANCE;
+	}
 
-    public GsonAdapterRegistry registerAdapter(Type clazz, TypeAdapter<?> adapter) {
-        gsonBuilder.registerTypeAdapter(clazz, adapter);
-        return INSTANCE;
-    }
+	private void registerDefaultAdapters() {
+		registerAdapterFactory(new ItemStackAdapter.Factory());
+		registerAdapterFactory(new LocationAdapter.Factory());
+		registerAdapterFactory(new OfflinePlayerAdapter.Factory());
+		registerAdapterFactory(new WorldAdapter.Factory());
+	}
 
-    public GsonAdapterRegistry registerAdapterFactory(TypeAdapterFactory factory) {
-        gsonBuilder.registerTypeAdapterFactory(factory);
-        return INSTANCE;
-    }
+	public GsonAdapterRegistry registerAdapter(Type clazz, TypeAdapter<?> adapter) {
+		gsonBuilder.registerTypeAdapter(clazz, adapter);
+		return INSTANCE;
+	}
 
-    public Gson getGson() {
-        return gsonBuilder.create();
-    }
+	public GsonAdapterRegistry registerAdapterFactory(TypeAdapterFactory factory) {
+		gsonBuilder.registerTypeAdapterFactory(factory);
+		return INSTANCE;
+	}
 
-    public static GsonAdapterRegistry getInstance() {
-        return INSTANCE;
-    }
+	public Gson getGson() {
+		return gsonBuilder.create();
+	}
 }
