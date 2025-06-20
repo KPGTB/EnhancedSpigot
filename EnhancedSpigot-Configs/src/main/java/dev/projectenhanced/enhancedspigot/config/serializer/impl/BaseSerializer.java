@@ -111,12 +111,12 @@ public class BaseSerializer implements ISerializer<Object> {
 					null;
 
 				TryCatchUtil.tryRun(() -> field.set(
-					to, configValue != null ?
-						deserializationHandler.handleObject(
-							configValue, field.getType(), typeArgs,
-							serializerAnn, config
-						) :
-						this.handleDefaults(field, config)
+					to, deserializationHandler.handleObject(
+						configValue != null ?
+							configValue :
+							this.handleDefaults(field, config), field.getType(),
+						typeArgs, serializerAnn, config
+					)
 				));
 				field.setAccessible(false);
 			});
@@ -251,11 +251,10 @@ public class BaseSerializer implements ISerializer<Object> {
 			Map.Entry<Class<?>, Type[]> typeData = extractTypeData(valueType);
 
 			return value.stream()
-				.map(
-					element -> handleObject(
-						element, typeData.getKey(), typeData.getValue(),
-						serializerAnn, config
-					))
+				.map(element -> handleObject(
+					element, typeData.getKey(), typeData.getValue(),
+					serializerAnn, config
+				))
 				.collect(Collectors.toList());
 		}
 

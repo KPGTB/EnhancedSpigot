@@ -90,7 +90,7 @@ public class CommandArgumentRegistry {
 	public <T> void registerParsers(IArgumentParser<?>... parsers) {
 		for (IArgumentParser<?> parser : parsers) {
 			ParameterizedType type = (ParameterizedType) parser.getClass()
-															   .getGenericInterfaces()[0];
+				.getGenericInterfaces()[0];
 			Class<T> typeArgClazz = (Class<T>) type.getActualTypeArguments()[0];
 			IArgumentParser<T> fixedParser = (IArgumentParser<T>) parser;
 			registerParser(typeArgClazz, fixedParser);
@@ -106,17 +106,17 @@ public class CommandArgumentRegistry {
 	@SuppressWarnings("unchecked")
 	public <T> void registerParsers(String parsersPackage, File jarFile) {
 		ReflectionUtil.getAllClassesInPackage(jarFile, parsersPackage)
-					  .stream()
-					  .filter(clazz -> !IArgumentParser.class.isAssignableFrom(
-						  clazz) || IArgumentParser.class.equals(
-						  clazz) || clazz.equals(EnumParser.class))
-					  .forEach(clazz -> {
-						  ParameterizedType type = (ParameterizedType) clazz.getGenericInterfaces()[0];
-						  Class<T> typeArgClazz = (Class<T>) type.getActualTypeArguments()[0];
-						  IArgumentParser<T> parser = (IArgumentParser<T>) TryCatchUtil.tryAndReturn(
-							  clazz::newInstance);
-						  registerParser(typeArgClazz, parser);
-					  });
+			.stream()
+			.filter(clazz -> !IArgumentParser.class.isAssignableFrom(
+				clazz) || IArgumentParser.class.equals(clazz) || clazz.equals(
+				EnumParser.class))
+			.forEach(clazz -> {
+				ParameterizedType type = (ParameterizedType) clazz.getGenericInterfaces()[0];
+				Class<T> typeArgClazz = (Class<T>) type.getActualTypeArguments()[0];
+				IArgumentParser<T> parser = (IArgumentParser<T>) TryCatchUtil.tryAndReturn(
+					clazz::newInstance);
+				registerParser(typeArgClazz, parser);
+			});
 	}
 
 	/**
@@ -192,7 +192,7 @@ public class CommandArgumentRegistry {
 		if (expected.isEnum()) {
 			Class<Z> enumClass = (Class<Z>) expected;
 			EnumParser<Z> enumParser = new EnumParser<>(enumClass);
-
+			return enumParser.complete(s, sender);
 		}
 		IArgumentParser<T> parser = getParser(expected);
 		if (parser == null) {
@@ -214,11 +214,11 @@ public class CommandArgumentRegistry {
 		map.put(Double.class, Double.TYPE);
 
 		return map.entrySet()
-				  .stream()
-				  .filter(entry -> entry.getKey()
-										.isAssignableFrom(clazz))
-				  .map(Map.Entry::getValue)
-				  .findAny()
-				  .orElse(null);
+			.stream()
+			.filter(entry -> entry.getKey()
+				.isAssignableFrom(clazz))
+			.map(Map.Entry::getValue)
+			.findAny()
+			.orElse(null);
 	}
 }
