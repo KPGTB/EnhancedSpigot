@@ -24,6 +24,7 @@ repositories {
 
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.19-R0.1-SNAPSHOT'
+    implementation 'org.bstats:bstats-bukkit:3.0.2'
 
     implementation project(':EnhancedSpigot-Utils')
     compileOnly project(':EnhancedSpigot-Commands')
@@ -33,6 +34,8 @@ dependencies {
 }
 
 shadowJar {
+    relocate 'org.bstats', 'dev.projectenhanced.enhancedspigot.plugin.bstats'
+
     dependsOn ':EnhancedSpigot-Utils:shadowJar'
     dependsOn ':EnhancedSpigot-Commands:shadowJar'
     dependsOn ':EnhancedSpigot-Configs:shadowJar'
