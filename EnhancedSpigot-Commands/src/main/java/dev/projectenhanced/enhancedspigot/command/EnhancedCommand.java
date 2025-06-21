@@ -54,7 +54,6 @@ public abstract class EnhancedCommand extends Command {
 	private final YamlConfiguration commandsConf;
 	private final Map<CommandPath, List<CommandInfo>> subCommands;
 	private String cmdName;
-	private int variantIdx = 0;
 
 	public EnhancedCommand(JavaPlugin plugin, CommandLocale locale, String groupPath) {
 		super("");
@@ -275,19 +274,15 @@ public abstract class EnhancedCommand extends Command {
 			);
 			commands.add(info);
 
-			String variantName = mainCommand ?
-				newPath.getPermissionStr() + "." + name :
-				newPath.getPermissionStr();
+			String variantName = getCommandStr(info);
 			info.setDescription(String.valueOf(
 				this.getVariantInfo(
 					variantName, "description", info.getDescription())));
 
-			setVariantInfo(variantName, "command", getCommandStr(info));
 			setVariantInfo(variantName, "description", description);
 			setVariantInfo(variantName, "permissions", permissions);
 			setVariantInfo(variantName, "onlyPlayer", playerRequired);
 			setVariantInfo(variantName, "hidden", hidden);
-			this.variantIdx++;
 		}
 
 		// === Scan another classes
@@ -762,16 +757,14 @@ public abstract class EnhancedCommand extends Command {
 
 	private void setVariantInfo(String variant, String key, Object value) {
 		this.setCommandInfo(
-			"variants." + variantIdx + "_" + variant.replace(
-				".", "_") + "." + key, value
+			"variants." + variant.replace(".", "_") + "." + key,
+			value
 		);
 	}
 
 	public Object getVariantInfo(String variant, String key, Object def) {
 		return this.getCommandInfo(
-			"variants." + variantIdx + "_" + variant.replace(
-				".", "_") + "." + key, def
-		);
+			"variants." + variant.replace(".", "_") + "." + key, def);
 	}
 
 	private void saveCommandsFile() {
