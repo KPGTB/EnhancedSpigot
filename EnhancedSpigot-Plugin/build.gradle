@@ -22,9 +22,14 @@ repositories {
     maven { url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/" }
 }
 
+java {
+    registerFeature('optional') {
+        usingSourceSet sourceSets.main
+    }
+}
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.19-R0.1-SNAPSHOT'
-    implementation 'org.bstats:bstats-bukkit:3.0.2'
+    optionalImplementation 'org.bstats:bstats-bukkit:3.0.2'
 
     implementation project(':EnhancedSpigot-Utils')
     compileOnly project(':EnhancedSpigot-Commands')

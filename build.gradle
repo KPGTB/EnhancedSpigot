@@ -57,8 +57,8 @@ subprojects {
             archiveFileName = project.name + "-" + project.version + ".jar"
             finalizedBy javadoc;
             finalizedBy sourcesJar;
+            relocate 'net.kyori', "dev.projectenhanced.enhancedspigot.locale.impl"
         }
-
 
         publishing {
             repositories {

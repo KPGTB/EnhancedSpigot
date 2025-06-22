@@ -32,8 +32,7 @@ import org.bstats.bukkit.Metrics;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public abstract class EnhancedPlugin extends JavaPlugin {
-	@Getter
-	private DependencyProvider dependencyProvider;
+	@Getter private DependencyProvider dependencyProvider;
 
 	@Override
 	public final void onEnable() {
@@ -99,13 +98,13 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 			this.dependencyProvider, this, this.getFile(), listenerPackage);
 	}
 
-	protected void useBStats(int serviceId) {
-		new Metrics(this, serviceId);
+	protected Metrics useBStats(int serviceId) {
+		return new Metrics(this, serviceId);
 	}
 
 	protected void useUpdater(IUpdater updater) {
 		if (updater.hasUpdate(new SemanticVersion(this.getDescription()
-													  .getVersion()))) {
+			.getVersion()))) {
 			this.getLogger()
 				.warning(
 					"Detected new version of " + this.getName() + " plugin. Download it on " + updater.getDownloadLink());
@@ -114,6 +113,6 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 
 	public String getTag() {
 		return this.getName()
-				   .toLowerCase();
+			.toLowerCase();
 	}
 }

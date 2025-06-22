@@ -22,10 +22,15 @@ import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.stream.Stream;
 
 public class PaperBridge implements IPlatformBridge {
+	@ApiStatus.Experimental
+	public PaperBridge() {
+	}
+
 	@Override
 	public void sendMessage(CommandSender sender, Component component) {
 		sender.sendMessage(component);
@@ -84,15 +89,15 @@ public class PaperBridge implements IPlatformBridge {
 
 	private Stream<Audience> getRestrictedAudience(String permission) {
 		return Bukkit.getOnlinePlayers()
-					 .stream()
-					 .filter(p -> p.hasPermission(permission))
-					 .map(p -> (Audience) p);
+			.stream()
+			.filter(p -> p.hasPermission(permission))
+			.map(p -> (Audience) p);
 	}
 
 	private Stream<Audience> getAllAudience() {
 		return Bukkit.getOnlinePlayers()
-					 .stream()
-					 .map(p -> (Audience) p);
+			.stream()
+			.map(p -> (Audience) p);
 	}
 
 	@Override

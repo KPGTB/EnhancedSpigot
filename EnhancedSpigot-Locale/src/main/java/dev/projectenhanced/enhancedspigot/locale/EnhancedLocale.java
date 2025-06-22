@@ -17,13 +17,11 @@
 package dev.projectenhanced.enhancedspigot.locale;
 
 import dev.projectenhanced.enhancedspigot.locale.bridge.IPlatformBridge;
-import dev.projectenhanced.enhancedspigot.locale.bridge.PaperBridge;
 import dev.projectenhanced.enhancedspigot.locale.bridge.SpigotBridge;
 import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
 import dev.projectenhanced.enhancedspigot.util.lifecycle.IClosable;
 import dev.projectenhanced.enhancedspigot.util.lifecycle.IReloadable;
 import lombok.Getter;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -37,10 +35,8 @@ public abstract class EnhancedLocale implements IClosable, IReloadable {
 	private File file;
 	private YamlConfiguration configuration;
 
-	@Getter
-	private String locale;
-	@Getter
-	private IPlatformBridge bridge;
+	@Getter private String locale;
+	@Getter private IPlatformBridge bridge;
 
 	public EnhancedLocale(JavaPlugin plugin, String locale) {
 		this.plugin = plugin;
@@ -58,10 +54,13 @@ public abstract class EnhancedLocale implements IClosable, IReloadable {
 
 	protected void init(boolean main) {
 		if (main) {
+			/*
 			if (Bukkit.getName()
 					  .contains("Spigot")) bridge = new SpigotBridge(
 				this.plugin);
 			else bridge = new PaperBridge();
+			 */
+			this.bridge = new SpigotBridge(this.plugin);
 
 			String trueLocale = this.locale;
 			this.supportedLocales()
@@ -80,7 +79,7 @@ public abstract class EnhancedLocale implements IClosable, IReloadable {
 		boolean newLocale = !this.file.exists();
 		if (newLocale) {
 			this.file.getParentFile()
-					 .mkdirs();
+				.mkdirs();
 			TryCatchUtil.tryRun(this.file::createNewFile);
 		}
 
