@@ -19,6 +19,7 @@ package dev.projectenhanced.enhancedspigot.locale;
 import dev.projectenhanced.enhancedspigot.locale.annotation.Ignore;
 import dev.projectenhanced.enhancedspigot.locale.annotation.InjectBridge;
 import dev.projectenhanced.enhancedspigot.locale.annotation.LocaleDefault;
+import dev.projectenhanced.enhancedspigot.locale.annotation.WithPrefix;
 import dev.projectenhanced.enhancedspigot.util.TextCase;
 import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
 import org.bukkit.configuration.ConfigurationSection;
@@ -62,7 +63,7 @@ public class LocaleSerializer {
 					() -> field.get(object));
 				if (value == null && LocaleObject.class.isAssignableFrom(
 					field.getType())) value = new LocaleObject(
-					locale.getBridge(), def != null ?
+					locale, false, def != null ?
 					def.def() :
 					new String[]{}
 				);
@@ -90,6 +91,8 @@ public class LocaleSerializer {
 						.equalsIgnoreCase(locale.getLocale()))
 					.findAny()
 					.orElse(null);
+				WithPrefix withPrefix = field.getDeclaredAnnotation(
+					WithPrefix.class);
 				InjectBridge bridgeAnn = field.getDeclaredAnnotation(
 					InjectBridge.class);
 				if (ignoreAnn != null) return;
@@ -105,19 +108,19 @@ public class LocaleSerializer {
 					TryCatchUtil.tryRun(() -> field.set(
 						to, configValue != null ?
 							deserializationHandler.handleObject(
-								configValue,
-								field.getType(), locale
+								configValue, field.getType(), locale,
+								withPrefix != null
 							) :
 							LocaleObject.class.isAssignableFrom(
 								field.getType()) ?
 								new LocaleObject(
-									locale.getBridge(), def != null ?
+									locale, withPrefix != null, def != null ?
 									def.def() :
 									new String[]{}
 								) :
 								deserializationHandler.handleObject(
 									new MemoryConfiguration(), field.getType(),
-									locale
+									locale, withPrefix != null
 								)
 					));
 				}
@@ -167,13 +170,13 @@ public class LocaleSerializer {
 
 	class DeserializationHandler {
 		@SuppressWarnings("unchecked")
-		private Object handleObject(Object configValue, Class<?> clazz, EnhancedLocale locale) {
+		private Object handleObject(Object configValue, Class<?> clazz, EnhancedLocale locale, boolean withPrefix) {
 			if (configValue == null) return null;
 			if (LocaleObject.class.isAssignableFrom(clazz)) {
 				if (configValue instanceof List) return new LocaleObject(
-					locale.getBridge(), (List<String>) configValue);
+					locale, withPrefix, (List<String>) configValue);
 				return new LocaleObject(
-					locale.getBridge(), String.valueOf(configValue));
+					locale, withPrefix, String.valueOf(configValue));
 			}
 			return deserialize(
 				(ConfigurationSection) configValue, clazz, locale);

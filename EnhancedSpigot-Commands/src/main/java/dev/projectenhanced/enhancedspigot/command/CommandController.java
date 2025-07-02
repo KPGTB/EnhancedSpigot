@@ -37,15 +37,16 @@ public class CommandController {
 	/**
 	 * Constructor of manager
 	 *
-	 * @param plugin    Instance od JavaPlugin
-	 * @param jarFile   JAR file of plugin
-	 * @param pluginTag Tag of plugin
+	 * @param plugin Instance od JavaPlugin
+	 * @param locale CommandLocale object
 	 */
-	public CommandController(JavaPlugin plugin, CommandLocale locale, File jarFile, String pluginTag) {
+	public CommandController(JavaPlugin plugin, CommandLocale locale) {
 		this.plugin = plugin;
 		this.locale = locale;
-		this.jarFile = jarFile;
-		this.pluginTag = pluginTag;
+		this.jarFile = ReflectionUtil.getJarFile(plugin);
+		this.pluginTag = plugin.getName()
+			.toLowerCase()
+			.replace("-", "_");
 	}
 
 	/**

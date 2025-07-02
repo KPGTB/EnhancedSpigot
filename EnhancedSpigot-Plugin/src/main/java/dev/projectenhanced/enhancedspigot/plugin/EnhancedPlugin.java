@@ -25,22 +25,45 @@ import dev.projectenhanced.enhancedspigot.locale.EnhancedLocale;
 import dev.projectenhanced.enhancedspigot.util.DependencyProvider;
 import dev.projectenhanced.enhancedspigot.util.SchedulerUtil;
 import dev.projectenhanced.enhancedspigot.util.SemanticVersion;
+import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
 import dev.projectenhanced.enhancedspigot.util.listener.ListenerRegistry;
 import dev.projectenhanced.enhancedspigot.util.updater.IUpdater;
 import lombok.Getter;
 import org.bstats.bukkit.Metrics;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.List;
+import java.util.logging.Level;
 
 public abstract class EnhancedPlugin extends JavaPlugin {
 	@Getter private DependencyProvider dependencyProvider;
 
 	@Override
 	public final void onEnable() {
+		TryCatchUtil.usePluginLogger(this);
+
 		this.dependencyProvider = new DependencyProvider();
 		this.dependencyProvider.register(
 			this, getClass(), EnhancedPlugin.class,
 			JavaPlugin.class
 		);
+
+		boolean passRequirements = true;
+		for (String requiredPlugin : this.requiredPlugins()) {
+			if (!Bukkit.getPluginManager()
+				.isPluginEnabled(requiredPlugin)) {
+				passRequirements = false;
+				this.getLogger()
+					.severe(
+						"This plugin requires " + requiredPlugin + " to be enabled.");
+			}
+		}
+		if (!passRequirements) {
+			Bukkit.getPluginManager()
+				.disablePlugin(this);
+			return;
+		}
 
 		load();
 		SchedulerUtil.runTaskLater(this, (task) -> postLoad(), 1);
@@ -65,17 +88,17 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 
 	public abstract void unload();
 
+	protected abstract List<String> requiredPlugins();
+
 	protected CommandController enableCommands(CommandLocale locale) {
-		CommandController controller = new CommandController(
-			this, locale, this.getFile(), this.getTag());
+		CommandController controller = new CommandController(this, locale);
 		controller.init();
 		this.dependencyProvider.register(controller);
 		return controller;
 	}
 
 	protected DatabaseController enableDatabase(DatabaseOptions options) {
-		DatabaseController controller = new DatabaseController(
-			this, this.getFile(), options);
+		DatabaseController controller = new DatabaseController(this, options);
 		controller.connect();
 		this.dependencyProvider.register(controller);
 		return controller;
@@ -93,9 +116,9 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 		return config;
 	}
 
-	protected void registerListeners(Package listenerPackage) {
+	protected void registerListeners(String listenerPackage) {
 		ListenerRegistry.register(
-			this.dependencyProvider, this, this.getFile(), listenerPackage);
+			this.dependencyProvider, this, listenerPackage);
 	}
 
 	protected Metrics useBStats(int serviceId) {
@@ -109,6 +132,11 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 				.warning(
 					"Detected new version of " + this.getName() + " plugin. Download it on " + updater.getDownloadLink());
 		}
+	}
+
+	protected void showDebug() {
+		this.getLogger()
+			.setLevel(Level.FINE);
 	}
 
 	public String getTag() {

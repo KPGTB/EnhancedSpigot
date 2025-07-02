@@ -23,20 +23,19 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
-
 public class ListenerRegistry {
-	public static void register(DependencyProvider dependencyProvider, JavaPlugin plugin, File jarFile, Package listenersPackage) {
+	public static void register(DependencyProvider dependencyProvider, JavaPlugin plugin, String listenersPackage) {
 		PluginManager pluginManager = Bukkit.getPluginManager();
 		ReflectionUtil.getAllClassesInPackage(
-						  jarFile, listenersPackage.getName(), EnhancedListener.class)
-					  .forEach(clazz -> {
-						  EnhancedListener listener = TryCatchUtil.tryAndReturn(
-							  () -> (EnhancedListener) clazz.getDeclaredConstructor(
-																DependencyProvider.class)
-															.newInstance(
-																dependencyProvider));
-						  pluginManager.registerEvents(listener, plugin);
-					  });
+				ReflectionUtil.getJarFile(plugin), listenersPackage,
+				EnhancedListener.class
+			)
+			.forEach(clazz -> {
+				EnhancedListener listener = TryCatchUtil.tryAndReturn(
+					() -> (EnhancedListener) clazz.getDeclaredConstructor(
+							DependencyProvider.class)
+						.newInstance(dependencyProvider));
+				pluginManager.registerEvents(listener, plugin);
+			});
 	}
 }

@@ -41,18 +41,18 @@ public class TextUtil {
 	 */
 	public static String convertComponentToString(Component component) {
 		boolean isHexSupport = SemanticVersion.getMinecraftVersion()
-											  .isNewerOrEqual("1.16");
+			.isNewerOrEqual("1.16");
 
 		if (isHexSupport) {
 			return LegacyComponentSerializer.builder()
-											.hexColors()
-											.useUnusualXRepeatedCharacterHexFormat()
-											.build()
-											.serialize(component);
+				.hexColors()
+				.useUnusualXRepeatedCharacterHexFormat()
+				.build()
+				.serialize(component);
 		}
 		return LegacyComponentSerializer.builder()
-										.build()
-										.serialize(component);
+			.build()
+			.serialize(component);
 	}
 
 	/**
@@ -64,7 +64,7 @@ public class TextUtil {
 	 */
 	public static String convertMmToString(String mm, TagResolver... placeholders) {
 		return convertComponentToString(MiniMessage.miniMessage()
-												   .deserialize(mm, placeholders));
+			.deserialize(mm, placeholders));
 	}
 
 	/**
@@ -75,18 +75,18 @@ public class TextUtil {
 	 */
 	public static TextComponent convertLegacyStringToComponent(String s) {
 		boolean isHexSupport = SemanticVersion.getMinecraftVersion()
-											  .isNewerOrEqual("1.16");
+			.isNewerOrEqual("1.16");
 
 		if (isHexSupport) {
 			return LegacyComponentSerializer.builder()
-											.hexColors()
-											.useUnusualXRepeatedCharacterHexFormat()
-											.build()
-											.deserialize(s);
+				.hexColors()
+				.useUnusualXRepeatedCharacterHexFormat()
+				.build()
+				.deserialize(s);
 		}
 		return LegacyComponentSerializer.builder()
-										.build()
-										.deserialize(s);
+			.build()
+			.deserialize(s);
 	}
 
 	public static void modifyItem(ItemStack is, TagResolver... placeholders) {
@@ -94,7 +94,8 @@ public class TextUtil {
 	}
 
 	public static void modifyItem(ItemStack is, Player player, TagResolver... placeholders) {
-		if (is == null || is.getType() == Material.AIR || !is.hasItemMeta()) return;
+		if (is == null || is.getType() == Material.AIR || !is.hasItemMeta())
+			return;
 		ItemMeta meta = is.getItemMeta();
 		if (meta.hasDisplayName()) {
 			String display = addPAPI(meta.getDisplayName(), player);
@@ -103,19 +104,19 @@ public class TextUtil {
 
 		if (meta.hasLore()) {
 			List<String> lore = meta.getLore()
-									.stream()
-									.map(s -> addPAPI(s, player))
-									.map(s -> convertMmToString(s, placeholders))
-									.collect(Collectors.toList());
+				.stream()
+				.map(s -> addPAPI(s, player))
+				.map(s -> convertMmToString(s, placeholders))
+				.collect(Collectors.toList());
 			meta.setLore(lore);
 		}
 
 		is.setItemMeta(meta);
 	}
 
-	private static String addPAPI(String s, Player player) {
+	public static String addPAPI(String s, Player player) {
 		if (Bukkit.getPluginManager()
-				  .isPluginEnabled("PlaceholdersAPI") && player != null) {
+			.isPluginEnabled("PlaceholdersAPI") && player != null) {
 			return PlaceholderAPI.setPlaceholders(player, s);
 		}
 		return s;

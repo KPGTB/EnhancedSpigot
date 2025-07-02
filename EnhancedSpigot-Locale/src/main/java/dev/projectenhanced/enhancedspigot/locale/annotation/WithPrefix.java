@@ -14,15 +14,12 @@
  *    limitations under the License.
  */
 
-package dev.projectenhanced.enhancedspigot.command.annotation;
+package dev.projectenhanced.enhancedspigot.locale.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Annotation that marked method that is not a sub command
- */
-@Target({ElementType.METHOD, ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME) public @interface Ignore {}
+@Target(ElementType.FIELD) @Retention(RetentionPolicy.RUNTIME)
+public @interface WithPrefix {}

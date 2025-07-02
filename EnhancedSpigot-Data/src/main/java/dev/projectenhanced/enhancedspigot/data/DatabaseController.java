@@ -56,9 +56,7 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Getter
-@Setter
-public class DatabaseController implements IClosable {
+@Getter @Setter public class DatabaseController implements IClosable {
 	private final JavaPlugin plugin;
 	private final File jarFile;
 	private final DatabaseOptions options;
@@ -68,9 +66,9 @@ public class DatabaseController implements IClosable {
 	private JdbcPooledConnectionSource source;
 	private Map<Class<?>, Dao<?, ?>> daoMap;
 
-	public DatabaseController(JavaPlugin plugin, File jarFile, DatabaseOptions options) {
+	public DatabaseController(JavaPlugin plugin, DatabaseOptions options) {
 		this.plugin = plugin;
-		this.jarFile = jarFile;
+		this.jarFile = ReflectionUtil.getJarFile(plugin);
 		this.options = options;
 
 		this.debug = false;
@@ -96,7 +94,7 @@ public class DatabaseController implements IClosable {
 			default:
 				throw new UnsupportedOperationException(
 					"Unsupported connection type: " + this.options.getType()
-																  .name());
+						.name());
 		}
 		handler.retrieveCredentials(this.options);
 		this.source = TryCatchUtil.tryAndReturn(handler::connect);
@@ -128,15 +126,15 @@ public class DatabaseController implements IClosable {
 				continue;
 
 			Field idField = Arrays.stream(clazz.getDeclaredFields())
-								  .filter(f -> {
-									  DatabaseField ann = f.getDeclaredAnnotation(
-										  DatabaseField.class);
-									  if (ann == null) return false;
-									  return ann.id() || ann.generatedId() || !ann.generatedIdSequence()
-																				  .isEmpty();
-								  })
-								  .findAny()
-								  .orElse(null);
+				.filter(f -> {
+					DatabaseField ann = f.getDeclaredAnnotation(
+						DatabaseField.class);
+					if (ann == null) return false;
+					return ann.id() || ann.generatedId() || !ann.generatedIdSequence()
+						.isEmpty();
+				})
+				.findAny()
+				.orElse(null);
 
 			if (idField == null) continue;
 
@@ -175,8 +173,8 @@ public class DatabaseController implements IClosable {
 
 		Dao<?, ?> dao = this.daoMap.get(daoClass);
 		return dao == null ?
-				   null :
-				   (Dao<T, Z>) dao;
+			null :
+			(Dao<T, Z>) dao;
 	}
 
 	/**
@@ -187,13 +185,13 @@ public class DatabaseController implements IClosable {
 	public void registerPersisters(String packageName) {
 		if (this.source == null) return;
 		ReflectionUtil.getAllClassesInPackage(this.jarFile, packageName)
-					  .stream()
-					  .filter(DataPersister.class::isAssignableFrom)
-					  .map(clazz -> TryCatchUtil.tryAndReturn(
-						  () -> (DataPersister) clazz.getDeclaredConstructor()
-													 .newInstance()))
-					  .filter(Objects::nonNull)
-					  .forEach(DataPersisterManager::registerDataPersisters);
+			.stream()
+			.filter(DataPersister.class::isAssignableFrom)
+			.map(clazz -> TryCatchUtil.tryAndReturn(
+				() -> (DataPersister) clazz.getDeclaredConstructor()
+					.newInstance()))
+			.filter(Objects::nonNull)
+			.forEach(DataPersisterManager::registerDataPersisters);
 	}
 
 	/**

@@ -277,9 +277,7 @@ public abstract class EnhancedCommand extends Command {
 			String variantName = getCommandStr(info);
 			info.setDescription(String.valueOf(
 				this.getVariantInfo(
-					variantName, "description",
-					info.getDescription()
-				)));
+					variantName, "description", info.getDescription())));
 
 			setVariantInfo(variantName, "permissions", permissions);
 			setVariantInfo(variantName, "onlyPlayer", playerRequired);
@@ -288,6 +286,8 @@ public abstract class EnhancedCommand extends Command {
 
 		// === Scan another classes
 		for (Class<?> c : clazz.getDeclaredClasses()) {
+			if (c.getDeclaredAnnotation(Ignore.class) != null) continue;
+
 			CommandPath newPath = path.clone();
 			newPath.add(c.getSimpleName()
 				.toLowerCase());

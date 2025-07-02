@@ -16,7 +16,10 @@
 
 package dev.projectenhanced.enhancedspigot.util;
 
+import org.bukkit.plugin.java.JavaPlugin;
+
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
@@ -43,9 +46,10 @@ public class ReflectionUtil {
 			for (Enumeration<JarEntry> entry = file.entries(); entry.hasMoreElements(); ) {
 				JarEntry jarEntry = entry.nextElement();
 				String name = jarEntry.getName()
-									  .replace("/", ".");
+					.replace("/", ".");
 				if (name.startsWith(packageName) && name.endsWith(".class"))
-					classes.add(Class.forName(name.substring(0, name.length() - 6)));
+					classes.add(
+						Class.forName(name.substring(0, name.length() - 6)));
 			}
 			file.close();
 		} catch (Exception e) {
@@ -65,8 +69,21 @@ public class ReflectionUtil {
 	public static Set<Class<?>> getAllClassesInPackage(File jarfile, String packageName, Class<?> abstractClass) {
 		Set<Class<?>> classes = getAllClassesInPackage(jarfile, packageName);
 		return classes.stream()
-					  .filter(clazz -> clazz.getSuperclass()
-											.equals(abstractClass))
-					  .collect(Collectors.toSet());
+			.filter(clazz -> clazz.getSuperclass()
+				.equals(abstractClass))
+			.collect(Collectors.toSet());
+	}
+
+	public static File getJarFile(JavaPlugin plugin) {
+		return TryCatchUtil.tryOrDefault(
+			() -> {
+				Method method = plugin.getClass()
+					.getMethod("getFile");
+				method.setAccessible(true);
+				File file = (File) method.invoke(plugin);
+				method.setAccessible(false);
+				return file;
+			}, null
+		);
 	}
 }

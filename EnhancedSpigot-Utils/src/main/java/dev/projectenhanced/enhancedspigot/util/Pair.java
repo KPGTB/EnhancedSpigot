@@ -14,15 +14,27 @@
  *    limitations under the License.
  */
 
-package dev.projectenhanced.enhancedspigot.command.annotation;
+package dev.projectenhanced.enhancedspigot.util;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-/**
- * Annotation that marked method that is not a sub command
- */
-@Target({ElementType.METHOD, ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME) public @interface Ignore {}
+import java.util.Objects;
+
+@Getter @AllArgsConstructor public class Pair<K, V> {
+	private final K key;
+	private final V value;
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass()) return false;
+		Pair<?, ?> pair = (Pair<?, ?>) o;
+		return Objects.equals(key, pair.key) && Objects.equals(
+			value, pair.value);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(key, value);
+	}
+}

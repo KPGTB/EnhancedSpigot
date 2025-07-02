@@ -114,4 +114,6 @@ public abstract class EnhancedLocale implements IClosable, IReloadable {
 	}
 
 	public abstract List<String> supportedLocales();
+
+	public abstract LocaleObject getPrefix();
 }

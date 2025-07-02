@@ -16,15 +16,26 @@
 
 package dev.projectenhanced.enhancedspigot.util;
 
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.java.JavaPlugin;
+
 import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TryCatchUtil {
+	private static Logger logger = Bukkit.getLogger();
+
+	public static void usePluginLogger(JavaPlugin plugin) {
+		logger = plugin.getLogger();
+	}
+
 	public static <T> T tryOrDefault(ITryCatchWithReturn<T> iface, T or, Consumer<Exception> catchHandler) {
 		try {
 			return iface.run();
 		} catch (Exception e) {
 			if (catchHandler != null) catchHandler.accept(e);
-			else e.printStackTrace();
+			else logger.log(Level.SEVERE, "Something went wrong!", e);
 			return or;
 		}
 	}
@@ -38,23 +49,23 @@ public class TryCatchUtil {
 	}
 
 	public static void tryRun(ITryCatch iface, Consumer<Exception> catchHandler) {
-		tryOrDefault(() -> {
-			iface.run();
-			return null;
-		}, null, catchHandler);
+		tryOrDefault(
+			() -> {
+				iface.run();
+				return null;
+			}, null, catchHandler
+		);
 	}
 
 	public static void tryRun(ITryCatch iface) {
 		tryRun(iface, null);
 	}
 
-	@FunctionalInterface
-	public interface ITryCatchWithReturn<T> {
+	@FunctionalInterface public interface ITryCatchWithReturn<T> {
 		T run() throws Exception;
 	}
 
-	@FunctionalInterface
-	public interface ITryCatch {
+	@FunctionalInterface public interface ITryCatch {
 		void run() throws Exception;
 	}
 }
