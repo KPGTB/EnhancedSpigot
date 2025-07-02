@@ -22,9 +22,9 @@ import com.j256.ormlite.dao.LruObjectCache;
 import com.j256.ormlite.field.DataPersister;
 import com.j256.ormlite.field.DataPersisterManager;
 import com.j256.ormlite.field.DatabaseField;
-import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
 import com.j256.ormlite.logger.LogBackendType;
 import com.j256.ormlite.logger.LoggerFactory;
+import com.j256.ormlite.support.BaseConnectionSource;
 import com.j256.ormlite.table.DatabaseTable;
 import com.j256.ormlite.table.TableUtils;
 import dev.projectenhanced.enhancedspigot.data.connection.DatabaseOptions;
@@ -60,10 +60,11 @@ import java.util.concurrent.Executors;
 	private final JavaPlugin plugin;
 	private final File jarFile;
 	private final DatabaseOptions options;
+	private IConnectionHandler handler;
+	private BaseConnectionSource source;
 	private ExecutorService executor;
 
 	private boolean debug;
-	private JdbcPooledConnectionSource source;
 	private Map<Class<?>, Dao<?, ?>> daoMap;
 
 	public DatabaseController(JavaPlugin plugin, DatabaseOptions options) {
@@ -79,15 +80,15 @@ import java.util.concurrent.Executors;
 		IConnectionHandler handler = null;
 		switch (this.options.getType()) {
 			case MYSQL:
-				handler = new MySQLConnectionHandler();
+				this.handler = new MySQLConnectionHandler();
 				this.executor = Executors.newFixedThreadPool(10);
 				break;
 			case POSTGRESQL:
-				handler = new PostgreSQLConnectionHandler();
+				this.handler = new PostgreSQLConnectionHandler();
 				this.executor = Executors.newFixedThreadPool(10);
 				break;
 			case SQLITE:
-				handler = new SQLiteConnectionHandler(
+				this.handler = new SQLiteConnectionHandler(
 					this.plugin.getDataFolder());
 				this.executor = Executors.newSingleThreadExecutor();
 				break;
@@ -96,8 +97,8 @@ import java.util.concurrent.Executors;
 					"Unsupported connection type: " + this.options.getType()
 						.name());
 		}
-		handler.retrieveCredentials(this.options);
-		this.source = TryCatchUtil.tryAndReturn(handler::connect);
+		this.handler.retrieveCredentials(this.options);
+		this.source = TryCatchUtil.tryAndReturn(this.handler::connect);
 		this.registerDefaultPersisters();
 
 		if (!this.debug) LoggerFactory.setLogBackendFactory(
@@ -114,6 +115,7 @@ import java.util.concurrent.Executors;
 		if (this.source == null) return;
 		this.source.close();
 		this.source = null;
+		this.handler.close();
 		this.daoMap = new HashMap<>();
 	}
 

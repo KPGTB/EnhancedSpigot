@@ -18,6 +18,7 @@ package dev.projectenhanced.enhancedspigot.data.connection;
 
 import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
 import com.j256.ormlite.jdbc.db.SqliteDatabaseType;
+import com.j256.ormlite.support.BaseConnectionSource;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,14 +44,20 @@ public class SQLiteConnectionHandler implements IConnectionHandler {
 	}
 
 	@Override
-	public JdbcPooledConnectionSource connect() throws IOException, SQLException {
+	public BaseConnectionSource connect() throws IOException, SQLException {
 		this.file.getParentFile()
-				 .mkdirs();
+			.mkdirs();
 		if (!this.file.exists()) {
 			this.file.createNewFile();
 		}
 
 		String connectionUrl = "jdbc:sqlite:" + this.file.getAbsolutePath();
-		return new JdbcPooledConnectionSource(connectionUrl, new SqliteDatabaseType());
+		return new JdbcPooledConnectionSource(
+			connectionUrl, new SqliteDatabaseType());
+	}
+
+	@Override
+	public void close() {
+
 	}
 }

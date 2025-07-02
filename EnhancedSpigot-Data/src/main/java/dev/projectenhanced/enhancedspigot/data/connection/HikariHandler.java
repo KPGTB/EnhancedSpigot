@@ -16,16 +16,16 @@
 
 package dev.projectenhanced.enhancedspigot.data.connection;
 
-import com.j256.ormlite.support.BaseConnectionSource;
-import dev.projectenhanced.enhancedspigot.util.lifecycle.IClosable;
+import com.zaxxer.hikari.HikariConfig;
 
-import java.io.IOException;
-import java.sql.SQLException;
-
-public interface IConnectionHandler extends IClosable {
-	ConnectionType getConnectionType();
-
-	void retrieveCredentials(DatabaseOptions options);
-
-	BaseConnectionSource connect() throws IOException, SQLException;
+public class HikariHandler {
+	public static HikariConfig configure(HikariConfig config) {
+		config.setPoolName("hikari");
+		config.setMaximumPoolSize(10);
+		config.setMinimumIdle(10);
+		config.setMaxLifetime(1800000L);
+		config.setConnectionTimeout(5000);
+		config.addDataSourceProperty("characterEncoding", "utf8");
+		return config;
+	}
 }

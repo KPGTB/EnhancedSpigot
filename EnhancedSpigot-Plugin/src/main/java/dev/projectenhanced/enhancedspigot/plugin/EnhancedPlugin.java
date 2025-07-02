@@ -99,6 +99,8 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 
 	protected DatabaseController enableDatabase(DatabaseOptions options) {
 		DatabaseController controller = new DatabaseController(this, options);
+		if (this.getLogger()
+			.getLevel() == Level.FINE) controller.setDebug(true);
 		controller.connect();
 		this.dependencyProvider.register(controller);
 		return controller;
