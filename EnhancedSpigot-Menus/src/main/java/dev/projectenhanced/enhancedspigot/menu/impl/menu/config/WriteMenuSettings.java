@@ -14,27 +14,21 @@
  *    limitations under the License.
  */
 
-package dev.projectenhanced.enhancedspigot.util;
+package dev.projectenhanced.enhancedspigot.menu.impl.menu.config;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import dev.projectenhanced.enhancedspigot.locale.TextUtil;
+import lombok.NoArgsConstructor;
+import org.bukkit.entity.Player;
 
-import java.util.Objects;
+@NoArgsConstructor public class WriteMenuSettings {
+	private String title = "Response";
+	private String placeholder = "Type here...";
 
-@Getter @AllArgsConstructor public class Pair<F, S> {
-	private final F first;
-	private final S second;
-
-	@Override
-	public boolean equals(Object o) {
-		if (o == null || getClass() != o.getClass()) return false;
-		Pair<?, ?> pair = (Pair<?, ?>) o;
-		return Objects.equals(first, pair.first) && Objects.equals(
-			second, pair.second);
+	public String getTitle(Player viewer) {
+		return TextUtil.addPAPI(TextUtil.convertMmToString(this.title), viewer);
 	}
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(first, second);
+	public String getPlaceholder(Player viewer) {
+		return TextUtil.addPAPI(TextUtil.convertMmToString(this.title), viewer);
 	}
 }

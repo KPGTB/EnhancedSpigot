@@ -14,27 +14,12 @@
  *    limitations under the License.
  */
 
-package dev.projectenhanced.enhancedspigot.util;
+package dev.projectenhanced.enhancedspigot.menu.nms;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import org.bukkit.entity.Player;
 
-import java.util.Objects;
+import java.lang.reflect.InvocationTargetException;
 
-@Getter @AllArgsConstructor public class Pair<F, S> {
-	private final F first;
-	private final S second;
-
-	@Override
-	public boolean equals(Object o) {
-		if (o == null || getClass() != o.getClass()) return false;
-		Pair<?, ?> pair = (Pair<?, ?>) o;
-		return Objects.equals(first, pair.first) && Objects.equals(
-			second, pair.second);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(first, second);
-	}
+public interface IInventoryHelper {
+	void updateInventoryTitle(Player player, String title) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException, InstantiationException;
 }
