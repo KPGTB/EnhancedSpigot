@@ -77,8 +77,7 @@ public class ReflectionUtil {
 	public static File getJarFile(JavaPlugin plugin) {
 		return TryCatchUtil.tryOrDefault(
 			() -> {
-				Method method = plugin.getClass()
-					.getMethod("getFile");
+				Method method = JavaPlugin.class.getMethod("getFile");
 				method.setAccessible(true);
 				File file = (File) method.invoke(plugin);
 				method.setAccessible(false);
