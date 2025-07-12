@@ -89,13 +89,13 @@ public class TextUtil {
 			.deserialize(s);
 	}
 
-	public static void modifyItem(ItemStack is, TagResolver... placeholders) {
-		modifyItem(is, null, placeholders);
+	public static ItemStack modifyItem(ItemStack is, TagResolver... placeholders) {
+		return modifyItem(is, null, placeholders);
 	}
 
-	public static void modifyItem(ItemStack is, Player player, TagResolver... placeholders) {
+	public static ItemStack modifyItem(ItemStack is, Player player, TagResolver... placeholders) {
 		if (is == null || is.getType() == Material.AIR || !is.hasItemMeta())
-			return;
+			return is;
 		ItemMeta meta = is.getItemMeta();
 		if (meta.hasDisplayName()) {
 			String display = addPAPI(meta.getDisplayName(), player);
@@ -112,6 +112,7 @@ public class TextUtil {
 		}
 
 		is.setItemMeta(meta);
+		return is;
 	}
 
 	public static String addPAPI(String s, Player player) {
