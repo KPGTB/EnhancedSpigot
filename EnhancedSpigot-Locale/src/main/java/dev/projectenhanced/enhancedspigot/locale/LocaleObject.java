@@ -212,14 +212,15 @@ import java.util.stream.Collectors;
 	}
 
 	private Component applyPrefix(Component comp) {
-		return (this.addPrefix ?
+		return (this.addPrefix && !TextUtil.convertComponentToString(comp)
+			.isBlank() ?
 			this.source.getPrefix()
 				.asComponent() :
 			Component.text("")).append(comp);
 	}
 
 	private String applyPrefix(String s) {
-		return (this.addPrefix ?
+		return (this.addPrefix && !s.isBlank() ?
 			this.source.getPrefix()
 				.asString() :
 			"").concat(s);

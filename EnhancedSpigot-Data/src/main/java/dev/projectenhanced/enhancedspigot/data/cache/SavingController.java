@@ -19,11 +19,12 @@ package dev.projectenhanced.enhancedspigot.data.cache;
 import com.google.common.collect.Sets;
 import dev.projectenhanced.enhancedspigot.data.cache.iface.ISavable;
 import dev.projectenhanced.enhancedspigot.util.SchedulerUtil;
+import dev.projectenhanced.enhancedspigot.util.lifecycle.IClosable;
 import org.bukkit.plugin.Plugin;
 
 import java.util.Set;
 
-public class SavingController {
+public class SavingController implements IClosable {
 	private final Plugin plugin;
 	private Set<SaveTask> saveTasks = Sets.newHashSet();
 
@@ -42,13 +43,22 @@ public class SavingController {
 		this.saveTasks.clear();
 	}
 
+	@Override
+	public void close() {
+		this.saveTasks.forEach(task -> {
+			task.savable.saveAll();
+			task.stop();
+		});
+	}
+
 	public class SaveTask {
 		private final ISavable<?, ?> savable;
 		private final SchedulerUtil.Task bukkitTask;
 
 		public SaveTask(Plugin plugin, ISavable<?, ?> savable, int interval) {
 			this.savable = savable;
-			this.bukkitTask = SchedulerUtil.runTaskTimerAsynchronously(plugin, task -> this.savable.saveAll(), interval, interval);
+			this.bukkitTask = SchedulerUtil.runTaskTimerAsynchronously(
+				plugin, task -> this.savable.saveAll(), interval, interval);
 		}
 
 		public void stop() {
