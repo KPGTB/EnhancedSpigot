@@ -20,6 +20,7 @@ import dev.projectenhanced.enhancedspigot.menu.container.MenuContainer;
 import dev.projectenhanced.enhancedspigot.menu.item.MenuItem;
 import dev.projectenhanced.enhancedspigot.menu.nms.InventoryHelperUtil;
 import dev.projectenhanced.enhancedspigot.util.Pair;
+import dev.projectenhanced.enhancedspigot.util.SchedulerUtil;
 import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
 import lombok.Getter;
 import lombok.Setter;
@@ -233,46 +234,44 @@ import java.util.function.Consumer;
 			return;
 		}
 
-		Bukkit.getScheduler()
-			.runTaskLater(
-				this.plugin, () -> {
-					for (int i = 0; i < inv.getContents().length; i++) {
-						ItemStack realIS = inv.getItem(i);
-						MenuContainer container = getContainerAt(i);
-						if (container == null) {
-							continue;
-						}
-						Pair<Integer, Integer> loc = container.getContainerLocFromMenuLoc(
-							i);
-						MenuItem menuItem = container.getItem(loc);
-
-						if (menuItem == null) {
-							if (realIS != null && !realIS.getType()
-								.equals(Material.AIR)) {
-								container.setItem(
-									loc.getFirst(),
-									loc.getSecond(), new MenuItem(realIS)
-								);
-							}
-							continue;
-						}
-
-						if (realIS == null || realIS.getType()
-							.equals(Material.AIR)) {
-							container.removeItem(
-								loc.getFirst(), loc.getSecond());
-							continue;
-						}
-
-						if (menuItem.getItemStack()
-							.isSimilar(realIS)) {
-							continue;
-						}
-
-						menuItem.setItemStack(realIS);
+		SchedulerUtil.runTaskLater(
+			this.plugin, (task) -> {
+				for (int i = 0; i < inv.getContents().length; i++) {
+					ItemStack realIS = inv.getItem(i);
+					MenuContainer container = getContainerAt(i);
+					if (container == null) {
+						continue;
 					}
-				}, 3
-			);
+					Pair<Integer, Integer> loc = container.getContainerLocFromMenuLoc(
+						i);
+					MenuItem menuItem = container.getItem(loc);
+
+					if (menuItem == null) {
+						if (realIS != null && !realIS.getType()
+							.equals(Material.AIR)) {
+							container.setItem(
+								loc.getFirst(), loc.getSecond(),
+								new MenuItem(realIS)
+							);
+						}
+						continue;
+					}
+
+					if (realIS == null || realIS.getType()
+						.equals(Material.AIR)) {
+						container.removeItem(loc.getFirst(), loc.getSecond());
+						continue;
+					}
+
+					if (menuItem.getItemStack()
+						.isSimilar(realIS)) {
+						continue;
+					}
+
+					menuItem.setItemStack(realIS);
+				}
+			}, 3
+		);
 	}
 
 	@EventHandler

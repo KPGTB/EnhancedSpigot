@@ -20,9 +20,9 @@ import dev.projectenhanced.enhancedspigot.locale.TextUtil;
 import dev.projectenhanced.enhancedspigot.menu.EnhancedMenu;
 import dev.projectenhanced.enhancedspigot.menu.impl.menu.config.CountMenuSettings;
 import dev.projectenhanced.enhancedspigot.menu.item.MenuItem;
+import dev.projectenhanced.enhancedspigot.util.SchedulerUtil;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -64,8 +64,8 @@ public class EnhancedCountMenu extends EnhancedConfigMenu {
 		setCloseAction(e -> {
 			if (!this.responded) {
 				this.response.accept(null);
-				if (this.lastMenu != null) Bukkit.getScheduler()
-					.runTaskLater(plugin, () -> this.lastMenu.open(viewer), 3);
+				if (this.lastMenu != null) SchedulerUtil.runTaskLater(
+					plugin, (task) -> this.lastMenu.open(viewer), 3);
 			}
 		});
 	}

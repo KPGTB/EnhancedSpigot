@@ -24,14 +24,9 @@ import org.bukkit.scheduler.BukkitTask;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 public class SchedulerUtil {
-	public static final boolean USING_FOLIA = Stream.of("Folia", "Luminol")
-		.anyMatch(fork -> Bukkit.getVersion()
-			.contains(fork) || Bukkit.getName()
-			.contains(fork));
-
+	public static final boolean USING_FOLIA = checkFolia();
 	private static final Class<?> PAPER_SCHEDULED_TASK = TryCatchUtil.tryOrDefault(
 		() -> Class.forName(
 			"io.papermc.paper.threadedregions.scheduler.ScheduledTask"), null,
@@ -41,6 +36,15 @@ public class SchedulerUtil {
 		() -> Bukkit.class.getMethod("getGlobalRegionScheduler")
 			.invoke(null), null, (e) -> {}
 	);
+
+	private static boolean checkFolia() {
+		try {
+			Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
+			return true;
+		} catch (ClassNotFoundException e) {
+			return false;
+		}
+	}
 
 	public static void runTask(Plugin plugin, Runnable runnable) {
 		if (USING_FOLIA) TryCatchUtil.tryRun(

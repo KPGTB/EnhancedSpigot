@@ -18,8 +18,8 @@ package dev.projectenhanced.enhancedspigot.menu.impl.menu;
 
 import dev.projectenhanced.enhancedspigot.menu.EnhancedMenu;
 import dev.projectenhanced.enhancedspigot.menu.impl.menu.config.WriteMenuSettings;
+import dev.projectenhanced.enhancedspigot.util.SchedulerUtil;
 import net.wesjd.anvilgui.AnvilGUI;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -54,12 +54,11 @@ public class EnhancedWriteMenu implements Listener {
 				if (responded) return;
 				response.accept(null);
 				responded = true;
-				if (this.lastMenu != null) Bukkit.getScheduler()
-					.runTaskLater(
-						this.plugin, () -> {
-							this.lastMenu.open(stateSnapshot.getPlayer());
-						}, 3
-					);
+				if (this.lastMenu != null) SchedulerUtil.runTaskLater(
+					this.plugin, (task) -> {
+						this.lastMenu.open(stateSnapshot.getPlayer());
+					}, 3
+				);
 			})
 			.onClick((slot, stateSnapshot) -> {
 				if (!slot.equals(AnvilGUI.Slot.OUTPUT)) {
