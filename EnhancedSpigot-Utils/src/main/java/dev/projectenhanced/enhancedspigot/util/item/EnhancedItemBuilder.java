@@ -59,7 +59,7 @@ public class EnhancedItemBuilder {
 		this.itemStack = itemStack;
 		this.amount = itemStack.getAmount();
 
-		if (itemStack.getType() == Material.AIR || !itemStack.hasItemMeta()) {
+		if (itemStack.getType() == Material.AIR || itemStack.getItemMeta() == null) {
 			throw new IllegalArgumentException(
 				"Provided ItemStack is AIR or doesn't have Item Meta");
 		}
@@ -505,9 +505,7 @@ public class EnhancedItemBuilder {
 								result.put(
 									attribute,
 									new AttributeModifier(
-										uuid, name, amount,
-										operation, slot
-									)
+										uuid, name, amount, operation, slot)
 								);
 							});
 
