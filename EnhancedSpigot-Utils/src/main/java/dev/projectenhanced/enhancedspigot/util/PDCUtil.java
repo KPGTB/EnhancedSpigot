@@ -37,11 +37,12 @@ public class PDCUtil {
 	 * @param data   Object with data
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> void setData(Object target, JavaPlugin plugin, String key, T data) {
+	public static <T> void setData(Object target, JavaPlugin plugin, String key, T data) {
 		Class<T> clazz = (Class<T>) data.getClass();
 		PersistentDataType<T, T> pdcType = getPdcType(clazz);
 
-		if (pdcType == null) throw new IllegalArgumentException("You try to save unsupported type!");
+		if (pdcType == null) throw new IllegalArgumentException(
+			"You try to save unsupported type!");
 
 		ItemStack is = null;
 		if (target instanceof ItemStack) {
@@ -51,7 +52,7 @@ public class PDCUtil {
 
 		if (!(target instanceof PersistentDataHolder)) return;
 		((PersistentDataHolder) target).getPersistentDataContainer()
-									   .set(new NamespacedKey(plugin, key), pdcType, data);
+			.set(new NamespacedKey(plugin, key), pdcType, data);
 		if (is != null) is.setItemMeta((ItemMeta) target);
 	}
 
@@ -62,7 +63,7 @@ public class PDCUtil {
 	 * @param plugin Plugin instance
 	 * @param key    Key of data
 	 */
-	public void removeData(Object target, JavaPlugin plugin, String key) {
+	public static void removeData(Object target, JavaPlugin plugin, String key) {
 		ItemStack is = null;
 		if (target instanceof ItemStack) {
 			is = (ItemStack) target;
@@ -71,7 +72,7 @@ public class PDCUtil {
 
 		if (!(target instanceof PersistentDataHolder)) return;
 		((PersistentDataHolder) target).getPersistentDataContainer()
-									   .remove(new NamespacedKey(plugin, key));
+			.remove(new NamespacedKey(plugin, key));
 		if (is != null) is.setItemMeta((ItemMeta) target);
 	}
 
@@ -85,16 +86,18 @@ public class PDCUtil {
 	 * @return Object with data or null if there isn't any data
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T getData(Object target, JavaPlugin plugin, String key, Class<T> expected) {
+	public static <T> T getData(Object target, JavaPlugin plugin, String key, Class<T> expected) {
 		PersistentDataType<T, T> pdcType = getPdcType(expected);
 
-		if (pdcType == null) throw new IllegalArgumentException("You try to save unsupported type!");
+		if (pdcType == null) throw new IllegalArgumentException(
+			"You try to save unsupported type!");
 
-		if (target instanceof ItemStack) target = ((ItemStack) target).getItemMeta();
+		if (target instanceof ItemStack)
+			target = ((ItemStack) target).getItemMeta();
 		if (!(target instanceof PersistentDataHolder)) return null;
 
 		return ((PersistentDataHolder) target).getPersistentDataContainer()
-											  .get(new NamespacedKey(plugin, key), pdcType);
+			.get(new NamespacedKey(plugin, key), pdcType);
 	}
 
 	/**
@@ -107,7 +110,7 @@ public class PDCUtil {
 	 * @return Object with data
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T getDataOr(Object target, JavaPlugin plugin, String key, T or) {
+	public static <T> T getDataOr(Object target, JavaPlugin plugin, String key, T or) {
 		Class<T> expected = (Class<T>) or.getClass();
 		if (!hasData(target, plugin, key, expected)) {
 			return or;
@@ -115,8 +118,8 @@ public class PDCUtil {
 
 		T result = getData(target, plugin, key, expected);
 		return result == null ?
-			   or :
-			   result;
+			or :
+			result;
 	}
 
 	/**
@@ -128,7 +131,7 @@ public class PDCUtil {
 	 * @param expected Class that should be checked
 	 * @return true if exists
 	 */
-	public <T> boolean hasData(Object target, JavaPlugin plugin, String key, Class<T> expected) {
+	public static <T> boolean hasData(Object target, JavaPlugin plugin, String key, Class<T> expected) {
 		try {
 			T data = getData(target, plugin, key, expected);
 			return data != null;
@@ -144,7 +147,7 @@ public class PDCUtil {
 	 * @return PersistentDataType of this class or null if there isn't any PDT with this class
 	 */
 	@SuppressWarnings("unchecked")
-	private <Z> PersistentDataType<Z, Z> getPdcType(Class<Z> clazz) {
+	private static <Z> PersistentDataType<Z, Z> getPdcType(Class<Z> clazz) {
 		Map<Class<?>, PersistentDataType<?, ?>> acceptedTypes = new HashMap<>();
 		acceptedTypes.put(Byte.class, PersistentDataType.BYTE);
 		acceptedTypes.put(Short.class, PersistentDataType.SHORT);
