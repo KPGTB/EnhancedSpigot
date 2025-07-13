@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class BaseSerializer implements ISerializer<Object> {
@@ -71,6 +72,9 @@ public class BaseSerializer implements ISerializer<Object> {
 					() -> field.get(object));
 				field.setAccessible(false);
 
+				config.getPlugin()
+					.getLogger()
+					.log(Level.FINE, "Serializing " + key);
 				section.set(
 					key, serializationHandler.handleObject(
 						value, serializerAnn,
@@ -277,6 +281,9 @@ public class BaseSerializer implements ISerializer<Object> {
 
 		@SuppressWarnings("unchecked")
 		private <T> Object useDeserializer(ISerializer<T> serializer, Object obj, Class<?> targetClass, EnhancedConfig config) {
+			if (targetClass.isAssignableFrom(obj.getClass())) {
+				return obj;
+			}
 			if (serializer.convertToSection() && !(obj instanceof MemorySection)) {
 				obj = SectionUtil.create((Map<?, ?>) obj);
 			}

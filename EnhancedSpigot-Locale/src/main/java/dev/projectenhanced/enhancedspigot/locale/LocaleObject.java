@@ -213,14 +213,16 @@ import java.util.stream.Collectors;
 
 	private Component applyPrefix(Component comp) {
 		return (this.addPrefix && !TextUtil.convertComponentToString(comp)
-			.isBlank() ?
+			.replace(" ", "")
+			.isEmpty() ?
 			this.source.getPrefix()
 				.asComponent() :
 			Component.text("")).append(comp);
 	}
 
 	private String applyPrefix(String s) {
-		return (this.addPrefix && !s.isBlank() ?
+		return (this.addPrefix && !s.replace(" ", "")
+			.isEmpty() ?
 			this.source.getPrefix()
 				.asString() :
 			"").concat(s);

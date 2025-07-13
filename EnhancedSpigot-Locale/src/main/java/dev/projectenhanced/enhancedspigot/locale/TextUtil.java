@@ -98,13 +98,19 @@ public class TextUtil {
 			return is;
 		ItemMeta meta = is.getItemMeta();
 		if (meta.hasDisplayName()) {
-			String display = addPAPI(meta.getDisplayName(), player);
+			String display = addPAPI(
+				convertComponentToString(
+					convertLegacyStringToComponent(meta.getDisplayName())),
+				player
+			);
 			meta.setDisplayName(convertMmToString(display, placeholders));
 		}
 
 		if (meta.hasLore()) {
 			List<String> lore = meta.getLore()
 				.stream()
+				.map(TextUtil::convertLegacyStringToComponent)
+				.map(TextUtil::convertComponentToString)
 				.map(s -> addPAPI(s, player))
 				.map(s -> convertMmToString(s, placeholders))
 				.collect(Collectors.toList());
