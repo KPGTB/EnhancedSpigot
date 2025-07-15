@@ -175,8 +175,7 @@ public class DataCache<K, V> implements ISavableCache<K, V>, IForeignMappingHand
 		Set<K> oldKeys = new HashSet<>(this.keySet());
 		this.loadAll();
 
-		this.runInTransaction(() -> this.values()
-			.stream()
+		this.runInTransaction(() -> new ArrayList<>(this.values()).stream()
 			.map(value -> new AbstractMap.SimpleEntry<K, V>(
 				TryCatchUtil.tryAndReturn(() -> this.dao.extractId(value)),
 				value
@@ -197,7 +196,7 @@ public class DataCache<K, V> implements ISavableCache<K, V>, IForeignMappingHand
 		Set<K> oldKeys = new HashSet<>(this.keySet());
 		this.loadAll();
 
-		this.runInTransaction(() -> values().stream()
+		this.runInTransaction(() -> new ArrayList<>(this.values()).stream()
 			.map(value -> new AbstractMap.SimpleEntry<K, V>(
 				TryCatchUtil.tryAndReturn(() -> this.dao.extractId(value)),
 				value
