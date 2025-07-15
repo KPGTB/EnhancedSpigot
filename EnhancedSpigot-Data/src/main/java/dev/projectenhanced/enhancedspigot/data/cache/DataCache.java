@@ -43,8 +43,7 @@ import java.util.function.Consumer;
 public class DataCache<K, V> implements ISavableCache<K, V>, IForeignMappingHandler {
 
 	private final Map<K, V> cache;
-	@Getter
-	private final Dao<V, K> dao;
+	@Getter private final Dao<V, K> dao;
 	private final JavaPlugin plugin;
 
 	/**
@@ -75,8 +74,8 @@ public class DataCache<K, V> implements ISavableCache<K, V>, IForeignMappingHand
 	@Override
 	public V get(K key) {
 		return this.contains(key) ?
-			   this.cache.get(key) :
-			   this.load(key);
+			this.cache.get(key) :
+			this.load(key);
 	}
 
 	@Override
@@ -122,15 +121,17 @@ public class DataCache<K, V> implements ISavableCache<K, V>, IForeignMappingHand
 	@Override
 	public void removeAll() {
 		TryCatchUtil.tryRun(() -> this.dao.deleteBuilder()
-										  .delete());
+			.delete());
 	}
 
 	@Override
 	public V load(K key) {
 		V value = TryCatchUtil.tryAndReturn(() -> this.dao.queryForId(key));
 		if (value == null) return null;
-		if (value instanceof IForeignMapping) this.dbToJava((IForeignMapping) value);
-		if (value instanceof ISavableLifecycle) ((ISavableLifecycle) value).afterLoad();
+		if (value instanceof IForeignMapping) this.dbToJava(
+			(IForeignMapping) value);
+		if (value instanceof ISavableLifecycle)
+			((ISavableLifecycle) value).afterLoad();
 		this.cache.put(key, value);
 		return value;
 	}
@@ -138,11 +139,16 @@ public class DataCache<K, V> implements ISavableCache<K, V>, IForeignMappingHand
 	@Override
 	public Set<V> loadAll() {
 		TryCatchUtil.tryOrDefault(this.dao::queryForAll, new ArrayList<V>())
-					.forEach(value -> {
-						if (value instanceof IForeignMapping) this.dbToJava((IForeignMapping) value);
-						if (value instanceof ISavableLifecycle) ((ISavableLifecycle) value).afterLoad();
-						this.cache.put(TryCatchUtil.tryAndReturn(() -> this.dao.extractId(value)), value);
-					});
+			.forEach(value -> {
+				if (value instanceof IForeignMapping) this.dbToJava(
+					(IForeignMapping) value);
+				if (value instanceof ISavableLifecycle)
+					((ISavableLifecycle) value).afterLoad();
+				this.cache.put(
+					TryCatchUtil.tryAndReturn(() -> this.dao.extractId(value)),
+					value
+				);
+			});
 		return new HashSet<>(this.cache.values());
 	}
 
@@ -161,47 +167,58 @@ public class DataCache<K, V> implements ISavableCache<K, V>, IForeignMappingHand
 	@Override
 	public void modifyMultiple(Set<K> keys, Consumer<V> action) {
 		this.cache.entrySet()
-				  .stream()
-				  .filter(entry -> keys.contains(entry.getKey()))
-				  .forEach(entry -> {
-					  action.accept(entry.getValue());
-				  });
+			.stream()
+			.filter(entry -> keys.contains(entry.getKey()))
+			.forEach(entry -> {
+				action.accept(entry.getValue());
+			});
+		Set<K> oldKeys = new HashSet<>(this.keySet());
+		this.loadAll();
 
-		this.runInTransaction(() -> TryCatchUtil.tryOrDefault(this.dao::queryForAll, new ArrayList<V>())
-												.stream()
-												.map(value -> new AbstractMap.SimpleEntry<K, V>(TryCatchUtil.tryAndReturn(() -> this.dao.extractId(value)), value))
-												.filter(entry -> !this.contains(entry.getKey()))
-												.filter(entry -> keys.contains(entry.getKey()))
-												.forEach(entry -> {
-													action.accept(entry.getValue());
-													this.save(entry.getKey());
-													this.invalidate(entry.getKey());
-												}));
+		this.runInTransaction(() -> this.values()
+			.stream()
+			.map(value -> new AbstractMap.SimpleEntry<K, V>(
+				TryCatchUtil.tryAndReturn(() -> this.dao.extractId(value)),
+				value
+			))
+			.filter(entry -> !oldKeys.contains(entry.getKey()))
+			.filter(entry -> keys.contains(entry.getKey()))
+			.forEach(entry -> {
+				action.accept(entry.getValue());
+				this.save(entry.getKey());
+				this.invalidate(entry.getKey());
+			}));
 	}
 
 	@Override
 	public void modifyAll(Consumer<V> action) {
 		this.cache.values()
-				  .forEach(action);
+			.forEach(action);
+		Set<K> oldKeys = new HashSet<>(this.keySet());
+		this.loadAll();
 
-		this.runInTransaction(() -> TryCatchUtil.tryOrDefault(this.dao::queryForAll, new ArrayList<V>())
-												.stream()
-												.map(value -> new AbstractMap.SimpleEntry<K, V>(TryCatchUtil.tryAndReturn(() -> this.dao.extractId(value)), value))
-												.filter(entry -> !this.contains(entry.getKey()))
-												.forEach(entry -> {
-													action.accept(entry.getValue());
-													this.save(entry.getKey());
-													this.invalidate(entry.getKey());
-												}));
+		this.runInTransaction(() -> values().stream()
+			.map(value -> new AbstractMap.SimpleEntry<K, V>(
+				TryCatchUtil.tryAndReturn(() -> this.dao.extractId(value)),
+				value
+			))
+			.filter(entry -> !oldKeys.contains(entry.getKey()))
+			.forEach(entry -> {
+				action.accept(entry.getValue());
+				this.save(entry.getKey());
+				this.invalidate(entry.getKey());
+			}));
 	}
 
 	@Override
 	public void save(K key) {
 		if (!contains(key)) return;
 		V value = this.get(key);
-		if (value instanceof ISavableLifecycle) ((ISavableLifecycle) value).beforeSave();
+		if (value instanceof ISavableLifecycle)
+			((ISavableLifecycle) value).beforeSave();
 		this.runInTransaction(() -> {
-			if (value instanceof IForeignMapping) this.javaToDb((IForeignMapping) value);
+			if (value instanceof IForeignMapping) this.javaToDb(
+				(IForeignMapping) value);
 			TryCatchUtil.tryRun(() -> this.dao.createOrUpdate(value));
 		});
 	}
@@ -209,7 +226,7 @@ public class DataCache<K, V> implements ISavableCache<K, V>, IForeignMappingHand
 	@Override
 	public void saveAll() {
 		this.runInTransaction(() -> this.cache.keySet()
-											  .forEach(this::save));
+			.forEach(this::save));
 	}
 
 	@Override
@@ -227,28 +244,30 @@ public class DataCache<K, V> implements ISavableCache<K, V>, IForeignMappingHand
 	}
 
 	private void runInTransaction(Runnable runnable) {
-		TryCatchUtil.tryRun(() -> TransactionManager.callInTransaction(this.dao.getConnectionSource(), () -> {
-			runnable.run();
-			return null;
-		}));
+		TryCatchUtil.tryRun(() -> TransactionManager.callInTransaction(
+			this.dao.getConnectionSource(), () -> {
+				runnable.run();
+				return null;
+			}
+		));
 	}
 
 	@Override
 	public void dbToJava(IForeignMapping entity) {
 		entity.getForeignMapping()
-			  .forEach(this::addAllForeignToCollection);
+			.forEach(this::addAllForeignToCollection);
 	}
 
 	@Override
 	public void javaToDb(IForeignMapping entity) {
 		entity.getForeignMapping()
-			  .forEach((foreign, collection) -> {
-				  foreign.removeIf(o -> !collection.contains(o));
-				  collection.forEach(obj -> {
-					  if (foreign.contains(obj)) updateForeign(foreign, obj);
-					  else addToForeign(foreign, obj);
-				  });
-			  });
+			.forEach((foreign, collection) -> {
+				foreign.removeIf(o -> !collection.contains(o));
+				collection.forEach(obj -> {
+					if (foreign.contains(obj)) updateForeign(foreign, obj);
+					else addToForeign(foreign, obj);
+				});
+			});
 	}
 
 	@SuppressWarnings("unchecked")

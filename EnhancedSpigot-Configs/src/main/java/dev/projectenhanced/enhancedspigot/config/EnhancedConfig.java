@@ -36,8 +36,7 @@ import java.util.Map;
  * <br />
  * Other useful annotations: {@link dev.projectenhanced.enhancedspigot.config.annotation}
  */
-@Getter
-public abstract class EnhancedConfig implements IReloadable {
+@Getter public abstract class EnhancedConfig implements IReloadable {
 	private JavaPlugin plugin;
 	private File configFile;
 	private YamlConfiguration configuration;
@@ -72,7 +71,7 @@ public abstract class EnhancedConfig implements IReloadable {
 		boolean newConfig = !this.configFile.exists();
 		if (newConfig) {
 			this.configFile.getParentFile()
-						   .mkdirs();
+				.mkdirs();
 			TryCatchUtil.tryRun(this.configFile::createNewFile);
 		}
 
@@ -88,6 +87,8 @@ public abstract class EnhancedConfig implements IReloadable {
 	 */
 	@Override
 	public void reload() {
+		this.configuration = YamlConfiguration.loadConfiguration(
+			this.configFile);
 		ConfigSerializerRegistry.CustomSerializers.BASE.deserializeTo(
 			this.configuration, this.getClass(), this, this);
 		this.save();
@@ -105,7 +106,7 @@ public abstract class EnhancedConfig implements IReloadable {
 
 	private void generateHeader() {
 		Comment commentAnn = this.getClass()
-								 .getDeclaredAnnotation(Comment.class);
+			.getDeclaredAnnotation(Comment.class);
 		if (commentAnn == null) return;
 
 		String header = String.join("\n", commentAnn.value());
@@ -113,6 +114,6 @@ public abstract class EnhancedConfig implements IReloadable {
 			header = header.replace(entry.getKey(), entry.getValue());
 		}
 		this.configuration.options()
-						  .header(header);
+			.header(header);
 	}
 }

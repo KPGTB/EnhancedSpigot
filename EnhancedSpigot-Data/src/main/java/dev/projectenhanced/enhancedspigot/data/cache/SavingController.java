@@ -19,12 +19,11 @@ package dev.projectenhanced.enhancedspigot.data.cache;
 import com.google.common.collect.Sets;
 import dev.projectenhanced.enhancedspigot.data.cache.iface.ISavable;
 import dev.projectenhanced.enhancedspigot.util.SchedulerUtil;
-import dev.projectenhanced.enhancedspigot.util.lifecycle.IClosable;
 import org.bukkit.plugin.Plugin;
 
 import java.util.Set;
 
-public class SavingController implements IClosable {
+public class SavingController {
 	private final Plugin plugin;
 	private Set<SaveTask> saveTasks = Sets.newHashSet();
 
@@ -43,11 +42,9 @@ public class SavingController implements IClosable {
 		this.saveTasks.clear();
 	}
 
-	@Override
-	public void close() {
+	public void saveAll() {
 		this.saveTasks.forEach(task -> {
 			task.savable.saveAll();
-			task.stop();
 		});
 	}
 

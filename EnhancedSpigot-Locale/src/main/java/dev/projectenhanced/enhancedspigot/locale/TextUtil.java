@@ -89,6 +89,12 @@ public class TextUtil {
 			.deserialize(s);
 	}
 
+	public static String convertComponentToMm(Component component) {
+		return MiniMessage.miniMessage()
+			.serialize(component)
+			.replace("\\<", "<");
+	}
+
 	public static ItemStack modifyItem(ItemStack is, TagResolver... placeholders) {
 		return modifyItem(is, null, placeholders);
 	}
@@ -99,7 +105,7 @@ public class TextUtil {
 		ItemMeta meta = is.getItemMeta();
 		if (meta.hasDisplayName()) {
 			String display = addPAPI(
-				convertComponentToString(
+				convertComponentToMm(
 					convertLegacyStringToComponent(meta.getDisplayName())),
 				player
 			);
@@ -110,7 +116,7 @@ public class TextUtil {
 			List<String> lore = meta.getLore()
 				.stream()
 				.map(TextUtil::convertLegacyStringToComponent)
-				.map(TextUtil::convertComponentToString)
+				.map(TextUtil::convertComponentToMm)
 				.map(s -> addPAPI(s, player))
 				.map(s -> convertMmToString(s, placeholders))
 				.collect(Collectors.toList());

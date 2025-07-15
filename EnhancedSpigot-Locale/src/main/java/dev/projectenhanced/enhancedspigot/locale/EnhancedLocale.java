@@ -94,6 +94,7 @@ public abstract class EnhancedLocale implements IClosable, IReloadable {
 	 */
 	@Override
 	public void reload() {
+		this.configuration = YamlConfiguration.loadConfiguration(this.file);
 		this.serializer.deserializeTo(
 			this.configuration, this.getClass(), this, this);
 		this.save();

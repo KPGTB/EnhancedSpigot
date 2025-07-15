@@ -32,20 +32,12 @@ public class TimeParser implements IArgumentParser<EnhancedTime> {
 
 	@Override
 	public boolean canConvert(String param, JavaPlugin plugin) {
+		if (param.equalsIgnoreCase("XdXhXmXs")) return true;
 		return new EnhancedTime(param).getMillis() >= 1000;
 	}
 
 	@Override
 	public List<String> complete(String arg, CommandSender sender, JavaPlugin plugin) {
-		return Arrays.asList(
-			"XdXhXmXs",
-			"Current: " + new EnhancedTime(arg).format(
-				"<days> days#<hours> hours#<minutes> minutes#<seconds> seconds",
-				true,
-				"#",
-				" ",
-				"0 seconds"
-			)
-		);
+		return Arrays.asList("XdXhXmXs");
 	}
 }
