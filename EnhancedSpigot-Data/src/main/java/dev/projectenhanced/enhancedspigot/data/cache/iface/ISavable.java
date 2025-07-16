@@ -24,6 +24,8 @@ public interface ISavable<K, V> {
 
 	Set<V> loadAll();
 
+	Set<V> loadAll(boolean ignoreCached);
+
 	void modify(K key, Consumer<V> action);
 
 	void modifyMultiple(Set<K> keys, Consumer<V> action);

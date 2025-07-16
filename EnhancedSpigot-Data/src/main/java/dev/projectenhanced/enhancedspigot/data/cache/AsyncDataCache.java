@@ -65,6 +65,11 @@ public class AsyncDataCache<K, V> extends DataCache<K, V> implements IAsyncSavab
 	}
 
 	@Override
+	public CompletableFuture<Set<V>> loadAsyncAll(boolean ignoreCached) {
+		return this.supplyAsync(() -> this.loadAll(ignoreCached));
+	}
+
+	@Override
 	public CompletableFuture<Void> modifyAsync(K key, Consumer<V> action) {
 		return this.runAsync(() -> this.modify(key, action));
 	}

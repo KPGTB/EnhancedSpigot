@@ -138,7 +138,15 @@ public class DataCache<K, V> implements ISavableCache<K, V>, IForeignMappingHand
 
 	@Override
 	public Set<V> loadAll() {
+		return this.loadAll(false);
+	}
+
+	@Override
+	public Set<V> loadAll(boolean ignoreCached) {
 		TryCatchUtil.tryOrDefault(this.dao::queryForAll, new ArrayList<V>())
+			.stream()
+			.filter(entity -> !ignoreCached || !this.contains(
+				TryCatchUtil.tryAndReturn(() -> this.dao.extractId(entity))))
 			.forEach(value -> {
 				if (value instanceof IForeignMapping) this.dbToJava(
 					(IForeignMapping) value);
@@ -173,7 +181,7 @@ public class DataCache<K, V> implements ISavableCache<K, V>, IForeignMappingHand
 				action.accept(entry.getValue());
 			});
 		Set<K> oldKeys = new HashSet<>(this.keySet());
-		this.loadAll();
+		this.loadAll(true);
 
 		this.runInTransaction(() -> new ArrayList<>(this.values()).stream()
 			.map(value -> new AbstractMap.SimpleEntry<K, V>(
@@ -194,7 +202,7 @@ public class DataCache<K, V> implements ISavableCache<K, V>, IForeignMappingHand
 		this.cache.values()
 			.forEach(action);
 		Set<K> oldKeys = new HashSet<>(this.keySet());
-		this.loadAll();
+		this.loadAll(true);
 
 		this.runInTransaction(() -> new ArrayList<>(this.values()).stream()
 			.map(value -> new AbstractMap.SimpleEntry<K, V>(
