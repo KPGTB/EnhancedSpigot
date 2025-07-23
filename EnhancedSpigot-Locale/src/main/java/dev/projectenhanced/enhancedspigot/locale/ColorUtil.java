@@ -24,6 +24,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -98,7 +99,8 @@ public class ColorUtil {
 	public static Component deserializeWithLegacy(String mm, TagResolver... placeholders) {
 		return MiniMessage.miniMessage()
 			.deserialize(
-				convertComponentToMm(convertLegacyStringToComponent(mm)),
+				convertComponentToMm(convertLegacyStringToComponent(
+					ChatColor.translateAlternateColorCodes('&', mm))),
 				placeholders
 			);
 	}
