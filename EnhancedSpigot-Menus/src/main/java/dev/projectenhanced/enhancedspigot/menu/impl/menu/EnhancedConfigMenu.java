@@ -34,9 +34,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public abstract class EnhancedConfigMenu extends EnhancedMenu {
-	private final JavaPlugin plugin;
-	private final Player viewer;
-	private final ConfigMenuSettings settings;
+	protected final ConfigMenuSettings settings;
+	protected final JavaPlugin plugin;
+	protected final Player viewer;
 	protected TagResolver[] placeholders;
 
 	public EnhancedConfigMenu(JavaPlugin plugin, Player viewer, ConfigMenuSettings settings, TagResolver... placeholders) {
