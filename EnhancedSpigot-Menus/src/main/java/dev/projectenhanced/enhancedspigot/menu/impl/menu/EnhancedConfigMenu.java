@@ -58,12 +58,18 @@ public abstract class EnhancedConfigMenu extends EnhancedMenu {
 
 	protected abstract Map<String, Consumer<EnhancedMenu>> customStaticActions();
 
+	protected abstract void beforePrepare(MenuContainer container);
+
+	protected abstract void afterPrepare(MenuContainer container);
+
 	@Override
 	public void prepareGui() {
 		resetContainers();
 
 		PagedMenuContainer container = new PagedMenuContainer(
 			this, 0, 0, 9, this.getRows());
+
+		this.beforePrepare(container);
 
 		// Generate dynamic items
 
@@ -125,6 +131,8 @@ public abstract class EnhancedConfigMenu extends EnhancedMenu {
 		});
 
 		pages.forEach(container::addPage);
+
+		this.afterPrepare(container);
 
 		addContainer(container);
 	}

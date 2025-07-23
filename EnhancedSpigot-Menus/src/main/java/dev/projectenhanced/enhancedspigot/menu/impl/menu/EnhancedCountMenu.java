@@ -18,6 +18,7 @@ package dev.projectenhanced.enhancedspigot.menu.impl.menu;
 
 import dev.projectenhanced.enhancedspigot.locale.ColorUtil;
 import dev.projectenhanced.enhancedspigot.menu.EnhancedMenu;
+import dev.projectenhanced.enhancedspigot.menu.container.MenuContainer;
 import dev.projectenhanced.enhancedspigot.menu.impl.menu.config.CountMenuSettings;
 import dev.projectenhanced.enhancedspigot.menu.item.MenuItem;
 import dev.projectenhanced.enhancedspigot.util.SchedulerUtil;
@@ -132,6 +133,16 @@ public class EnhancedCountMenu extends EnhancedConfigMenu {
 		);
 
 		return map;
+	}
+
+	@Override
+	protected void beforePrepare(MenuContainer container) {
+		
+	}
+
+	@Override
+	protected void afterPrepare(MenuContainer container) {
+
 	}
 
 	private void changeValue(double addValue) {
