@@ -218,6 +218,33 @@ public class DataCache<K, V> implements ISavableCache<K, V>, IForeignMappingHand
 	}
 
 	@Override
+	public void loopAll(Consumer<V> action) {
+		this.loopAll()
+			.forEach(action);
+	}
+
+	@Override
+	public Set<V> loopAll() {
+		Set<V> result = new HashSet<>(this.cache.values());
+
+		Set<K> oldKeys = new HashSet<>(this.keySet());
+		this.loadAll(true);
+
+		this.runInTransaction(() -> new ArrayList<>(this.values()).stream()
+			.map(value -> new AbstractMap.SimpleEntry<K, V>(
+				TryCatchUtil.tryAndReturn(() -> this.dao.extractId(value)),
+				value
+			))
+			.filter(entry -> !oldKeys.contains(entry.getKey()))
+			.forEach(entry -> {
+				result.add(entry.getValue());
+				this.invalidate(entry.getKey());
+			}));
+
+		return result;
+	}
+
+	@Override
 	public void save(K key) {
 		if (!contains(key)) return;
 		V value = this.get(key);

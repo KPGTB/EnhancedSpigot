@@ -277,8 +277,11 @@ public abstract class EnhancedCommand extends Command {
 			String variantName = getCommandStr(info);
 			info.setDescription(String.valueOf(
 				this.getVariantInfo(
-					variantName, "description", info.getDescription())));
+					variantName, "description",
+					info.getDescription()
+				)));
 
+			setVariantInfo(variantName, "description", info.getDescription());
 			setVariantInfo(variantName, "permissions", permissions);
 			setVariantInfo(variantName, "onlyPlayer", playerRequired);
 			setVariantInfo(variantName, "hidden", hidden);

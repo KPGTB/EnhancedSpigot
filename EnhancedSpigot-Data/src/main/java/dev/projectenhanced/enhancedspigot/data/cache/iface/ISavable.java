@@ -32,6 +32,10 @@ public interface ISavable<K, V> {
 
 	void modifyAll(Consumer<V> action);
 
+	void loopAll(Consumer<V> action);
+
+	Set<V> loopAll();
+
 	void save(K key);
 
 	void saveAll();

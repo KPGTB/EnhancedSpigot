@@ -33,6 +33,10 @@ public interface IAsyncSavable<K, V> extends ISavable<K, V> {
 
 	CompletableFuture<Void> modifyAsyncAll(Consumer<V> action);
 
+	CompletableFuture<Void> loopAsyncAll(Consumer<V> action);
+
+	CompletableFuture<Set<V>> loopAsyncAll();
+
 	CompletableFuture<Void> saveAsync(K key);
 
 	CompletableFuture<Void> saveAsyncAll();
