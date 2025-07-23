@@ -100,6 +100,11 @@ public class AsyncDataCache<K, V> extends DataCache<K, V> implements IAsyncSavab
 	}
 
 	@Override
+	public CompletableFuture<Void> saveAsyncValue(V value) {
+		return this.runAsync(() -> this.saveAsyncValue(value));
+	}
+
+	@Override
 	public CompletableFuture<Void> saveAsyncAll() {
 		return this.runAsync(this::saveAll);
 	}
@@ -107,6 +112,11 @@ public class AsyncDataCache<K, V> extends DataCache<K, V> implements IAsyncSavab
 	@Override
 	public CompletableFuture<Void> createAsync(K key, V value) {
 		return this.runAsync(() -> this.create(key, value));
+	}
+
+	@Override
+	public CompletableFuture<Void> createAsync(V value) {
+		return this.runAsync(() -> this.create(value));
 	}
 
 	@Override

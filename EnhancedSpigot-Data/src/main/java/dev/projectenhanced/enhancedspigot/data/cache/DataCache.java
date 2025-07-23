@@ -248,6 +248,11 @@ public class DataCache<K, V> implements ISavableCache<K, V>, IForeignMappingHand
 	public void save(K key) {
 		if (!contains(key)) return;
 		V value = this.get(key);
+		this.saveValue(value);
+	}
+
+	@Override
+	public void saveValue(V value) {
 		if (value instanceof ISavableLifecycle)
 			((ISavableLifecycle) value).beforeSave();
 		this.runInTransaction(() -> {
@@ -269,6 +274,14 @@ public class DataCache<K, V> implements ISavableCache<K, V>, IForeignMappingHand
 		this.save(key);
 
 		SchedulerUtil.runTaskLater(plugin, (task) -> this.load(key), 20);
+	}
+
+	@Override
+	public void create(V value) {
+		this.saveValue(value);
+		SchedulerUtil.runTaskLater(plugin, (task) -> this.load(
+			TryCatchUtil.tryAndReturn(() -> this.dao.extractId(value))), 20
+		);
 	}
 
 	@Override

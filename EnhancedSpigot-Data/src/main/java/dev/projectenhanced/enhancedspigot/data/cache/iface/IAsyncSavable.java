@@ -39,9 +39,13 @@ public interface IAsyncSavable<K, V> extends ISavable<K, V> {
 
 	CompletableFuture<Void> saveAsync(K key);
 
+	CompletableFuture<Void> saveAsyncValue(V value);
+
 	CompletableFuture<Void> saveAsyncAll();
 
 	CompletableFuture<Void> createAsync(K key, V value);
+
+	CompletableFuture<Void> createAsync(V value);
 
 	CompletableFuture<Void> removeAsync(K key);
 
