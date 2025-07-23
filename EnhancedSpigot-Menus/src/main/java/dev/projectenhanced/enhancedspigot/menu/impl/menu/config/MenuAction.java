@@ -31,23 +31,23 @@ public class MenuAction {
 
 	public static Consumer<EnhancedMenu> parse(String data, Map<String, Consumer<EnhancedMenu>> custom) {
 		String[] elements = data.split(" ", 2);
-		String action = "[" + elements[0] + "]";
+		String action = elements[0];
 		switch (action) {
-			case "menu-previous":
+			case "[menu-previous]":
 				return (menu) -> menu.getContainers()
 					.stream()
 					.filter(
 						container -> container instanceof PagedMenuContainer)
 					.map(container -> (PagedMenuContainer) container)
 					.forEach(PagedMenuContainer::previousPage);
-			case "menu-next":
+			case "[menu-next]":
 				return (menu) -> menu.getContainers()
 					.stream()
 					.filter(
 						container -> container instanceof PagedMenuContainer)
 					.map(container -> (PagedMenuContainer) container)
 					.forEach(PagedMenuContainer::nextPage);
-			case "menu-close":
+			case "[menu-close]":
 				return (menu) -> menu.getBukkitInventory()
 					.getViewers()
 					.forEach(HumanEntity::closeInventory);
