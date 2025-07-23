@@ -69,7 +69,7 @@ public abstract class ConfigMenuSettings {
 				item.setClickAction((e, loc) -> {
 					staticItem.getActions()
 						.stream()
-						.map(MenuAction::parse)
+						.map(s -> MenuAction.parse(s, customActions))
 						.forEach(action -> action.accept(menu));
 				});
 
