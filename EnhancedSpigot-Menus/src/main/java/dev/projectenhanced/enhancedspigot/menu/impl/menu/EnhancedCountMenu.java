@@ -16,7 +16,7 @@
 
 package dev.projectenhanced.enhancedspigot.menu.impl.menu;
 
-import dev.projectenhanced.enhancedspigot.locale.TextUtil;
+import dev.projectenhanced.enhancedspigot.locale.ColorUtil;
 import dev.projectenhanced.enhancedspigot.menu.EnhancedMenu;
 import dev.projectenhanced.enhancedspigot.menu.impl.menu.config.CountMenuSettings;
 import dev.projectenhanced.enhancedspigot.menu.item.MenuItem;
@@ -97,7 +97,7 @@ public class EnhancedCountMenu extends EnhancedConfigMenu {
 			"increase-value", (value) -> {
 				ItemStack is = this.settings.getDynamicItems()
 					.getIncreaseValueItem();
-				TextUtil.modifyItem(
+				ColorUtil.modifyItem(
 					is, Placeholder.unparsed("value", String.valueOf(value)));
 				MenuItem menuItem = new MenuItem(is);
 				this.changeValue((double) value);
@@ -108,7 +108,7 @@ public class EnhancedCountMenu extends EnhancedConfigMenu {
 			"decrease-value", (value) -> {
 				ItemStack is = this.settings.getDynamicItems()
 					.getDecreaseValueItem();
-				TextUtil.modifyItem(
+				ColorUtil.modifyItem(
 					is, Placeholder.unparsed("value", String.valueOf(value)));
 				MenuItem menuItem = new MenuItem(is);
 				this.changeValue(-((double) value));

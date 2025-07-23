@@ -16,7 +16,7 @@
 
 package dev.projectenhanced.enhancedspigot.menu.impl.menu.config;
 
-import dev.projectenhanced.enhancedspigot.locale.TextUtil;
+import dev.projectenhanced.enhancedspigot.locale.ColorUtil;
 import lombok.NoArgsConstructor;
 import org.bukkit.entity.Player;
 
@@ -25,10 +25,12 @@ import org.bukkit.entity.Player;
 	private String placeholder = "Type here...";
 
 	public String getTitle(Player viewer) {
-		return TextUtil.addPAPI(TextUtil.convertMmToString(this.title), viewer);
+		return ColorUtil.addPAPI(
+			ColorUtil.convertMmToString(this.title), viewer);
 	}
 
 	public String getPlaceholder(Player viewer) {
-		return TextUtil.addPAPI(TextUtil.convertMmToString(this.title), viewer);
+		return ColorUtil.addPAPI(
+			ColorUtil.convertMmToString(this.title), viewer);
 	}
 }

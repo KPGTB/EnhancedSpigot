@@ -16,7 +16,7 @@
 
 package dev.projectenhanced.enhancedspigot.menu.impl.menu.config;
 
-import dev.projectenhanced.enhancedspigot.locale.TextUtil;
+import dev.projectenhanced.enhancedspigot.locale.ColorUtil;
 import dev.projectenhanced.enhancedspigot.menu.EnhancedMenu;
 import dev.projectenhanced.enhancedspigot.menu.item.MenuItem;
 import lombok.AllArgsConstructor;
@@ -44,8 +44,8 @@ public abstract class ConfigMenuSettings {
 	protected abstract Map<Integer, StaticItem> staticItems();
 
 	public String getTitle(Player viewer, TagResolver... placeholders) {
-		return TextUtil.addPAPI(
-			TextUtil.convertMmToString(this.title(), placeholders), viewer);
+		return ColorUtil.addPAPI(
+			ColorUtil.convertMmToString(this.title(), placeholders), viewer);
 	}
 
 	public int getRows() {
@@ -63,7 +63,7 @@ public abstract class ConfigMenuSettings {
 			.forEach((slot, staticItem) -> {
 				ItemStack is = staticItem.getItem()
 					.clone();
-				TextUtil.modifyItem(is, viewer, placeholders);
+				ColorUtil.modifyItem(is, viewer, placeholders);
 
 				MenuItem item = new MenuItem(is);
 				item.setClickAction((e, loc) -> {

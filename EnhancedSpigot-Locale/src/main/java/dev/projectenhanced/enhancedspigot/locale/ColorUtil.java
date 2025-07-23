@@ -32,7 +32,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class TextUtil {
+public class ColorUtil {
 	/**
 	 * Convert Component to String
 	 *
@@ -63,8 +63,8 @@ public class TextUtil {
 	 * @return formatted string
 	 */
 	public static String convertMmToString(String mm, TagResolver... placeholders) {
-		return convertComponentToString(MiniMessage.miniMessage()
-			.deserialize(mm, placeholders));
+		return convertComponentToString(
+			deserializeWithLegacy(mm, placeholders));
 	}
 
 	/**
@@ -95,6 +95,14 @@ public class TextUtil {
 			.replace("\\<", "<");
 	}
 
+	public static Component deserializeWithLegacy(String mm, TagResolver... placeholders) {
+		return MiniMessage.miniMessage()
+			.deserialize(
+				convertComponentToMm(convertLegacyStringToComponent(mm)),
+				placeholders
+			);
+	}
+
 	public static ItemStack modifyItem(ItemStack is, TagResolver... placeholders) {
 		return modifyItem(is, null, placeholders);
 	}
@@ -115,8 +123,8 @@ public class TextUtil {
 		if (meta.hasLore()) {
 			List<String> lore = meta.getLore()
 				.stream()
-				.map(TextUtil::convertLegacyStringToComponent)
-				.map(TextUtil::convertComponentToMm)
+				.map(ColorUtil::convertLegacyStringToComponent)
+				.map(ColorUtil::convertComponentToMm)
 				.map(s -> addPAPI(s, player))
 				.map(s -> convertMmToString(s, placeholders))
 				.collect(Collectors.toList());

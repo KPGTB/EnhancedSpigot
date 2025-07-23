@@ -20,7 +20,6 @@ import dev.projectenhanced.enhancedspigot.locale.bridge.IPlatformBridge;
 import lombok.Getter;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -183,11 +182,11 @@ import java.util.stream.Collectors;
 	}
 
 	public List<Component> asComponents(TagResolver... placeholders) {
-		return this.rawText.stream()
-			.map(s -> MiniMessage.miniMessage()
-				.deserialize(s, placeholders))
-			.map(this::applyPrefix)
+		List<Component> result = this.rawText.stream()
+			.map(s -> ColorUtil.deserializeWithLegacy(s, placeholders))
 			.collect(Collectors.toList());
+		if (!result.isEmpty()) result.set(0, this.applyPrefix(result.get(0)));
+		return result;
 	}
 
 	public Component asComponent(TagResolver... placeholders) {
@@ -198,10 +197,11 @@ import java.util.stream.Collectors;
 	}
 
 	public List<String> asStrings(TagResolver... placeholders) {
-		return this.rawText.stream()
-			.map(s -> TextUtil.convertMmToString(s, placeholders))
-			.map(this::applyPrefix)
+		List<String> result = this.rawText.stream()
+			.map(s -> ColorUtil.convertMmToString(s, placeholders))
 			.collect(Collectors.toList());
+		if (!result.isEmpty()) result.set(0, this.applyPrefix(result.get(0)));
+		return result;
 	}
 
 	public String asString(TagResolver... placeholders) {
@@ -212,7 +212,7 @@ import java.util.stream.Collectors;
 	}
 
 	private Component applyPrefix(Component comp) {
-		return (this.addPrefix && !TextUtil.convertComponentToString(comp)
+		return (this.addPrefix && !ColorUtil.convertComponentToString(comp)
 			.replace(" ", "")
 			.isEmpty() ?
 			this.source.getPrefix()

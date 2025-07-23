@@ -137,6 +137,7 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 	}
 
 	protected void showDebug() {
+		DebugLogHandler.attachDebugLogger(this);
 		this.getLogger()
 			.setLevel(Level.FINE);
 	}
