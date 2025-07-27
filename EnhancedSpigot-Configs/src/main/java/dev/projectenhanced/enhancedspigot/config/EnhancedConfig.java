@@ -92,6 +92,8 @@ import java.util.Map;
 		ConfigSerializerRegistry.CustomSerializers.BASE.deserializeTo(
 			this.configuration, this.getClass(), this, this);
 		this.save();
+
+		this.postLoad();
 	}
 
 	/**
@@ -116,4 +118,6 @@ import java.util.Map;
 		this.configuration.options()
 			.header(header);
 	}
+
+	protected abstract void postLoad();
 }
