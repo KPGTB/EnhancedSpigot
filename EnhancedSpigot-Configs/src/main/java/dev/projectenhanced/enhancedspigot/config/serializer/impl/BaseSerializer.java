@@ -20,6 +20,7 @@ import dev.projectenhanced.enhancedspigot.config.EnhancedConfig;
 import dev.projectenhanced.enhancedspigot.config.annotation.Comment;
 import dev.projectenhanced.enhancedspigot.config.annotation.DoNotRecover;
 import dev.projectenhanced.enhancedspigot.config.annotation.Ignore;
+import dev.projectenhanced.enhancedspigot.config.annotation.InjectKey;
 import dev.projectenhanced.enhancedspigot.config.annotation.Serializer;
 import dev.projectenhanced.enhancedspigot.config.serializer.ConfigSerializerRegistry;
 import dev.projectenhanced.enhancedspigot.config.serializer.ISerializer;
@@ -39,7 +40,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class BaseSerializer implements ISerializer<Object> {
@@ -60,10 +60,12 @@ public class BaseSerializer implements ISerializer<Object> {
 			.filter(field -> !field.isSynthetic())
 			.forEach(field -> {
 				Ignore ignoreAnn = field.getDeclaredAnnotation(Ignore.class);
+				InjectKey injectKeyAnn = field.getDeclaredAnnotation(
+					InjectKey.class);
 				Comment commentAnn = field.getDeclaredAnnotation(Comment.class);
 				Serializer serializerAnn = field.getDeclaredAnnotation(
 					Serializer.class);
-				if (ignoreAnn != null) return;
+				if (ignoreAnn != null || injectKeyAnn != null) return;
 
 				String key = TextCase.camelToKebabCase(field.getName());
 
@@ -72,9 +74,6 @@ public class BaseSerializer implements ISerializer<Object> {
 					() -> field.get(object));
 				field.setAccessible(false);
 
-				config.getPlugin()
-					.getLogger()
-					.log(Level.FINE, "Serializing " + key);
 				section.set(
 					key, serializationHandler.handleObject(
 						value, serializerAnn,
@@ -101,9 +100,11 @@ public class BaseSerializer implements ISerializer<Object> {
 			.filter(field -> !field.isSynthetic())
 			.forEach(field -> {
 				Ignore ignoreAnn = field.getDeclaredAnnotation(Ignore.class);
+				InjectKey injectKeyAnn = field.getDeclaredAnnotation(
+					InjectKey.class);
 				Serializer serializerAnn = field.getDeclaredAnnotation(
 					Serializer.class);
-				if (ignoreAnn != null) return;
+				if (ignoreAnn != null || injectKeyAnn != null) return;
 
 				String key = TextCase.camelToKebabCase(field.getName());
 				Object configValue = section.get(key);
@@ -195,7 +196,9 @@ public class BaseSerializer implements ISerializer<Object> {
 				() -> serializerAnn.value()
 					.getDeclaredConstructor()
 					.newInstance());
-			if (isEnclosedInConfig(configValue.getClass()))
+			if (!Enum.class.isAssignableFrom(
+				configValue.getClass()) && isEnclosedInConfig(
+				configValue.getClass()))
 				serializer = ConfigSerializerRegistry.CustomSerializers.BASE;
 
 			return serializer == null ?
@@ -243,7 +246,8 @@ public class BaseSerializer implements ISerializer<Object> {
 				() -> serializerAnn.value()
 					.getDeclaredConstructor()
 					.newInstance());
-			if (isEnclosedInConfig(clazz))
+			if (!Enum.class.isAssignableFrom(clazz) && isEnclosedInConfig(
+				clazz))
 				serializer = ConfigSerializerRegistry.CustomSerializers.BASE;
 
 			return serializer == null ?
@@ -267,13 +271,12 @@ public class BaseSerializer implements ISerializer<Object> {
 			Map<Object, Object> result = new HashMap<>();
 
 			value.forEach((k, v) -> {
-				result.put(
-					k,
-					handleObject(
-						v, typeData.getKey(), typeData.getValue(),
-						serializerAnn, config
-					)
+				Object obj = handleObject(
+					v, typeData.getKey(),
+					typeData.getValue(), serializerAnn, config
 				);
+				injectKey(obj, k);
+				result.put(k, obj);
 			});
 
 			return result;
@@ -306,6 +309,21 @@ public class BaseSerializer implements ISerializer<Object> {
 				typeArgs = null;
 			}
 			return new AbstractMap.SimpleEntry<>(clazz, typeArgs);
+		}
+
+		public void injectKey(Object obj, Object key) {
+			if (obj == null) return;
+			Arrays.stream(obj.getClass()
+					.getDeclaredFields())
+				.filter(field -> !field.isSynthetic())
+				.forEach(field -> {
+					InjectKey injectKeyAn = field.getAnnotation(
+						InjectKey.class);
+					if (injectKeyAn == null) return;
+					field.setAccessible(true);
+					TryCatchUtil.tryRun(() -> field.set(obj, key));
+					field.setAccessible(false);
+				});
 		}
 	}
 }
