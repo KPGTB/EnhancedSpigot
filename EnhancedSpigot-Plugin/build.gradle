@@ -20,6 +20,7 @@ description = "EnhancedSpigot Plugin module adds a simple plugin wrapper"
 repositories {
     mavenCentral()
     maven { url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/" }
+    maven { url 'https://jitpack.io' }
 }
 
 java {
@@ -29,6 +30,7 @@ java {
 }
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.19-R0.1-SNAPSHOT'
+    compileOnly "com.github.MilkBowl:VaultAPI:1.7"
     optionalImplementation 'org.bstats:bstats-bukkit:3.0.2'
 
     implementation project(':EnhancedSpigot-Utils')

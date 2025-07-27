@@ -91,7 +91,8 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 	protected abstract List<String> requiredPlugins();
 
 	protected CommandController enableCommands(CommandLocale locale) {
-		CommandController controller = new CommandController(this, locale);
+		CommandController controller = new CommandController(
+			this.dependencyProvider, locale);
 		controller.init();
 		this.dependencyProvider.register(controller);
 		return controller;
