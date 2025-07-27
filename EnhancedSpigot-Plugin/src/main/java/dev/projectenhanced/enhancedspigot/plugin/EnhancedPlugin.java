@@ -21,6 +21,8 @@ import dev.projectenhanced.enhancedspigot.command.CommandLocale;
 import dev.projectenhanced.enhancedspigot.config.EnhancedConfig;
 import dev.projectenhanced.enhancedspigot.data.DatabaseController;
 import dev.projectenhanced.enhancedspigot.data.connection.DatabaseOptions;
+import dev.projectenhanced.enhancedspigot.item.ItemController;
+import dev.projectenhanced.enhancedspigot.item.recipe.RecipeController;
 import dev.projectenhanced.enhancedspigot.locale.EnhancedLocale;
 import dev.projectenhanced.enhancedspigot.util.DependencyProvider;
 import dev.projectenhanced.enhancedspigot.util.SchedulerUtil;
@@ -103,6 +105,19 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 		if (this.getLogger()
 			.getLevel() == Level.FINE) controller.setDebug(true);
 		controller.connect();
+		this.dependencyProvider.register(controller);
+		return controller;
+	}
+
+	protected RecipeController enableRecipes() {
+		RecipeController controller = new RecipeController(
+			this.dependencyProvider);
+		this.dependencyProvider.register(controller);
+		return controller;
+	}
+
+	protected ItemController enableCustomItems() {
+		ItemController controller = new ItemController(this.dependencyProvider);
 		this.dependencyProvider.register(controller);
 		return controller;
 	}

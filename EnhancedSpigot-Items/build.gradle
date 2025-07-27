@@ -14,12 +14,20 @@
  *    limitations under the License.
  */
 
-rootProject.name = "EnhancedSpigot"
-include "EnhancedSpigot-Utils"
-include "EnhancedSpigot-Data"
-include 'EnhancedSpigot-Configs'
-include 'EnhancedSpigot-Locale'
-include 'EnhancedSpigot-Commands'
-include 'EnhancedSpigot-Plugin'
-include 'EnhancedSpigot-Menus'
-include 'EnhancedSpigot-Items'
+version = "1.0.0-SNAPSHOT"
+description = "EnhancedSpigot Items module adds items & recipes management"
+
+repositories {
+    mavenCentral()
+    maven { url "https://hub.spigotmc.org/nexus/content/repositories/snapshots/" }
+}
+
+dependencies {
+    compileOnly 'org.spigotmc:spigot-api:1.19-R0.1-SNAPSHOT'
+
+    implementation project(':EnhancedSpigot-Utils')
+}
+
+shadowJar {
+    dependsOn ':EnhancedSpigot-Utils:shadowJar'
+}
