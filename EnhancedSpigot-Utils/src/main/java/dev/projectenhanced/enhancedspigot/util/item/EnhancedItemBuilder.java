@@ -286,20 +286,20 @@ public class EnhancedItemBuilder {
 			result.put(
 				"model", hasModelSupport() && itemMeta.hasCustomModelData() ?
 					itemMeta.getCustomModelData() :
-					0
+					null
 			);
 
 			result.put(
 				"damage", isUsingNewDamage() ?
 					itemMeta instanceof Damageable ?
 						((Damageable) itemMeta).getDamage() :
-						0 :
+						null :
 					itemStack.getDurability()
 			);
 			result.put(
 				"unbreakable", hasUnbreakableSupport() ?
 					itemMeta.isUnbreakable() :
-					false
+					null
 			);
 
 			result.put(
@@ -311,19 +311,39 @@ public class EnhancedItemBuilder {
 						.getKey() + " " + entry.getValue())
 					.collect(Collectors.toList())
 			);
+			boolean isGlowing = itemStack.getType() == Material.BOW ?
+				itemMeta.hasEnchant(
+					VanillaEnchantment.LUCK_OF_THE_SEA.getEnchantment()) :
+				itemMeta.hasEnchant(
+					VanillaEnchantment.INFINITY.getEnchantment());
 			result.put(
-				"glow", itemStack.getType() == Material.BOW ?
-					itemMeta.hasEnchant(
-						VanillaEnchantment.LUCK_OF_THE_SEA.getEnchantment()) :
-					itemMeta.hasEnchant(
-						VanillaEnchantment.INFINITY.getEnchantment())
+				"glow", isGlowing ?
+					true :
+					null
 			);
+			if (isGlowing) {
+				((List<String>) result.get("enchantments")).remove(
+					itemStack.getType() == Material.BOW ?
+						VanillaEnchantment.LUCK_OF_THE_SEA.getEnchantment()
+							.getKey()
+							.getKey() :
+						VanillaEnchantment.INFINITY.getEnchantment()
+							.getKey()
+							.getKey() + " 1");
+			}
+			if (((List<String>) result.get("enchantments")).isEmpty()) {
+				result.remove("enchantments");
+			}
+
 			result.put(
 				"item-flags", itemMeta.getItemFlags()
 					.stream()
 					.map(ItemFlag::name)
 					.collect(Collectors.toList())
 			);
+			if (((List<String>) result.get("item-flags")).isEmpty()) {
+				result.remove("item-flags");
+			}
 
 			result.put(
 				"head-owner", itemStack.getType() == Material.PLAYER_HEAD ?
@@ -344,13 +364,15 @@ public class EnhancedItemBuilder {
 
 			if (hasTrimSupport() && itemMeta instanceof ArmorMeta) {
 				ArmorTrim trim = ((ArmorMeta) itemMeta).getTrim();
-				result.put(
-					"armor-trim", trim.getMaterial()
-						.getKey()
-						.getKey() + " " + trim.getPattern()
-						.getKey()
-						.getKey()
-				);
+				if (trim != null) {
+					result.put(
+						"armor-trim", trim.getMaterial()
+							.getKey()
+							.getKey() + " " + trim.getPattern()
+							.getKey()
+							.getKey()
+					);
+				}
 			}
 
 			if (hasAttributeSupport() && itemMeta.getAttributeModifiers() != null) {
@@ -505,7 +527,9 @@ public class EnhancedItemBuilder {
 								result.put(
 									attribute,
 									new AttributeModifier(
-										uuid, name, amount, operation, slot)
+										uuid, name, amount,
+										operation, slot
+									)
 								);
 							});
 
