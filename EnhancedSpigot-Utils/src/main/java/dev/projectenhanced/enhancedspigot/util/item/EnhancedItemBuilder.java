@@ -79,6 +79,19 @@ public class EnhancedItemBuilder {
 		));
 	}
 
+	public static EnhancedItemBuilder of(ItemStack itemStack) {
+		return new EnhancedItemBuilder(itemStack);
+	}
+
+	public static EnhancedItemBuilder of(Material material) {
+		return new EnhancedItemBuilder(material);
+	}
+
+	@Deprecated
+	public static EnhancedItemBuilder of(MaterialData materialData) {
+		return new EnhancedItemBuilder(materialData);
+	}
+
 	public static boolean hasTrimSupport() {
 		return SemanticVersion.getMinecraftVersion()
 			.isNewerOrEqual("1.20");
@@ -527,9 +540,7 @@ public class EnhancedItemBuilder {
 								result.put(
 									attribute,
 									new AttributeModifier(
-										uuid, name, amount,
-										operation, slot
-									)
+										uuid, name, amount, operation, slot)
 								);
 							});
 
