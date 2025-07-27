@@ -23,6 +23,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * MenuItem represents item in EnhancedMenu
@@ -61,6 +62,14 @@ import java.util.function.BiConsumer;
 	 * @param builder ItemBuilder
 	 */
 	public void fromBuilder(EnhancedItemBuilder builder) {this.itemStack = builder.build();}
+
+	public void setClickAction(Consumer<InventoryClickEvent> action) {
+		this.clickAction = (e, loc) -> action.accept(e);
+	}
+
+	public void setClickAction(Runnable action) {
+		this.clickAction = (e, loc) -> action.run();
+	}
 
 	public enum ClickLocation {TOP, BOTTOM, OUTSIDE}
 }
