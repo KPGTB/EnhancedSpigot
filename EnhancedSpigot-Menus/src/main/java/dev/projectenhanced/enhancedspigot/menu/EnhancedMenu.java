@@ -19,6 +19,7 @@ package dev.projectenhanced.enhancedspigot.menu;
 import dev.projectenhanced.enhancedspigot.menu.container.MenuContainer;
 import dev.projectenhanced.enhancedspigot.menu.item.MenuItem;
 import dev.projectenhanced.enhancedspigot.menu.nms.InventoryHelperUtil;
+import dev.projectenhanced.enhancedspigot.util.DependencyProvider;
 import dev.projectenhanced.enhancedspigot.util.Pair;
 import dev.projectenhanced.enhancedspigot.util.SchedulerUtil;
 import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
@@ -46,6 +47,7 @@ import java.util.function.Consumer;
  * EnhancedMenu handles menu making process in plugin
  */
 @Getter @Setter public abstract class EnhancedMenu implements Listener {
+	protected final DependencyProvider provider;
 	private final int rows;
 	private final List<MenuContainer> containers;
 	private final Inventory bukkitInventory;
@@ -55,11 +57,12 @@ import java.util.function.Consumer;
 	private Consumer<InventoryCloseEvent> closeAction;
 	private boolean updateItems;
 
-	public EnhancedMenu(String title, int rows, JavaPlugin plugin) {
+	public EnhancedMenu(String title, int rows, DependencyProvider provider) {
 		this.rows = rows;
 		this.containers = new ArrayList<>();
 		this.updateItems = false;
-		this.plugin = plugin;
+		this.provider = provider;
+		this.plugin = provider.provide(JavaPlugin.class);
 
 		if (rows > 6 || rows < 1) {
 			throw new IllegalArgumentException("rows must be between 1 and 6");

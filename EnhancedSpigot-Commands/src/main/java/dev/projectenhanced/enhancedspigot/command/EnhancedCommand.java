@@ -22,6 +22,7 @@ import dev.projectenhanced.enhancedspigot.command.filter.IFilter;
 import dev.projectenhanced.enhancedspigot.command.parser.CommandArgumentRegistry;
 import dev.projectenhanced.enhancedspigot.command.parser.IArgumentParser;
 import dev.projectenhanced.enhancedspigot.locale.LocaleObject;
+import dev.projectenhanced.enhancedspigot.util.DependencyProvider;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.command.Command;
@@ -46,6 +47,7 @@ import java.util.Map;
  * Abstract class that handles process of creating commands
  */
 public abstract class EnhancedCommand extends Command {
+	protected final DependencyProvider provider;
 	private final JavaPlugin plugin;
 	private final String groupPath;
 	private final CommandLocale language;
@@ -55,10 +57,11 @@ public abstract class EnhancedCommand extends Command {
 	private final Map<CommandPath, List<CommandInfo>> subCommands;
 	private String cmdName;
 
-	public EnhancedCommand(JavaPlugin plugin, CommandLocale locale, String groupPath) {
+	public EnhancedCommand(DependencyProvider provider, CommandLocale locale, String groupPath) {
 		super("");
 
-		this.plugin = plugin;
+		this.provider = provider;
+		this.plugin = provider.provide(JavaPlugin.class);
 		this.language = locale;
 		this.parser = CommandArgumentRegistry.getInstance();
 		this.groupPath = groupPath;

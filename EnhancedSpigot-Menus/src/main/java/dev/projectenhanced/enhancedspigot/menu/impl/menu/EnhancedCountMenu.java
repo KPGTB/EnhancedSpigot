@@ -21,12 +21,12 @@ import dev.projectenhanced.enhancedspigot.menu.EnhancedMenu;
 import dev.projectenhanced.enhancedspigot.menu.container.MenuContainer;
 import dev.projectenhanced.enhancedspigot.menu.impl.menu.config.CountMenuSettings;
 import dev.projectenhanced.enhancedspigot.menu.item.MenuItem;
+import dev.projectenhanced.enhancedspigot.util.DependencyProvider;
 import dev.projectenhanced.enhancedspigot.util.SchedulerUtil;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,9 +47,9 @@ public class EnhancedCountMenu extends EnhancedConfigMenu {
 	private double value;
 	private boolean responded;
 
-	public EnhancedCountMenu(JavaPlugin plugin, Player viewer, CountMenuSettings settings, EnhancedMenu lastMenu, Consumer<Double> response, double defaultValue, double min, double max) {
+	public EnhancedCountMenu(DependencyProvider provider, Player viewer, CountMenuSettings settings, EnhancedMenu lastMenu, Consumer<Double> response, double defaultValue, double min, double max) {
 		super(
-			plugin, viewer, settings,
+			provider, viewer, settings,
 			Placeholder.unparsed("value", String.valueOf(defaultValue))
 		);
 		this.settings = settings;

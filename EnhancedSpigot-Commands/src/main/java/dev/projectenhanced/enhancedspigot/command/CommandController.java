@@ -16,6 +16,7 @@
 
 package dev.projectenhanced.enhancedspigot.command;
 
+import dev.projectenhanced.enhancedspigot.util.DependencyProvider;
 import dev.projectenhanced.enhancedspigot.util.ReflectionUtil;
 import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
 import org.bukkit.Bukkit;
@@ -29,6 +30,7 @@ import java.lang.reflect.Field;
  * CommandManager handles all commands in plugin
  */
 public class CommandController {
+	private final DependencyProvider provider;
 	private final JavaPlugin plugin;
 	private final CommandLocale locale;
 	private final File jarFile;
@@ -37,11 +39,12 @@ public class CommandController {
 	/**
 	 * Constructor of manager
 	 *
-	 * @param plugin Instance od JavaPlugin
-	 * @param locale CommandLocale object
+	 * @param provider DependencyProvider
+	 * @param locale   CommandLocale object
 	 */
-	public CommandController(JavaPlugin plugin, CommandLocale locale) {
-		this.plugin = plugin;
+	public CommandController(DependencyProvider provider, CommandLocale locale) {
+		this.provider = provider;
+		this.plugin = provider.provide(JavaPlugin.class);
 		this.locale = locale;
 		this.jarFile = ReflectionUtil.getJarFile(plugin);
 		this.pluginTag = plugin.getName()
@@ -94,11 +97,11 @@ public class CommandController {
 
 				EnhancedCommand command = (EnhancedCommand) TryCatchUtil.tryAndReturn(
 					() -> clazz.getDeclaredConstructor(
-							JavaPlugin.class,
-							CommandLocale.class, String.class
+							DependencyProvider.class, CommandLocale.class,
+							String.class
 						)
 						.newInstance(
-							plugin, this.locale,
+							this.provider, this.locale,
 							finalPath.toString()
 						));
 				TryCatchUtil.tryRun(command::prepareCommand);

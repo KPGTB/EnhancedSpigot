@@ -21,6 +21,7 @@ import dev.projectenhanced.enhancedspigot.menu.container.MenuContainer;
 import dev.projectenhanced.enhancedspigot.menu.container.PagedMenuContainer;
 import dev.projectenhanced.enhancedspigot.menu.impl.menu.config.ConfigMenuSettings;
 import dev.projectenhanced.enhancedspigot.menu.item.MenuItem;
+import dev.projectenhanced.enhancedspigot.util.DependencyProvider;
 import dev.projectenhanced.enhancedspigot.util.Pair;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.entity.Player;
@@ -34,19 +35,21 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public abstract class EnhancedConfigMenu extends EnhancedMenu {
-	protected final ConfigMenuSettings settings;
+	protected final ConfigMenuSettings menuSettings;
+	protected final DependencyProvider provider;
 	protected final JavaPlugin plugin;
 	protected final Player viewer;
 	protected TagResolver[] placeholders;
 
-	public EnhancedConfigMenu(JavaPlugin plugin, Player viewer, ConfigMenuSettings settings, TagResolver... placeholders) {
+	public EnhancedConfigMenu(DependencyProvider provider, Player viewer, ConfigMenuSettings settings, TagResolver... placeholders) {
 		super(
 			settings.getTitle(viewer, placeholders), settings.getRows(),
-			plugin
+			provider
 		);
-		this.plugin = plugin;
+		this.provider = provider;
+		this.plugin = provider.provide(JavaPlugin.class);
 		this.viewer = viewer;
-		this.settings = settings;
+		this.menuSettings = settings;
 		this.placeholders = placeholders;
 
 		if (settings.blockClick()) this.blockClick();
@@ -84,7 +87,7 @@ public abstract class EnhancedConfigMenu extends EnhancedMenu {
 			.anyMatch(num -> num > 0)) {
 			MenuContainer page = new MenuContainer(container);
 
-			this.settings.getDynamicSlots()
+			this.menuSettings.getDynamicSlots()
 				.forEach((key, slots) -> {
 					int left = itemsLeft.get(key);
 					Function<Object, MenuItem> func = this.processObject()
@@ -118,7 +121,7 @@ public abstract class EnhancedConfigMenu extends EnhancedMenu {
 		if (pages.isEmpty()) pages.add(new MenuContainer(container));
 
 		pages.forEach(page -> {
-			this.settings.getStaticItems(
+			this.menuSettings.getStaticItems(
 					this, this.viewer,
 					this.customStaticActions(), this.placeholders
 				)
