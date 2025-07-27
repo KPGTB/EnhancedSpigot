@@ -302,16 +302,21 @@ public class EnhancedItemBuilder {
 					null
 			);
 
+			int damage = isUsingNewDamage() ?
+				itemMeta instanceof Damageable ?
+					((Damageable) itemMeta).getDamage() :
+					0 :
+				itemStack.getDurability();
 			result.put(
-				"damage", isUsingNewDamage() ?
-					itemMeta instanceof Damageable ?
-						((Damageable) itemMeta).getDamage() :
-						null :
-					itemStack.getDurability()
+				"damage", damage == 0 ?
+					null :
+					damage
 			);
+
+			boolean unbreakable = hasUnbreakableSupport() && itemMeta.isUnbreakable();
 			result.put(
-				"unbreakable", hasUnbreakableSupport() ?
-					itemMeta.isUnbreakable() :
+				"unbreakable", unbreakable ?
+					true :
 					null
 			);
 
@@ -540,7 +545,9 @@ public class EnhancedItemBuilder {
 								result.put(
 									attribute,
 									new AttributeModifier(
-										uuid, name, amount, operation, slot)
+										uuid, name, amount,
+										operation, slot
+									)
 								);
 							});
 
