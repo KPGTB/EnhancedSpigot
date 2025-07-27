@@ -26,7 +26,9 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,9 +41,9 @@ public abstract class ConfigMenuSettings {
 
 	public abstract boolean blockClick();
 
-	public abstract Map<String, Set<Integer>> dynamicSlots();
+	public abstract Map<String, Set<String>> dynamicSlots();
 
-	protected abstract Map<Integer, StaticItem> staticItems();
+	protected abstract Map<String, StaticItem> staticItems();
 
 	public String getTitle(Player viewer, TagResolver... placeholders) {
 		return ColorUtil.addPAPI(
@@ -60,7 +62,7 @@ public abstract class ConfigMenuSettings {
 		Map<Integer, MenuItem> result = new HashMap<>();
 
 		this.staticItems()
-			.forEach((slot, staticItem) -> {
+			.forEach((slots, staticItem) -> {
 				ItemStack is = staticItem.getItem()
 					.clone();
 				ColorUtil.modifyItem(is, viewer, placeholders);
@@ -73,8 +75,52 @@ public abstract class ConfigMenuSettings {
 						.forEach(action -> action.accept(menu));
 				});
 
-				result.put(slot, item);
+				this.parseSlots(slots)
+					.forEach(slot -> {
+						result.put(slot, item);
+					});
 			});
+
+		return result;
+	}
+
+	public Map<String, Set<Integer>> getDynamicSlots() {
+		Map<String, Set<Integer>> result = new HashMap<>();
+		this.dynamicSlots()
+			.forEach((id, slotsSet) -> {
+				result.put(id, new HashSet<>());
+				slotsSet.forEach((slots) -> {
+					result.get(id)
+						.addAll(this.parseSlots(slots));
+				});
+			});
+		return result;
+	}
+
+	protected List<Integer> parseSlots(String slots) {
+		String[] elements = slots.replace(" ", "")
+			.split(",");
+		List<Integer> result = new ArrayList<>();
+
+		for (String element : elements) {
+			if (element.contains("-")) {
+				String[] split = element.split("-", 2);
+				int first = Integer.parseInt(split[0]);
+				int second = Integer.parseInt(split[1]);
+
+				if (second < first) {
+					int temp = first;
+					first = second;
+					second = temp;
+				}
+
+				for (int i = first; i <= second; i++) {
+					result.add(i);
+				}
+			} else {
+				result.add(Integer.parseInt(element));
+			}
+		}
 
 		return result;
 	}

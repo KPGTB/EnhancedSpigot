@@ -84,7 +84,7 @@ public abstract class EnhancedConfigMenu extends EnhancedMenu {
 			.anyMatch(num -> num > 0)) {
 			MenuContainer page = new MenuContainer(container);
 
-			this.settings.dynamicSlots()
+			this.settings.getDynamicSlots()
 				.forEach((key, slots) -> {
 					int left = itemsLeft.get(key);
 					Function<Object, MenuItem> func = this.processObject()

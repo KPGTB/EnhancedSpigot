@@ -101,7 +101,9 @@ public class EnhancedCountMenu extends EnhancedConfigMenu {
 				ColorUtil.modifyItem(
 					is, Placeholder.unparsed("value", String.valueOf(value)));
 				MenuItem menuItem = new MenuItem(is);
-				this.changeValue((double) value);
+				menuItem.setClickAction((e, loc) -> {
+					this.changeValue((double) value);
+				});
 				return menuItem;
 			}
 		);
@@ -112,7 +114,10 @@ public class EnhancedCountMenu extends EnhancedConfigMenu {
 				ColorUtil.modifyItem(
 					is, Placeholder.unparsed("value", String.valueOf(value)));
 				MenuItem menuItem = new MenuItem(is);
-				this.changeValue(-((double) value));
+				menuItem.setClickAction((e, loc) -> {
+					this.changeValue(-((double) value));
+				});
+
 				return menuItem;
 			}
 		);
@@ -125,7 +130,7 @@ public class EnhancedCountMenu extends EnhancedConfigMenu {
 		Map<String, Consumer<EnhancedMenu>> map = new HashMap<>();
 
 		map.put(
-			"accept", (menu) -> {
+			"[accept]", (menu) -> {
 				this.responded = true;
 				this.response.accept(this.value);
 				if (this.lastMenu != null) this.lastMenu.open(viewer);
@@ -137,7 +142,7 @@ public class EnhancedCountMenu extends EnhancedConfigMenu {
 
 	@Override
 	protected void beforePrepare(MenuContainer container) {
-		
+
 	}
 
 	@Override
