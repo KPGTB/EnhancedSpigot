@@ -63,6 +63,10 @@ import java.util.function.Consumer;
 	 */
 	public void fromBuilder(EnhancedItemBuilder builder) {this.itemStack = builder.build();}
 
+	public void setClickAction(BiConsumer<InventoryClickEvent, ClickLocation> clickAction) {
+		this.clickAction = clickAction;
+	}
+
 	public void setClickAction(Consumer<InventoryClickEvent> action) {
 		this.clickAction = (e, loc) -> action.accept(e);
 	}
