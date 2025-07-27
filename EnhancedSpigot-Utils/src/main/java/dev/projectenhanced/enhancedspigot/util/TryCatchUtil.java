@@ -16,6 +16,7 @@
 
 package dev.projectenhanced.enhancedspigot.util;
 
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -25,6 +26,8 @@ import java.util.logging.Logger;
 
 public class TryCatchUtil {
 	private static Logger logger = Bukkit.getLogger();
+	@Setter private static Consumer<Exception> defaultExceptionHandler = (e) -> logger.log(
+		Level.SEVERE, "Something went wrong!", e);
 
 	public static void usePluginLogger(JavaPlugin plugin) {
 		logger = plugin.getLogger();
@@ -35,7 +38,7 @@ public class TryCatchUtil {
 			return iface.run();
 		} catch (Exception e) {
 			if (catchHandler != null) catchHandler.accept(e);
-			else logger.log(Level.SEVERE, "Something went wrong!", e);
+			else defaultExceptionHandler.accept(e);
 			return or;
 		}
 	}
