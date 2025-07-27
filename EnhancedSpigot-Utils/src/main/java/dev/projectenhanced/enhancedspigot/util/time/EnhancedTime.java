@@ -21,14 +21,16 @@ import lombok.Getter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Object that handles time (days, hours, minutes, seconds)
  */
-@Getter
-public class EnhancedTime {
+@Getter public class EnhancedTime {
 	private final long millis;
 	private final String text;
+	private final String input;
 
 	/**
 	 * Get object of Time from millis
@@ -37,7 +39,8 @@ public class EnhancedTime {
 	 */
 	public EnhancedTime(long millis) {
 		this.millis = millis;
-		this.text = fromMillis(millis);
+		this.text = this.defaultFormat();
+		this.input = this.as("<days:d><hours:h><minutes:m><seconds:s>", "");
 	}
 
 	/**
@@ -46,8 +49,9 @@ public class EnhancedTime {
 	 * @param text String in format XdXhXmXs (d=days, h=hours, m=minutes, s=seconds, X=integer)
 	 */
 	public EnhancedTime(String text) {
-		this.millis = toMillis(text);
-		this.text = fromMillis(this.millis);
+		this.millis = this.toMillis(text);
+		this.text = this.defaultFormat();
+		this.input = text;
 	}
 
 	/**
@@ -59,22 +63,7 @@ public class EnhancedTime {
 		return (millis / 1000L * 20L);
 	}
 
-	/**
-	 * Get time as text in specified format
-	 *
-	 * @param format          format of text. Placeholders: &lt;days&gt; &lt;hours&gt; &lt;minutes&gt; &lt;seconds&gt;
-	 * @param hideZero        Hide elements with "0" like 0 seconds
-	 * @param splitSeq        String which is a seq of chars between elements
-	 * @param replaceSplitSeq string that should be replacement for splitSeq or null when it should be like splitSeq
-	 * @param emptyReplace    string that should be returned if millis is 0
-	 * @return Text in specified format
-	 */
-	public String format(String format, boolean hideZero, String splitSeq, String replaceSplitSeq, String emptyReplace) {
-		return fromMillis(this.millis, format, hideZero, splitSeq, replaceSplitSeq, emptyReplace);
-	}
-
 	private long toMillis(String time) {
-
 		String temp = "";
 
 		int days = 0;
@@ -124,12 +113,8 @@ public class EnhancedTime {
 		return seconds * 1000L;
 	}
 
-	private String fromMillis(long millis, String format, boolean hideZero, String splitSeq, String replaceSplitSeq, String emptyReplace) {
-		String end = replaceSplitSeq == null ?
-					 splitSeq :
-					 replaceSplitSeq;
-
-		int seconds = (int) Math.floorDiv(millis, 1000L);
+	public String as(String format, String emptyReplace) {
+		int seconds = (int) Math.floorDiv(this.millis, 1000L);
 		int minutes = Math.floorDiv(seconds, 60);
 		seconds -= minutes * 60;
 		int hours = Math.floorDiv(minutes, 60);
@@ -137,61 +122,48 @@ public class EnhancedTime {
 		int days = Math.floorDiv(hours, 24);
 		hours -= days * 24;
 
-		String[] formatSplit = format.split(splitSeq);
-		StringBuilder result = new StringBuilder();
+		Map<String, Integer> timeMap = new HashMap<>();
+		timeMap.put("<days>", days);
+		timeMap.put("<hours>", hours);
+		timeMap.put("<minutes>", minutes);
+		timeMap.put("<seconds>", seconds);
 
-		Map<String, Integer> types = new HashMap<>();
-		types.put("<days>", days);
-		types.put("<hours>", hours);
-		types.put("<minutes>", minutes);
-		types.put("<seconds>", seconds);
+		String output = format;
+		Map<String, String> replaces = new HashMap<>();
+		timeMap.forEach((key, value) -> {
+			String regex = "<" + key + ":([^>]+)>";
+			Pattern pattern = Pattern.compile(regex);
+			Matcher matcher = pattern.matcher(format);
 
-		for (int i = 0; i < formatSplit.length; i++) {
-			String text = formatSplit[i];
-			String type = "";
-			int number = 0;
+			while (matcher.find()) {
+				String extra = matcher.group(1);
 
-			for (String t : types.keySet()) {
-				if (text.contains(t)) {
-					type = t;
-					number = types.get(t);
-					break;
+				String toReplace = "<" + key + ":" + extra + ">";
+				String replace = value + extra;
+
+				if (value <= 0) {
+					replaces.put(toReplace, "");
+				} else {
+					replaces.put(toReplace, replace);
 				}
 			}
-
-			if (type.isEmpty()) {
-				result.append(text);
-				if ((i + 1) != formatSplit.length) {
-					result.append(end);
-				}
-				break;
-			}
-
-			if (!hideZero || number != 0) {
-				result.append(text.replace(type, String.valueOf(number)));
-				if ((i + 1) != formatSplit.length) {
-					result.append(end);
-				}
-			}
+		});
+		for (Map.Entry<String, String> entry : replaces.entrySet()) {
+			output = output.replaceAll(entry.getKey(), entry.getValue());
 		}
 
-		String resultStr = result.toString();
-		if (resultStr.endsWith(end)) {
-			resultStr = resultStr.substring(0, resultStr.length() - end.length());
-		}
-
-		return resultStr.isEmpty() ?
-			   emptyReplace :
-			   resultStr;
+		return output.isEmpty() ?
+			emptyReplace :
+			output;
 	}
 
-	private String fromMillis(long millis) {
-		return fromMillis(millis, "<days>d <hours>h <minutes>m <seconds>s", true, " ", null, "now");
+	private String defaultFormat() {
+		return as(Configuration.FORMAT, Configuration.EMPTY_REPLACER);
 	}
 
 	@Override
 	public String toString() {
-		return this.text.replace(" ", "");
+		return this.input;
 	}
 
 	@Override
@@ -205,5 +177,10 @@ public class EnhancedTime {
 	@Override
 	public int hashCode() {
 		return Objects.hash(millis);
+	}
+
+	public static class Configuration {
+		public static String FORMAT = "<days:d ><hours:h ><minutes:m ><seconds:s>";
+		public static String EMPTY_REPLACER = "now";
 	}
 }
