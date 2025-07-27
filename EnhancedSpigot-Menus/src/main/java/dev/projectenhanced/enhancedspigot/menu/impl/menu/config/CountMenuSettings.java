@@ -37,13 +37,13 @@ public class CountMenuSettings extends ConfigMenuSettings {
 	@Getter private List<Double> values = Arrays.asList(
 		0.01, 0.1, 0.5, 1.0, 10.0, 100.0);
 
-	private Map<Integer, StaticItem> staticItems = this.defaultStaticItems();
+	private Map<String, StaticItem> staticItems = this.defaultStaticItems();
 
-	private Map<Integer, StaticItem> defaultStaticItems() {
-		Map<Integer, StaticItem> map = new HashMap<>();
+	private Map<String, StaticItem> defaultStaticItems() {
+		Map<String, StaticItem> map = new HashMap<>();
 
 		map.put(
-			14, new StaticItem(
+			"14", new StaticItem(
 				new EnhancedItemBuilder(Material.EMERALD).displayName(
 						"<gold><value>")
 					.lore("<green><b>Click to accept")
@@ -70,27 +70,27 @@ public class CountMenuSettings extends ConfigMenuSettings {
 	}
 
 	@Override
-	public Map<String, Set<Integer>> dynamicSlots() {
-		Map<String, Set<Integer>> map = new HashMap<>();
+	public Map<String, Set<String>> dynamicSlots() {
+		Map<String, Set<String>> map = new HashMap<>();
 		map.put("decrease-value", this.dynamicItems.decreaseValueSlots);
 		map.put("increase-value", this.dynamicItems.increaseValueSlots);
 		return map;
 	}
 
 	@Override
-	protected Map<Integer, StaticItem> staticItems() {
+	protected Map<String, StaticItem> staticItems() {
 		return this.staticItems;
 	}
 
 	@Getter @NoArgsConstructor public class DynamicItems {
-		private Set<Integer> decreaseValueSlots = new HashSet<>(
-			Arrays.asList(1, 10, 19, 2, 11, 20));
+		private Set<String> decreaseValueSlots = new HashSet<>(
+			Arrays.asList("1", "10", "19", "2", "11", "20"));
 		private ItemStack decreaseValueItem = new EnhancedItemBuilder(
 			Material.LIME_DYE).displayName("<red>-<value>")
 			.build();
 
-		private Set<Integer> increaseValueSlots = new HashSet<>(
-			Arrays.asList(6, 15, 24, 7, 16, 25));
+		private Set<String> increaseValueSlots = new HashSet<>(
+			Arrays.asList("6", "15", "24", "7", "16", "25"));
 		private ItemStack increaseValueItem = new EnhancedItemBuilder(
 			Material.LIME_DYE).displayName("<red>+<value>")
 			.build();
