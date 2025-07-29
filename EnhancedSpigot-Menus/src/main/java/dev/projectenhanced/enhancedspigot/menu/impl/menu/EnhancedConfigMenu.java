@@ -34,14 +34,14 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public abstract class EnhancedConfigMenu extends EnhancedMenu {
-	protected final ConfigMenuSettings menuSettings;
+public abstract class EnhancedConfigMenu<T extends ConfigMenuSettings> extends EnhancedMenu {
+	protected final T menuSettings;
 	protected final DependencyProvider provider;
 	protected final JavaPlugin plugin;
 	protected final Player viewer;
 	protected TagResolver[] placeholders;
 
-	public EnhancedConfigMenu(DependencyProvider provider, Player viewer, ConfigMenuSettings settings, TagResolver... placeholders) {
+	public EnhancedConfigMenu(DependencyProvider provider, Player viewer, T settings, TagResolver... placeholders) {
 		super(
 			settings.getTitle(viewer, placeholders), settings.getRows(),
 			provider

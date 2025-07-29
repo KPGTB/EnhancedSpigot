@@ -35,9 +35,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class EnhancedCountMenu extends EnhancedConfigMenu {
-	private final CountMenuSettings settings;
-
+public class EnhancedCountMenu extends EnhancedConfigMenu<CountMenuSettings> {
 	private final EnhancedMenu lastMenu;
 	private final Consumer<Double> response;
 	private final Player viewer;
@@ -52,7 +50,6 @@ public class EnhancedCountMenu extends EnhancedConfigMenu {
 			provider, viewer, settings,
 			Placeholder.unparsed("value", String.valueOf(defaultValue))
 		);
-		this.settings = settings;
 		this.viewer = viewer;
 		this.lastMenu = lastMenu;
 		this.response = response;
@@ -78,7 +75,7 @@ public class EnhancedCountMenu extends EnhancedConfigMenu {
 		map.put("increase-value", new ArrayList<>());
 		map.put("decrease-value", new ArrayList<>());
 
-		this.settings.getValues()
+		this.menuSettings.getValues()
 			.forEach(value -> {
 				map.keySet()
 					.forEach(key -> {
@@ -96,7 +93,7 @@ public class EnhancedCountMenu extends EnhancedConfigMenu {
 
 		map.put(
 			"increase-value", (value) -> {
-				ItemStack is = this.settings.getDynamicItems()
+				ItemStack is = this.menuSettings.getDynamicItems()
 					.getIncreaseValueItem();
 				ColorUtil.modifyItem(
 					is, Placeholder.unparsed("value", String.valueOf(value)));
@@ -109,7 +106,7 @@ public class EnhancedCountMenu extends EnhancedConfigMenu {
 		);
 		map.put(
 			"decrease-value", (value) -> {
-				ItemStack is = this.settings.getDynamicItems()
+				ItemStack is = this.menuSettings.getDynamicItems()
 					.getDecreaseValueItem();
 				ColorUtil.modifyItem(
 					is, Placeholder.unparsed("value", String.valueOf(value)));
