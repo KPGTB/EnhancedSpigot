@@ -123,10 +123,10 @@ import java.util.regex.Pattern;
 		hours -= days * 24;
 
 		Map<String, Integer> timeMap = new HashMap<>();
-		timeMap.put("<days>", days);
-		timeMap.put("<hours>", hours);
-		timeMap.put("<minutes>", minutes);
-		timeMap.put("<seconds>", seconds);
+		timeMap.put("days", days);
+		timeMap.put("hours", hours);
+		timeMap.put("minutes", minutes);
+		timeMap.put("seconds", seconds);
 
 		String output = format;
 		Map<String, String> replaces = new HashMap<>();
