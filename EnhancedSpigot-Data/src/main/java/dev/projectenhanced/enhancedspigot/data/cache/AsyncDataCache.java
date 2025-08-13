@@ -159,4 +159,9 @@ public class AsyncDataCache<K, V> extends DataCache<K, V> implements IAsyncSavab
 	public void setExecutor(ExecutorService executorService) {
 		this.executor = executorService;
 	}
+
+	@Override
+	public boolean runningAsync() {
+		return true;
+	}
 }

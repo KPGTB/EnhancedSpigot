@@ -51,4 +51,6 @@ public interface ISavable<K, V> {
 	void removeAll();
 
 	boolean exists(K key);
+
+	boolean runningAsync();
 }

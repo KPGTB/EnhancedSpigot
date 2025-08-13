@@ -273,21 +273,36 @@ public class DataCache<K, V> implements ISavableCache<K, V>, IForeignMappingHand
 		this.set(key, value);
 		this.save(key);
 
-		SchedulerUtil.runTaskLater(plugin, (task) -> this.load(key), 20);
+		Consumer<SchedulerUtil.Task> task = (t) -> this.load(key);
+		if (this.runningAsync()) {
+			SchedulerUtil.runTaskLaterAsynchronously(plugin, task, 20);
+		} else {
+			SchedulerUtil.runTaskLater(plugin, task, 20);
+		}
 	}
 
 	@Override
 	public void create(V value) {
 		this.saveValue(value);
-		SchedulerUtil.runTaskLater(plugin, (task) -> this.load(
-			TryCatchUtil.tryAndReturn(() -> this.dao.extractId(value))), 20
-		);
+
+		Consumer<SchedulerUtil.Task> task = (t) -> this.load(
+			TryCatchUtil.tryAndReturn(() -> this.dao.extractId(value)));
+		if (this.runningAsync()) {
+			SchedulerUtil.runTaskLaterAsynchronously(plugin, task, 20);
+		} else {
+			SchedulerUtil.runTaskLater(plugin, task, 20);
+		}
 	}
 
 	@Override
 	public boolean exists(K key) {
 		if (this.contains(key)) return true;
 		return TryCatchUtil.tryOrDefault(() -> this.dao.idExists(key), false);
+	}
+
+	@Override
+	public boolean runningAsync() {
+		return false;
 	}
 
 	private void runInTransaction(Runnable runnable) {
