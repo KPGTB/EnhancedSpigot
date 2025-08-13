@@ -87,6 +87,6 @@ public class VaultHook {
 			.getServicesManager()
 			.getRegistration(clazz);
 		T service = this.serviceCheck(rsp, optional, serviceName);
-		if (service != null) this.provider.register(service);
+		if (service != null) this.provider.register(service, clazz);
 	}
 }
