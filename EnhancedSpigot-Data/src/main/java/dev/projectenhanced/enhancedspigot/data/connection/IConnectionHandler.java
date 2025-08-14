@@ -28,4 +28,6 @@ public interface IConnectionHandler extends IClosable {
 	void retrieveCredentials(DatabaseOptions options);
 
 	BaseConnectionSource connect() throws IOException, SQLException;
+
+	BaseConnectionSource connectHikari(DatabaseOptions.HikariOptions options) throws IOException, SQLException;
 }

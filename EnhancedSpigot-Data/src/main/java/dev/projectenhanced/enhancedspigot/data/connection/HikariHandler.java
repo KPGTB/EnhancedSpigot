@@ -19,13 +19,16 @@ package dev.projectenhanced.enhancedspigot.data.connection;
 import com.zaxxer.hikari.HikariConfig;
 
 public class HikariHandler {
-	public static HikariConfig configure(HikariConfig config) {
-		config.setPoolName("hikari");
-		config.setMaximumPoolSize(10);
-		config.setMinimumIdle(10);
-		config.setMaxLifetime(1800000L);
-		config.setConnectionTimeout(5000);
+	public static HikariConfig configure(HikariConfig config, DatabaseOptions.HikariOptions options) {
+		config.setPoolName(options.getPoolName());
+		config.setMaximumPoolSize(options.getMaximumPoolSize());
+		config.setMinimumIdle(options.getMinimumIdle());
+		config.setMaxLifetime(options.getMaxLifetime());
+		config.setConnectionTimeout(options.getConnectionTimeout());
+		config.setIdleTimeout(options.getIdleTimeout());
 		config.addDataSourceProperty("characterEncoding", "utf8");
+		config.addDataSourceProperty("autoReconnect", "true");
+		config.addDataSourceProperty("useSSL", options.isUseSSL());
 		return config;
 	}
 }

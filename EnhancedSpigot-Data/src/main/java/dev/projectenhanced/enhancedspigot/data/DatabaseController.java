@@ -77,7 +77,6 @@ import java.util.concurrent.Executors;
 	}
 
 	public void connect() {
-		IConnectionHandler handler = null;
 		switch (this.options.getType()) {
 			case MYSQL:
 				this.handler = new MySQLConnectionHandler();
@@ -98,7 +97,11 @@ import java.util.concurrent.Executors;
 						.name());
 		}
 		this.handler.retrieveCredentials(this.options);
-		this.source = TryCatchUtil.tryAndReturn(this.handler::connect);
+		this.source = TryCatchUtil.tryAndReturn(
+			() -> this.options.getHikariOptions()
+				.isEnabled() ?
+				this.handler.connectHikari(this.options.getHikariOptions()) :
+				this.handler.connect());
 		this.registerDefaultPersisters();
 
 		if (!this.debug) LoggerFactory.setLogBackendFactory(

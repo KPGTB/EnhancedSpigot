@@ -31,6 +31,9 @@ public class DatabaseOptions {
 	@Comment({"Configure only when using MySQL or PostgreSQL"})
 	@Serializer(BaseSerializer.class)
 	private Credentials credentials = new Credentials();
+	@Comment({"Configure only when using MySQL or PostgreSQL", "Don't change if you don't know what it is!"})
+	@Serializer(BaseSerializer.class)
+	private HikariOptions hikariOptions = new HikariOptions();
 
 	@Getter @Setter @NoArgsConstructor @AllArgsConstructor
 	public static class Credentials {
@@ -39,5 +42,17 @@ public class DatabaseOptions {
 		private String username = "root";
 		private String password = "";
 		private String database = "minecraft";
+	}
+
+	@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+	public static class HikariOptions {
+		private boolean enabled = true;
+		private String poolName = "hikari";
+		private int maximumPoolSize = 5;
+		private int minimumIdle = 15;
+		private long idleTimeout = 600000L;
+		private long maxLifetime = 1800000L;
+		private long connectionTimeout = 30000L;
+		private boolean useSSL = false;
 	}
 }

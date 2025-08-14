@@ -57,6 +57,11 @@ public class SQLiteConnectionHandler implements IConnectionHandler {
 	}
 
 	@Override
+	public BaseConnectionSource connectHikari(DatabaseOptions.HikariOptions options) throws IOException, SQLException {
+		return this.connect();
+	}
+
+	@Override
 	public void close() {
 
 	}

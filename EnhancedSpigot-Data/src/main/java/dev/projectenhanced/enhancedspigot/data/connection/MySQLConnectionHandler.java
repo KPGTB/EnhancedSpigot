@@ -17,6 +17,8 @@
 package dev.projectenhanced.enhancedspigot.data.connection;
 
 import com.j256.ormlite.jdbc.DataSourceConnectionSource;
+import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
+import com.j256.ormlite.jdbc.db.MysqlDatabaseType;
 import com.j256.ormlite.support.BaseConnectionSource;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -42,6 +44,15 @@ public class MySQLConnectionHandler implements IConnectionHandler {
 
 	@Override
 	public BaseConnectionSource connect() throws IOException, SQLException {
+		String url = "jdbc:mysql://" + this.credentials.getHost() + ":" + this.credentials.getPort() + "/" + this.credentials.getDatabase() + "?autoReconnect=true";
+		return new JdbcPooledConnectionSource(
+			url, credentials.getUsername(), credentials.getPassword(),
+			new MysqlDatabaseType()
+		);
+	}
+
+	@Override
+	public BaseConnectionSource connectHikari(DatabaseOptions.HikariOptions options) throws IOException, SQLException {
 		HikariConfig config = new HikariConfig();
 		config.setJdbcUrl(
 			"jdbc:mysql://" + this.credentials.getHost() + ":" + this.credentials.getPort() + "/" + this.credentials.getDatabase());
@@ -50,7 +61,8 @@ public class MySQLConnectionHandler implements IConnectionHandler {
 
 		TryCatchUtil.tryAndReturn(
 			() -> Class.forName("com.mysql.cj.jdbc.Driver"));
-		this.dataSource = new HikariDataSource(HikariHandler.configure(config));
+		this.dataSource = new HikariDataSource(
+			HikariHandler.configure(config, options));
 
 		return new DataSourceConnectionSource(
 			this.dataSource, this.dataSource.getJdbcUrl());

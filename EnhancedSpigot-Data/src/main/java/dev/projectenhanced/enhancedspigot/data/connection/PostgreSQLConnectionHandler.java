@@ -17,6 +17,8 @@
 package dev.projectenhanced.enhancedspigot.data.connection;
 
 import com.j256.ormlite.jdbc.DataSourceConnectionSource;
+import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
+import com.j256.ormlite.jdbc.db.PostgresDatabaseType;
 import com.j256.ormlite.support.BaseConnectionSource;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -42,6 +44,15 @@ public class PostgreSQLConnectionHandler implements IConnectionHandler {
 
 	@Override
 	public BaseConnectionSource connect() throws IOException, SQLException {
+		String url = "jdbc:postgresql://" + this.credentials.getHost() + ":" + this.credentials.getPort() + "/" + this.credentials.getDatabase() + "&autoReconnect=true";
+		return new JdbcPooledConnectionSource(
+			url, this.credentials.getUsername(), this.credentials.getPassword(),
+			new PostgresDatabaseType()
+		);
+	}
+
+	@Override
+	public BaseConnectionSource connectHikari(DatabaseOptions.HikariOptions options) throws IOException, SQLException {
 		HikariConfig config = new HikariConfig();
 		config.setJdbcUrl(
 			"jdbc:postgresql://" + this.credentials.getHost() + ":" + this.credentials.getPort() + "/" + this.credentials.getDatabase());
@@ -49,7 +60,8 @@ public class PostgreSQLConnectionHandler implements IConnectionHandler {
 		config.setPassword(this.credentials.getPassword());
 
 		TryCatchUtil.tryAndReturn(() -> Class.forName("org.postgresql.Driver"));
-		this.dataSource = new HikariDataSource(HikariHandler.configure(config));
+		this.dataSource = new HikariDataSource(
+			HikariHandler.configure(config, options));
 
 		return new DataSourceConnectionSource(
 			this.dataSource, this.dataSource.getJdbcUrl());
