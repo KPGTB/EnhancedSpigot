@@ -34,15 +34,17 @@ public class OfflinePlayerParser implements IArgumentParser<OfflinePlayer> {
 
 	@Override
 	public boolean canConvert(String param, JavaPlugin plugin) {
-		return convert(param, plugin) != null;
+		return Arrays.stream(Bukkit.getOfflinePlayers())
+			.map(OfflinePlayer::getName)
+			.anyMatch(param::equalsIgnoreCase);
 	}
 
 	@Override
 	public List<String> complete(String arg, CommandSender sender, JavaPlugin plugin) {
 		return Arrays.stream(Bukkit.getOfflinePlayers())
-					 .map(OfflinePlayer::getName)
-					 .filter(s -> s.startsWith(arg))
-					 .limit(30)
-					 .collect(Collectors.toList());
+			.map(OfflinePlayer::getName)
+			.filter(s -> s.startsWith(arg))
+			.limit(30)
+			.collect(Collectors.toList());
 	}
 }

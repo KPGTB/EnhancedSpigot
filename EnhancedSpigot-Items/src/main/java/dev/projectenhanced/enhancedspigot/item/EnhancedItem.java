@@ -219,7 +219,7 @@ public abstract class EnhancedItem implements Listener {
 			ItemStack[] invContent = inv.getContents();
 
 			for (int i = 0; i < invContent.length; i++) {
-				ItemStack is = invContent[0];
+				ItemStack is = invContent[i];
 				if (is == null || is.getType()
 					.equals(Material.AIR)) {
 					continue;
