@@ -264,8 +264,8 @@ public class DataCache<K, V> implements ISavableCache<K, V>, IForeignMappingHand
 
 	@Override
 	public void saveAll() {
-		this.runInTransaction(() -> this.cache.keySet()
-			.forEach(this::save));
+		this.runInTransaction(
+			() -> new HashSet<>(this.cache.keySet()).forEach(this::save));
 	}
 
 	@Override
