@@ -173,6 +173,23 @@ public abstract class EnhancedItem implements Listener {
 				}
 			}
 		}
+
+		if (event.getClick() == ClickType.SWAP_OFFHAND) {
+			ItemStack offhand = event.getWhoClicked()
+				.getInventory()
+				.getItemInOffHand();
+
+			if (offhand != null && !offhand.getType()
+				.equals(Material.AIR)) {
+				if (this.isSimilar(offhand)) {
+					this.onClick(event, InternalClickType.OFFHAND);
+
+					if (blockDroppingItem && (clickedInv == null || clickedInv.getType() != InventoryType.PLAYER)) {
+						event.setCancelled(true);
+					}
+				}
+			}
+		}
 	}
 
 	@EventHandler
@@ -402,7 +419,11 @@ public abstract class EnhancedItem implements Listener {
 		/**
 		 * Item clicked using 1-9 keys
 		 */
-		HOTBAR
+		HOTBAR,
+		/**
+		 * When pressing F
+		 */
+		OFFHAND
 	}
 
 	@lombok.Builder public static class Builder {

@@ -20,9 +20,9 @@ import dev.projectenhanced.enhancedspigot.command.parser.IArgumentParser;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,15 +34,14 @@ public class OfflinePlayerParser implements IArgumentParser<OfflinePlayer> {
 
 	@Override
 	public boolean canConvert(String param, JavaPlugin plugin) {
-		return Arrays.stream(Bukkit.getOfflinePlayers())
-			.map(OfflinePlayer::getName)
-			.anyMatch(param::equalsIgnoreCase);
+		return true;
 	}
 
 	@Override
 	public List<String> complete(String arg, CommandSender sender, JavaPlugin plugin) {
-		return Arrays.stream(Bukkit.getOfflinePlayers())
-			.map(OfflinePlayer::getName)
+		return Bukkit.getOnlinePlayers()
+			.stream()
+			.map(Player::getName)
 			.filter(s -> s.startsWith(arg))
 			.limit(30)
 			.collect(Collectors.toList());
