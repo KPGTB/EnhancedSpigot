@@ -18,12 +18,7 @@ package dev.projectenhanced.enhancedspigot.data.cache.iface;
 
 import com.j256.ormlite.dao.ForeignCollection;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
-public interface IForeignMapping {
-	Map<ForeignCollection<?>, Collection<?>> getForeignMapping();
-
-	List<ForeignMapper<?>> getForeignMappers();
-}
+public record ForeignMapper<T>(ForeignCollection<T> foreign, Map<String, T> cache, Function<T, String> keyExtractor) {}
