@@ -17,8 +17,15 @@
 package dev.projectenhanced.enhancedspigot.data.cache.iface;
 
 import com.j256.ormlite.dao.ForeignCollection;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 import java.util.Map;
 import java.util.function.Function;
 
-public record ForeignMapper<T>(ForeignCollection<T> foreign, Map<String, T> cache, Function<T, String> keyExtractor) {}
+@Getter @AllArgsConstructor public class ForeignMapper<T> {
+	private final ForeignCollection<T> foreign;
+	private final Map<String, T> cache;
+	private final Function<T, String> keyExtractor;
+}
+

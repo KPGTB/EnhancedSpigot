@@ -316,26 +316,26 @@ public class DataCache<K, V> implements ISavableCache<K, V>, IForeignMappingHand
 
 		entity.getForeignMappers()
 			.forEach(mapper -> {
-				mapper.foreign()
-					.removeIf(o -> !mapper.cache()
+				mapper.getForeign()
+					.removeIf(o -> !mapper.getCache()
 						.containsValue(o));
-				mapper.cache()
+				mapper.getCache()
 					.values()
 					.forEach(obj -> {
-						if (mapper.foreign()
-							.contains(obj)) updateForeign(mapper.foreign(), obj);
-						else addToForeign(mapper.foreign(), obj);
+						if (mapper.getForeign()
+							.contains(obj)) updateForeign(mapper.getForeign(), obj);
+						else addToForeign(mapper.getForeign(), obj);
 					});
 			});
 	}
 
 	private <T> void addAllMapper(ForeignMapper<T> mapper) {
-		mapper.cache()
+		mapper.getCache()
 			.clear();
-		mapper.foreign()
-			.forEach(e -> mapper.cache()
+		mapper.getForeign()
+			.forEach(e -> mapper.getCache()
 				.put(
-					mapper.keyExtractor()
+					mapper.getKeyExtractor()
 						.apply(e), e
 				));
 	}
