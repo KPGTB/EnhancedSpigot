@@ -39,17 +39,14 @@ import java.util.List;
 import java.util.logging.Level;
 
 public abstract class EnhancedPlugin extends JavaPlugin {
-	@Getter private DependencyProvider dependencyProvider;
+	@Getter protected DependencyProvider dependencyProvider;
 
 	@Override
 	public final void onEnable() {
 		TryCatchUtil.usePluginLogger(this);
 
 		this.dependencyProvider = new DependencyProvider();
-		this.dependencyProvider.register(
-			this, getClass(), EnhancedPlugin.class,
-			JavaPlugin.class
-		);
+		this.dependencyProvider.register(this, getClass(), EnhancedPlugin.class, JavaPlugin.class);
 
 		boolean passRequirements = true;
 		for (String requiredPlugin : this.requiredPlugins()) {
@@ -57,8 +54,7 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 				.isPluginEnabled(requiredPlugin)) {
 				passRequirements = false;
 				this.getLogger()
-					.severe(
-						"This plugin requires " + requiredPlugin + " to be enabled.");
+					.severe("This plugin requires " + requiredPlugin + " to be enabled.");
 			}
 		}
 		if (!passRequirements) {
@@ -93,8 +89,7 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 	protected abstract List<String> requiredPlugins();
 
 	protected CommandController enableCommands(CommandLocale locale) {
-		CommandController controller = new CommandController(
-			this.dependencyProvider, locale);
+		CommandController controller = new CommandController(this.dependencyProvider, locale);
 		controller.init();
 		this.dependencyProvider.register(controller);
 		return controller;
@@ -110,8 +105,7 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 	}
 
 	protected RecipeController enableRecipes() {
-		RecipeController controller = new RecipeController(
-			this.dependencyProvider);
+		RecipeController controller = new RecipeController(this.dependencyProvider);
 		this.dependencyProvider.register(controller);
 		return controller;
 	}
@@ -135,8 +129,7 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 	}
 
 	protected void registerListeners(String listenerPackage) {
-		ListenerRegistry.register(
-			this.dependencyProvider, this, listenerPackage);
+		ListenerRegistry.register(this.dependencyProvider, this, listenerPackage);
 	}
 
 	protected Metrics useBStats(int serviceId) {
@@ -147,8 +140,7 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 		if (updater.hasUpdate(new SemanticVersion(this.getDescription()
 			.getVersion()))) {
 			this.getLogger()
-				.warning(
-					"Detected new version of " + this.getName() + " plugin. Download it on " + updater.getDownloadLink());
+				.warning("Detected new version of " + this.getName() + " plugin. Download it on " + updater.getDownloadLink());
 		}
 	}
 

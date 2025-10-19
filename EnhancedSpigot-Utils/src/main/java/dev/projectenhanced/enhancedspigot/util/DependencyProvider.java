@@ -29,14 +29,14 @@ public class DependencyProvider {
 		this.dependencies = new HashMap<>();
 	}
 
-	public DependencyProvider register(Object dependency, Class<?>... classes) {
+	public <T> T register(T dependency, Class<?>... classes) {
 		for (Class<?> clazz : classes) {
 			this.dependencies.put(clazz, dependency);
 		}
-		return this;
+		return dependency;
 	}
 
-	public DependencyProvider register(Object dependency) {
+	public <T> T register(T dependency) {
 		return this.register(dependency, dependency.getClass());
 	}
 
@@ -51,17 +51,17 @@ public class DependencyProvider {
 
 	public void reloadAll() {
 		dependencies.values()
-					.stream()
-					.filter(obj -> obj instanceof IReloadable)
-					.map(obj -> (IReloadable) obj)
-					.forEach(IReloadable::reload);
+			.stream()
+			.filter(obj -> obj instanceof IReloadable)
+			.map(obj -> (IReloadable) obj)
+			.forEach(IReloadable::reload);
 	}
 
 	public void closeAll() {
 		dependencies.values()
-					.stream()
-					.filter(obj -> obj instanceof IClosable)
-					.map(obj -> (IClosable) obj)
-					.forEach(IClosable::close);
+			.stream()
+			.filter(obj -> obj instanceof IClosable)
+			.map(obj -> (IClosable) obj)
+			.forEach(IClosable::close);
 	}
 }

@@ -26,7 +26,6 @@ import lombok.Setter;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor public class DatabaseOptions {
 	@Comment("Supported types: SQLITE, MYSQL, POSTGRESQL") private ConnectionType type = ConnectionType.SQLITE;
-	@Comment({"With these options, you can manage database cache (from OrmLite)", "The cache system saves the most recent database queries to improve performance. It's highly recommended to use!", "With the capacity option, you can manage the size of the cache per DAO. Greater - Better Server Performance - More RAM usage", "Capacity '0' changes the system to default. It means that there can be stored unlimited amount of objects, but they are removed after garbage collection.", "Test on your server which option is better for you. Disable only if you have a small amount of RAM!", "To disable, set to -1"}) private int cacheCapacity = 0;
 	@Comment({"Configure only when using MySQL or PostgreSQL"})
 	@Serializer(BaseSerializer.class)
 	private Credentials credentials = new Credentials();

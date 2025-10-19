@@ -62,7 +62,7 @@ import java.util.Map;
 	 *
 	 * @return Map of placeholders used in header's comment
 	 */
-	protected abstract Map<String, String> getCommentPlaceholders();
+	protected Map<String, String> getCommentPlaceholders() {return Map.of();}
 
 	/**
 	 * Creates config file and loads configuration
@@ -75,8 +75,7 @@ import java.util.Map;
 			TryCatchUtil.tryRun(this.configFile::createNewFile);
 		}
 
-		this.configuration = YamlConfiguration.loadConfiguration(
-			this.configFile);
+		this.configuration = YamlConfiguration.loadConfiguration(this.configFile);
 
 		if (newConfig) this.save();
 		this.reload();
@@ -87,10 +86,8 @@ import java.util.Map;
 	 */
 	@Override
 	public void reload() {
-		this.configuration = YamlConfiguration.loadConfiguration(
-			this.configFile);
-		ConfigSerializerRegistry.CustomSerializers.BASE.deserializeTo(
-			this.configuration, this.getClass(), this, this);
+		this.configuration = YamlConfiguration.loadConfiguration(this.configFile);
+		ConfigSerializerRegistry.CustomSerializers.BASE.deserializeTo(this.configuration, this.getClass(), this, this);
 		this.save();
 
 		this.postLoad();
@@ -100,8 +97,7 @@ import java.util.Map;
 	 * Saves config
 	 */
 	public void save() {
-		ConfigSerializerRegistry.CustomSerializers.BASE.serializeTo(
-			this, this.getClass(), this, this.configuration);
+		ConfigSerializerRegistry.CustomSerializers.BASE.serializeTo(this, this.getClass(), this, this.configuration);
 		this.generateHeader();
 		TryCatchUtil.tryRun(() -> this.configuration.save(this.configFile));
 	}
@@ -119,5 +115,5 @@ import java.util.Map;
 			.header(header);
 	}
 
-	protected abstract void postLoad();
+	protected void postLoad() {}
 }

@@ -14,12 +14,24 @@
  *    limitations under the License.
  */
 
-package dev.projectenhanced.enhancedspigot.data.cache.iface;
+package dev.projectenhanced.enhancedspigot.menu;
 
-import org.bukkit.plugin.java.JavaPlugin;
+import lombok.Getter;
+import org.bukkit.Bukkit;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 
-public interface ISavableLifecycle {
-	void beforeSave(JavaPlugin plugin);
+public class EnhancedMenuHolder implements InventoryHolder {
+	@Getter private final EnhancedMenu menu;
+	private final Inventory inventory;
 
-	void afterLoad(JavaPlugin plugin);
+	public EnhancedMenuHolder(EnhancedMenu menu, int size, String title) {
+		this.menu = menu;
+		this.inventory = Bukkit.createInventory(this, size, title);
+	}
+
+	@Override
+	public Inventory getInventory() {
+		return this.inventory;
+	}
 }

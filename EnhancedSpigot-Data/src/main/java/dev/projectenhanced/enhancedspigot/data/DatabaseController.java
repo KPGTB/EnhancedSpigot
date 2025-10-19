@@ -18,7 +18,6 @@ package dev.projectenhanced.enhancedspigot.data;
 
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
-import com.j256.ormlite.dao.LruObjectCache;
 import com.j256.ormlite.field.DataPersister;
 import com.j256.ormlite.field.DataPersisterManager;
 import com.j256.ormlite.field.DatabaseField;
@@ -87,25 +86,21 @@ import java.util.concurrent.Executors;
 				this.executor = Executors.newFixedThreadPool(10);
 				break;
 			case SQLITE:
-				this.handler = new SQLiteConnectionHandler(
-					this.plugin.getDataFolder());
+				this.handler = new SQLiteConnectionHandler(this.plugin.getDataFolder());
 				this.executor = Executors.newSingleThreadExecutor();
 				break;
 			default:
-				throw new UnsupportedOperationException(
-					"Unsupported connection type: " + this.options.getType()
-						.name());
+				throw new UnsupportedOperationException("Unsupported connection type: " + this.options.getType()
+					.name());
 		}
 		this.handler.retrieveCredentials(this.options);
-		this.source = TryCatchUtil.tryAndReturn(
-			() -> this.options.getHikariOptions()
-				.isEnabled() ?
-				this.handler.connectHikari(this.options.getHikariOptions()) :
-				this.handler.connect());
+		this.source = TryCatchUtil.tryAndReturn(() -> this.options.getHikariOptions()
+			.isEnabled() ?
+			this.handler.connectHikari(this.options.getHikariOptions()) :
+			this.handler.connect());
 		this.registerDefaultPersisters();
 
-		if (!this.debug) LoggerFactory.setLogBackendFactory(
-			LogBackendType.NULL);
+		if (!this.debug) LoggerFactory.setLogBackendFactory(LogBackendType.NULL);
 	}
 
 	/**
@@ -125,15 +120,12 @@ import java.util.concurrent.Executors;
 	public void registerEntities(String packageName) {
 		if (this.source == null) return;
 
-		for (Class<?> clazz : ReflectionUtil.getAllClassesInPackage(
-			this.jarFile, packageName)) {
-			if (clazz.getDeclaredAnnotation(DatabaseTable.class) == null)
-				continue;
+		for (Class<?> clazz : ReflectionUtil.getAllClassesInPackage(this.jarFile, packageName)) {
+			if (clazz.getDeclaredAnnotation(DatabaseTable.class) == null) continue;
 
 			Field idField = Arrays.stream(clazz.getDeclaredFields())
 				.filter(f -> {
-					DatabaseField ann = f.getDeclaredAnnotation(
-						DatabaseField.class);
+					DatabaseField ann = f.getDeclaredAnnotation(DatabaseField.class);
 					if (ann == null) return false;
 					return ann.id() || ann.generatedId() || !ann.generatedIdSequence()
 						.isEmpty();
@@ -153,17 +145,7 @@ import java.util.concurrent.Executors;
 			Dao<?, ?> dao;
 			try {
 				dao = DaoManager.createDao(this.source, clazz);
-				int cache = this.options.getCacheCapacity();
-				switch (cache) {
-					case -1:
-						break;
-					case 0:
-						dao.setObjectCache(true);
-						break;
-					default:
-						dao.setObjectCache(new LruObjectCache(cache));
-						break;
-				}
+				dao.setObjectCache(false);
 			} catch (SQLException e) {
 				e.printStackTrace();
 				continue;
@@ -192,9 +174,8 @@ import java.util.concurrent.Executors;
 		ReflectionUtil.getAllClassesInPackage(this.jarFile, packageName)
 			.stream()
 			.filter(DataPersister.class::isAssignableFrom)
-			.map(clazz -> TryCatchUtil.tryAndReturn(
-				() -> (DataPersister) clazz.getDeclaredConstructor()
-					.newInstance()))
+			.map(clazz -> TryCatchUtil.tryAndReturn(() -> (DataPersister) clazz.getDeclaredConstructor()
+				.newInstance()))
 			.filter(Objects::nonNull)
 			.forEach(DataPersisterManager::registerDataPersisters);
 	}
@@ -209,10 +190,6 @@ import java.util.concurrent.Executors;
 	}
 
 	private void registerDefaultPersisters() {
-		registerPersisters(
-			new ItemStackPersister(), new ListPersister(),
-			new LocationPersister(), new MapPersister(),
-			new OfflinePlayerPersister(), new WorldPersister()
-		);
+		registerPersisters(new ItemStackPersister(), new ListPersister(), new LocationPersister(), new MapPersister(), new OfflinePlayerPersister(), new WorldPersister());
 	}
 }

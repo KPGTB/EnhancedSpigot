@@ -46,8 +46,7 @@ public abstract class ConfigMenuSettings {
 	protected abstract Map<String, StaticItem> staticItems();
 
 	public String getTitle(Player viewer, TagResolver... placeholders) {
-		return ColorUtil.addPAPI(
-			ColorUtil.convertMmToString(this.title(), placeholders), viewer);
+		return ColorUtil.addPAPI(ColorUtil.convertMmToString(this.title(), placeholders), viewer);
 	}
 
 	public int getRows() {
@@ -125,8 +124,7 @@ public abstract class ConfigMenuSettings {
 		return result;
 	}
 
-	@Getter @NoArgsConstructor @AllArgsConstructor
-	public static class StaticItem {
+	@Getter @NoArgsConstructor @AllArgsConstructor public static class StaticItem {
 		private ItemStack item;
 		private List<String> actions;
 	}

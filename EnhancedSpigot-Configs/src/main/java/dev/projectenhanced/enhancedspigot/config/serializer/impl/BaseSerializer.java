@@ -60,28 +60,19 @@ public class BaseSerializer implements ISerializer<Object> {
 			.filter(field -> !field.isSynthetic())
 			.forEach(field -> {
 				Ignore ignoreAnn = field.getDeclaredAnnotation(Ignore.class);
-				InjectKey injectKeyAnn = field.getDeclaredAnnotation(
-					InjectKey.class);
+				InjectKey injectKeyAnn = field.getDeclaredAnnotation(InjectKey.class);
 				Comment commentAnn = field.getDeclaredAnnotation(Comment.class);
-				Serializer serializerAnn = field.getDeclaredAnnotation(
-					Serializer.class);
+				Serializer serializerAnn = field.getDeclaredAnnotation(Serializer.class);
 				if (ignoreAnn != null || injectKeyAnn != null) return;
 
 				String key = TextCase.camelToKebabCase(field.getName());
 
 				field.setAccessible(true);
-				Object value = TryCatchUtil.tryAndReturn(
-					() -> field.get(object));
+				Object value = TryCatchUtil.tryAndReturn(() -> field.get(object));
 				field.setAccessible(false);
 
-				section.set(
-					key, serializationHandler.handleObject(
-						value, serializerAnn,
-						config
-					)
-				);
-				if (commentAnn != null) SectionUtil.addComments(
-					section, key, commentAnn.value());
+				section.set(key, serializationHandler.handleObject(value, serializerAnn, config));
+				if (commentAnn != null) SectionUtil.addComments(section, key, commentAnn.value());
 			});
 	}
 
@@ -100,10 +91,8 @@ public class BaseSerializer implements ISerializer<Object> {
 			.filter(field -> !field.isSynthetic())
 			.forEach(field -> {
 				Ignore ignoreAnn = field.getDeclaredAnnotation(Ignore.class);
-				InjectKey injectKeyAnn = field.getDeclaredAnnotation(
-					InjectKey.class);
-				Serializer serializerAnn = field.getDeclaredAnnotation(
-					Serializer.class);
+				InjectKey injectKeyAnn = field.getDeclaredAnnotation(InjectKey.class);
+				Serializer serializerAnn = field.getDeclaredAnnotation(Serializer.class);
 				if (ignoreAnn != null || injectKeyAnn != null) return;
 
 				String key = TextCase.camelToKebabCase(field.getName());
@@ -119,8 +108,7 @@ public class BaseSerializer implements ISerializer<Object> {
 					to, deserializationHandler.handleObject(
 						configValue != null ?
 							configValue :
-							this.handleDefaults(field, config), field.getType(),
-						typeArgs, serializerAnn, config
+							this.handleDefaults(field, config), field.getType(), typeArgs, serializerAnn, config
 					)
 				));
 				field.setAccessible(false);
@@ -133,8 +121,7 @@ public class BaseSerializer implements ISerializer<Object> {
 	}
 
 	private Object handleDefaults(Field field, EnhancedConfig source) {
-		if (field.getDeclaredAnnotation(DoNotRecover.class) != null)
-			return null;
+		if (field.getDeclaredAnnotation(DoNotRecover.class) != null) return null;
 
 		Class<?> clazz = field.getDeclaringClass();
 		Object newClassInstance = this.getClassInstance(clazz, source);
@@ -152,17 +139,13 @@ public class BaseSerializer implements ISerializer<Object> {
 		Object invoker = null;
 
 		if (enclosing != null) {
-			if (EnhancedConfig.class.isAssignableFrom(enclosing))
-				invoker = source;
+			if (EnhancedConfig.class.isAssignableFrom(enclosing)) invoker = source;
 			else invoker = getClassInstance(enclosing, source);
 		}
 
 		Object finalInvoker = invoker;
 		return TryCatchUtil.tryAndReturn(() -> finalInvoker != null ?
-			getAccessibleInstance(
-				clazz.getDeclaredConstructor(enclosing),
-				finalInvoker
-			) :
+			getAccessibleInstance(clazz.getDeclaredConstructor(enclosing), finalInvoker) :
 			getAccessibleInstance(clazz.getDeclaredConstructor()));
 	}
 
@@ -185,21 +168,15 @@ public class BaseSerializer implements ISerializer<Object> {
 	class SerializationHandler {
 		private Object handleObject(Object configValue, Serializer serializerAnn, EnhancedConfig config) {
 			if (configValue == null) return null;
-			if (configValue instanceof List) return handleList(
-				(List<?>) configValue, serializerAnn, config);
-			if (configValue instanceof Map) return handleMap(
-				(Map<?, ?>) configValue, serializerAnn, config);
+			if (configValue instanceof List) return handleList((List<?>) configValue, serializerAnn, config);
+			if (configValue instanceof Map) return handleMap((Map<?, ?>) configValue, serializerAnn, config);
 
 			ISerializer<?> serializer = ConfigSerializerRegistry.getInstance()
 				.getSerializer(configValue.getClass());
-			if (serializerAnn != null) serializer = TryCatchUtil.tryAndReturn(
-				() -> serializerAnn.value()
-					.getDeclaredConstructor()
-					.newInstance());
-			if (!Enum.class.isAssignableFrom(
-				configValue.getClass()) && isEnclosedInConfig(
-				configValue.getClass()))
-				serializer = ConfigSerializerRegistry.CustomSerializers.BASE;
+			if (serializerAnn != null) serializer = TryCatchUtil.tryAndReturn(() -> serializerAnn.value()
+				.getDeclaredConstructor()
+				.newInstance());
+			if (!Enum.class.isAssignableFrom(configValue.getClass()) && isEnclosedInConfig(configValue.getClass())) serializer = ConfigSerializerRegistry.CustomSerializers.BASE;
 
 			return serializer == null ?
 				configValue :
@@ -222,33 +199,26 @@ public class BaseSerializer implements ISerializer<Object> {
 
 		@SuppressWarnings("unchecked")
 		private <T> Object useSerializer(ISerializer<T> serializer, Object obj, EnhancedConfig config) {
-			return serializer.serialize(
-				(T) obj, (Class<? extends T>) obj.getClass(), config);
+			return serializer.serialize((T) obj, (Class<? extends T>) obj.getClass(), config);
 		}
 	}
 
 	class DeserializationHandler {
 		private Object handleObject(Object configValue, Class<?> clazz, Type[] typeArgs, Serializer serializerAnn, EnhancedConfig config) {
 			if (configValue == null) return null;
-			if (List.class.isAssignableFrom(clazz)) return handleList(
-				(List<?>) configValue, typeArgs[0], serializerAnn, config);
-			if (Map.class.isAssignableFrom(clazz))
-				return handleMapDeserialization(
-					configValue instanceof ConfigurationSection ?
-						((ConfigurationSection) configValue).getValues(false) :
-						(Map<?, ?>) configValue, typeArgs[1], serializerAnn,
-					config
-				);
+			if (List.class.isAssignableFrom(clazz)) return handleList((List<?>) configValue, typeArgs[0], serializerAnn, config);
+			if (Map.class.isAssignableFrom(clazz)) return handleMapDeserialization(
+				configValue instanceof ConfigurationSection ?
+					((ConfigurationSection) configValue).getValues(false) :
+					(Map<?, ?>) configValue, typeArgs[1], serializerAnn, config
+			);
 
 			ISerializer<?> serializer = ConfigSerializerRegistry.getInstance()
 				.getSerializer(clazz);
-			if (serializerAnn != null) serializer = TryCatchUtil.tryAndReturn(
-				() -> serializerAnn.value()
-					.getDeclaredConstructor()
-					.newInstance());
-			if (!Enum.class.isAssignableFrom(clazz) && isEnclosedInConfig(
-				clazz))
-				serializer = ConfigSerializerRegistry.CustomSerializers.BASE;
+			if (serializerAnn != null) serializer = TryCatchUtil.tryAndReturn(() -> serializerAnn.value()
+				.getDeclaredConstructor()
+				.newInstance());
+			if (!Enum.class.isAssignableFrom(clazz) && isEnclosedInConfig(clazz)) serializer = ConfigSerializerRegistry.CustomSerializers.BASE;
 
 			return serializer == null ?
 				configValue :
@@ -259,10 +229,7 @@ public class BaseSerializer implements ISerializer<Object> {
 			Map.Entry<Class<?>, Type[]> typeData = extractTypeData(valueType);
 
 			return value.stream()
-				.map(element -> handleObject(
-					element, typeData.getKey(), typeData.getValue(),
-					serializerAnn, config
-				))
+				.map(element -> handleObject(element, typeData.getKey(), typeData.getValue(), serializerAnn, config))
 				.collect(Collectors.toList());
 		}
 
@@ -271,10 +238,7 @@ public class BaseSerializer implements ISerializer<Object> {
 			Map<Object, Object> result = new HashMap<>();
 
 			value.forEach((k, v) -> {
-				Object obj = handleObject(
-					v, typeData.getKey(),
-					typeData.getValue(), serializerAnn, config
-				);
+				Object obj = handleObject(v, typeData.getKey(), typeData.getValue(), serializerAnn, config);
 				injectKey(obj, k);
 				result.put(k, obj);
 			});
@@ -290,8 +254,7 @@ public class BaseSerializer implements ISerializer<Object> {
 			if (serializer.convertToSection() && !(obj instanceof MemorySection)) {
 				obj = SectionUtil.create((Map<?, ?>) obj);
 			}
-			return serializer.deserialize(
-				(T) obj, (Class<? extends T>) targetClass, config);
+			return serializer.deserialize((T) obj, (Class<? extends T>) targetClass, config);
 		}
 
 		private Map.Entry<Class<?>, Type[]> extractTypeData(Type type) {
@@ -317,8 +280,7 @@ public class BaseSerializer implements ISerializer<Object> {
 					.getDeclaredFields())
 				.filter(field -> !field.isSynthetic())
 				.forEach(field -> {
-					InjectKey injectKeyAn = field.getAnnotation(
-						InjectKey.class);
+					InjectKey injectKeyAn = field.getAnnotation(InjectKey.class);
 					if (injectKeyAn == null) return;
 					field.setAccessible(true);
 					TryCatchUtil.tryRun(() -> field.set(obj, key));

@@ -42,10 +42,7 @@ public abstract class EnhancedConfigMenu<T extends ConfigMenuSettings> extends E
 	protected TagResolver[] placeholders;
 
 	public EnhancedConfigMenu(DependencyProvider provider, Player viewer, T settings, TagResolver... placeholders) {
-		super(
-			settings.getTitle(viewer, placeholders), settings.getRows(),
-			provider
-		);
+		super(settings.getTitle(viewer, placeholders), settings.getRows(), provider);
 		this.provider = provider;
 		this.plugin = provider.provide(JavaPlugin.class);
 		this.viewer = viewer;
@@ -59,18 +56,17 @@ public abstract class EnhancedConfigMenu<T extends ConfigMenuSettings> extends E
 
 	protected abstract Map<String, Function<Object, MenuItem>> processObject();
 
-	protected abstract Map<String, Consumer<EnhancedMenu>> customStaticActions();
+	protected Map<String, Consumer<EnhancedMenu>> customStaticActions() {return Map.of();}
 
-	protected abstract void beforePrepare(MenuContainer container);
+	protected void beforePrepare(MenuContainer container) {}
 
-	protected abstract void afterPrepare(MenuContainer container);
+	protected void afterPrepare(MenuContainer container) {}
 
 	@Override
 	public void prepareGui() {
 		resetContainers();
 
-		PagedMenuContainer container = new PagedMenuContainer(
-			this, 0, 0, 9, this.getRows());
+		PagedMenuContainer container = new PagedMenuContainer(this, 0, 0, 9, this.getRows());
 
 		this.beforePrepare(container);
 
@@ -99,12 +95,8 @@ public abstract class EnhancedConfigMenu<T extends ConfigMenuSettings> extends E
 						objects.get(key)
 							.remove(0);
 
-						Pair<Integer, Integer> location = container.getContainerLocFromMenuLoc(
-							slot);
-						page.setItem(
-							location.getFirst(), location.getSecond(),
-							func.apply(obj)
-						);
+						Pair<Integer, Integer> location = container.getContainerLocFromMenuLoc(slot);
+						page.setItem(location.getFirst(), location.getSecond(), func.apply(obj));
 
 						left--;
 						if (left <= 0) break;
@@ -121,15 +113,10 @@ public abstract class EnhancedConfigMenu<T extends ConfigMenuSettings> extends E
 		if (pages.isEmpty()) pages.add(new MenuContainer(container));
 
 		pages.forEach(page -> {
-			this.menuSettings.getStaticItems(
-					this, this.viewer,
-					this.customStaticActions(), this.placeholders
-				)
+			this.menuSettings.getStaticItems(this, this.viewer, this.customStaticActions(), this.placeholders)
 				.forEach((slot, item) -> {
-					Pair<Integer, Integer> location = container.getContainerLocFromMenuLoc(
-						slot);
-					page.setItem(
-						location.getFirst(), location.getSecond(), item);
+					Pair<Integer, Integer> location = container.getContainerLocFromMenuLoc(slot);
+					page.setItem(location.getFirst(), location.getSecond(), item);
 				});
 		});
 

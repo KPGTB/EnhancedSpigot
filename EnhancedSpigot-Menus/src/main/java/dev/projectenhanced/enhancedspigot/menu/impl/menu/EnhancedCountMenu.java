@@ -18,7 +18,6 @@ package dev.projectenhanced.enhancedspigot.menu.impl.menu;
 
 import dev.projectenhanced.enhancedspigot.locale.ColorUtil;
 import dev.projectenhanced.enhancedspigot.menu.EnhancedMenu;
-import dev.projectenhanced.enhancedspigot.menu.container.MenuContainer;
 import dev.projectenhanced.enhancedspigot.menu.impl.menu.config.CountMenuSettings;
 import dev.projectenhanced.enhancedspigot.menu.item.MenuItem;
 import dev.projectenhanced.enhancedspigot.util.DependencyProvider;
@@ -46,10 +45,7 @@ public class EnhancedCountMenu extends EnhancedConfigMenu<CountMenuSettings> {
 	private boolean responded;
 
 	public EnhancedCountMenu(DependencyProvider provider, Player viewer, CountMenuSettings settings, EnhancedMenu lastMenu, Consumer<Double> response, double defaultValue, double min, double max) {
-		super(
-			provider, viewer, settings,
-			Placeholder.unparsed("value", String.valueOf(defaultValue))
-		);
+		super(provider, viewer, settings, Placeholder.unparsed("value", String.valueOf(defaultValue)));
 		this.viewer = viewer;
 		this.lastMenu = lastMenu;
 		this.response = response;
@@ -62,8 +58,7 @@ public class EnhancedCountMenu extends EnhancedConfigMenu<CountMenuSettings> {
 		setCloseAction(e -> {
 			if (!this.responded) {
 				this.response.accept(null);
-				if (this.lastMenu != null) SchedulerUtil.runTaskLater(
-					plugin, (task) -> this.lastMenu.open(viewer), 3);
+				if (this.lastMenu != null) SchedulerUtil.runTaskLater(plugin, (task) -> this.lastMenu.open(viewer), 3);
 			}
 		});
 	}
@@ -95,8 +90,7 @@ public class EnhancedCountMenu extends EnhancedConfigMenu<CountMenuSettings> {
 			"increase-value", (value) -> {
 				ItemStack is = this.menuSettings.getDynamicItems()
 					.getIncreaseValueItem();
-				ColorUtil.modifyItem(
-					is, Placeholder.unparsed("value", String.valueOf(value)));
+				ColorUtil.modifyItem(is, Placeholder.unparsed("value", String.valueOf(value)));
 				MenuItem menuItem = new MenuItem(is);
 				menuItem.setClickAction((e, loc) -> {
 					this.changeValue((double) value);
@@ -108,8 +102,7 @@ public class EnhancedCountMenu extends EnhancedConfigMenu<CountMenuSettings> {
 			"decrease-value", (value) -> {
 				ItemStack is = this.menuSettings.getDynamicItems()
 					.getDecreaseValueItem();
-				ColorUtil.modifyItem(
-					is, Placeholder.unparsed("value", String.valueOf(value)));
+				ColorUtil.modifyItem(is, Placeholder.unparsed("value", String.valueOf(value)));
 				MenuItem menuItem = new MenuItem(is);
 				menuItem.setClickAction((e, loc) -> {
 					this.changeValue(-((double) value));
@@ -137,16 +130,6 @@ public class EnhancedCountMenu extends EnhancedConfigMenu<CountMenuSettings> {
 		return map;
 	}
 
-	@Override
-	protected void beforePrepare(MenuContainer container) {
-
-	}
-
-	@Override
-	protected void afterPrepare(MenuContainer container) {
-
-	}
-
 	private void changeValue(double addValue) {
 		double newValue = Math.round((this.value + addValue) * 100.0) / 100.0;
 
@@ -154,8 +137,7 @@ public class EnhancedCountMenu extends EnhancedConfigMenu<CountMenuSettings> {
 		if (newValue > max) return;
 
 		this.value = newValue;
-		super.placeholders = new TagResolver[]{Placeholder.unparsed(
-			"value", String.valueOf(newValue))};
+		super.placeholders = new TagResolver[]{Placeholder.unparsed("value", String.valueOf(newValue))};
 		super.prepareGui();
 	}
 }

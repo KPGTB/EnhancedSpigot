@@ -19,6 +19,7 @@ package dev.projectenhanced.enhancedspigot.util.item;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -46,8 +47,8 @@ public class ItemUtil {
 		is2 = is2.clone();
 
 		if (is1.getType()
-			   .equals(Material.AIR) || is2.getType()
-										   .equals(Material.AIR)) return false;
+			.equals(Material.AIR) || is2.getType()
+			.equals(Material.AIR)) return false;
 
 		ItemMeta im1 = is1.getItemMeta();
 		ItemMeta im2 = is2.getItemMeta();
@@ -78,8 +79,10 @@ public class ItemUtil {
 	 * @since 2.2.0
 	 */
 	public static boolean compareWithoutPDC(ItemStack is1, ItemStack is2, NamespacedKey... ignore) {
-		return compareWithoutPDC(is1, is2, Arrays.stream(ignore)
-												 .collect(Collectors.toList()));
+		return compareWithoutPDC(
+			is1, is2, Arrays.stream(ignore)
+				.collect(Collectors.toList())
+		);
 	}
 
 	/**
@@ -94,10 +97,10 @@ public class ItemUtil {
 		if (lostItems.isEmpty()) return;
 		Location loc = player.getLocation();
 		lostItems.values()
-				 .forEach(item -> {
-					 loc.getWorld()
-						.dropItemNaturally(loc, item);
-				 });
+			.forEach(item -> {
+				loc.getWorld()
+					.dropItemNaturally(loc, item);
+			});
 	}
 
 	/**
@@ -109,5 +112,15 @@ public class ItemUtil {
 	 */
 	public static void giveItemToPlayer(Player player, List<ItemStack> is) {
 		giveItemToPlayer(player, is.toArray(new ItemStack[0]));
+	}
+
+	public static boolean validateItem(ItemStack is) {
+		return is != null && !is.getType()
+			.isAir();
+	}
+
+	public static boolean validateBlock(Block block) {
+		return block != null && !block.getType()
+			.isAir();
 	}
 }
