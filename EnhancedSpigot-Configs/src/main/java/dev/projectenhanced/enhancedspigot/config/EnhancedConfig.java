@@ -25,6 +25,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -62,7 +63,7 @@ import java.util.Map;
 	 *
 	 * @return Map of placeholders used in header's comment
 	 */
-	protected Map<String, String> getCommentPlaceholders() {return Map.of();}
+	protected Map<String, String> getCommentPlaceholders() {return new HashMap<>();}
 
 	/**
 	 * Creates config file and loads configuration

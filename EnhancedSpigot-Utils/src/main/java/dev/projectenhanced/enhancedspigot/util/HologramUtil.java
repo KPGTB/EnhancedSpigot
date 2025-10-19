@@ -22,6 +22,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class HologramUtil {
 	public static final double LINE_HEIGHT = 0.25;
@@ -71,7 +72,7 @@ public class HologramUtil {
 			.stream()
 			.filter(e -> isHologram(plugin, e) && (id == null || getHologramId(plugin, e).equalsIgnoreCase(id)))
 			.map(e -> (ArmorStand) e)
-			.toList();
+			.collect(Collectors.toList());
 	}
 
 	public static void removeHologram(JavaPlugin plugin, String id, Location location) {

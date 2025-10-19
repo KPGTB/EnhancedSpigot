@@ -299,10 +299,8 @@ import java.util.function.Consumer;
 
 	public boolean isMenu(Inventory inv) {
 		if (inv == null || inv.getHolder() == null) return false;
-		if (inv.getHolder() instanceof EnhancedMenuHolder holder) {
-			return holder.getMenu()
-				.equals(this);
-		}
-		return false;
+		if (!(inv.getHolder() instanceof EnhancedMenuHolder)) return false;
+		return ((EnhancedMenuHolder) inv.getHolder()).getMenu()
+			.equals(this);
 	}
 }

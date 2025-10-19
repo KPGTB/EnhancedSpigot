@@ -56,7 +56,7 @@ public abstract class EnhancedConfigMenu<T extends ConfigMenuSettings> extends E
 
 	protected abstract Map<String, Function<Object, MenuItem>> processObject();
 
-	protected Map<String, Consumer<EnhancedMenu>> customStaticActions() {return Map.of();}
+	protected Map<String, Consumer<EnhancedMenu>> customStaticActions() {return new HashMap<>();}
 
 	protected void beforePrepare(MenuContainer container) {}
 
