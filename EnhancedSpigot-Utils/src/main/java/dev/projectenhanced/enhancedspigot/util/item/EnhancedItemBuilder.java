@@ -34,11 +34,14 @@ import org.bukkit.inventory.meta.ArmorMeta;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.inventory.meta.trim.ArmorTrim;
 import org.bukkit.inventory.meta.trim.TrimMaterial;
 import org.bukkit.inventory.meta.trim.TrimPattern;
 import org.bukkit.material.MaterialData;
+import org.bukkit.potion.PotionData;
+import org.bukkit.potion.PotionType;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 
@@ -60,8 +63,7 @@ public class EnhancedItemBuilder {
 		this.amount = itemStack.getAmount();
 
 		if (itemStack.getType() == Material.AIR || itemStack.getItemMeta() == null) {
-			throw new IllegalArgumentException(
-				"Provided ItemStack is AIR or doesn't have Item Meta");
+			throw new IllegalArgumentException("Provided ItemStack is AIR or doesn't have Item Meta");
 		}
 
 		this.itemMeta = itemStack.getItemMeta();
@@ -73,10 +75,7 @@ public class EnhancedItemBuilder {
 
 	@Deprecated
 	public EnhancedItemBuilder(MaterialData materialData) {
-		this(new ItemStack(
-			materialData.getItemType(), 1,
-			materialData.getData()
-		));
+		this(new ItemStack(materialData.getItemType(), 1, materialData.getData()));
 	}
 
 	public static EnhancedItemBuilder of(ItemStack itemStack) {
@@ -90,6 +89,11 @@ public class EnhancedItemBuilder {
 	@Deprecated
 	public static EnhancedItemBuilder of(MaterialData materialData) {
 		return new EnhancedItemBuilder(materialData);
+	}
+
+	public static boolean hasNewPotions() {
+		return SemanticVersion.getMinecraftVersion()
+			.isNewerOrEqual("1.20.2");
 	}
 
 	public static boolean hasTrimSupport() {
@@ -131,8 +135,7 @@ public class EnhancedItemBuilder {
 
 	public EnhancedItemBuilder damage(int damage) {
 		if (isUsingNewDamage()) {
-			if (this.itemMeta instanceof Damageable)
-				((Damageable) this.itemMeta).setDamage(damage);
+			if (this.itemMeta instanceof Damageable) ((Damageable) this.itemMeta).setDamage(damage);
 		} else {
 			this.itemStack.setDurability((short) damage);
 		}
@@ -162,8 +165,7 @@ public class EnhancedItemBuilder {
 
 	public EnhancedItemBuilder clearEnchantments() {
 		this.itemMeta.getEnchants()
-			.forEach((enchantment, level) -> this.itemMeta.removeEnchant(
-				enchantment));
+			.forEach((enchantment, level) -> this.itemMeta.removeEnchant(enchantment));
 		return this;
 	}
 
@@ -203,11 +205,7 @@ public class EnhancedItemBuilder {
 	}
 
 	public EnhancedItemBuilder hideAttributes() {
-		this.flag(
-			ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_DESTROYS,
-			ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_PLACED_ON,
-			ItemFlag.HIDE_UNBREAKABLE
-		);
+		this.flag(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_DESTROYS, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_PLACED_ON, ItemFlag.HIDE_UNBREAKABLE);
 		return this;
 	}
 
@@ -251,8 +249,7 @@ public class EnhancedItemBuilder {
 	}
 
 	public EnhancedItemBuilder color(Color color) {
-		if (this.itemMeta instanceof LeatherArmorMeta)
-			((LeatherArmorMeta) this.itemMeta).setColor(color);
+		if (this.itemMeta instanceof LeatherArmorMeta) ((LeatherArmorMeta) this.itemMeta).setColor(color);
 		return this;
 	}
 
@@ -266,6 +263,48 @@ public class EnhancedItemBuilder {
 	public EnhancedItemBuilder attribute(Attribute attribute, AttributeModifier modifier) {
 		if (!hasAttributeSupport()) return this;
 		this.itemMeta.addAttributeModifier(attribute, modifier);
+		return this;
+	}
+
+	public EnhancedItemBuilder potion(String potionStr) {
+		if (!(this.itemMeta instanceof PotionMeta)) return this;
+		PotionMeta potionMeta = (PotionMeta) this.itemMeta;
+
+		if (hasNewPotions()) {
+			potionMeta.setBasePotionType(PotionType.valueOf(potionStr.toUpperCase()));
+		} else {
+			potionMeta.setBasePotionData(new PotionData(
+				PotionType.valueOf(potionStr.toUpperCase()
+					.replace("LONG_", "")
+					.replace("STRONG_", "")), potionStr.startsWith("LONG_"), potionStr.startsWith("STRONG_")
+			));
+		}
+
+		return this;
+	}
+
+	public EnhancedItemBuilder potion(PotionType type) {
+		return this.potion(type.name());
+	}
+
+	public EnhancedItemBuilder potion(PotionType type, boolean extended, boolean upgraded) {
+		if (!(this.itemMeta instanceof PotionMeta)) return this;
+		PotionMeta potionMeta = (PotionMeta) this.itemMeta;
+
+		if (hasNewPotions()) {
+			if (extended && !type.name()
+				.startsWith("LONG_")) {
+				type = PotionType.valueOf("LONG_" + type.name());
+			} else if (upgraded && !type.name()
+				.startsWith("STRONG_")) {
+				type = PotionType.valueOf("STRONG_" + type.name());
+			}
+
+			potionMeta.setBasePotionType(type);
+		} else {
+			potionMeta.setBasePotionData(new PotionData(type, extended, upgraded));
+		}
+
 		return this;
 	}
 
@@ -330,24 +369,21 @@ public class EnhancedItemBuilder {
 					.collect(Collectors.toList())
 			);
 			boolean isGlowing = itemStack.getType() == Material.BOW ?
-				itemMeta.hasEnchant(
-					VanillaEnchantment.LUCK_OF_THE_SEA.getEnchantment()) :
-				itemMeta.hasEnchant(
-					VanillaEnchantment.INFINITY.getEnchantment());
+				itemMeta.hasEnchant(VanillaEnchantment.LUCK_OF_THE_SEA.getEnchantment()) :
+				itemMeta.hasEnchant(VanillaEnchantment.INFINITY.getEnchantment());
 			result.put(
 				"glow", isGlowing ?
 					true :
 					null
 			);
 			if (isGlowing) {
-				((List<String>) result.get("enchantments")).remove(
-					itemStack.getType() == Material.BOW ?
-						VanillaEnchantment.LUCK_OF_THE_SEA.getEnchantment()
-							.getKey()
-							.getKey() :
-						VanillaEnchantment.INFINITY.getEnchantment()
-							.getKey()
-							.getKey() + " 1");
+				((List<String>) result.get("enchantments")).remove(itemStack.getType() == Material.BOW ?
+					VanillaEnchantment.LUCK_OF_THE_SEA.getEnchantment()
+						.getKey()
+						.getKey() :
+					VanillaEnchantment.INFINITY.getEnchantment()
+						.getKey()
+						.getKey() + " 1");
 			}
 			if (((List<String>) result.get("enchantments")).isEmpty()) {
 				result.remove("enchantments");
@@ -374,10 +410,7 @@ public class EnhancedItemBuilder {
 
 			if (itemMeta instanceof LeatherArmorMeta) {
 				Color color = ((LeatherArmorMeta) itemMeta).getColor();
-				result.put(
-					"armor-color",
-					color.getRed() + " " + color.getGreen() + " " + color.getBlue()
-				);
+				result.put("armor-color", color.getRed() + " " + color.getGreen() + " " + color.getBlue());
 			}
 
 			if (hasTrimSupport() && itemMeta instanceof ArmorMeta) {
@@ -413,6 +446,22 @@ public class EnhancedItemBuilder {
 				);
 			}
 
+			if (itemMeta instanceof PotionMeta) {
+				if (hasNewPotions()) {
+					result.put(
+						"potion", ((PotionMeta) itemMeta).getBasePotionType()
+							.name()
+					);
+				} else {
+					PotionData data = ((PotionMeta) itemMeta).getBasePotionData();
+
+					String potionString = data.getType()
+						.name();
+					if (data.isExtended()) potionString = "LONG_" + potionString;
+					else if (data.isUpgraded()) potionString = "STRONG_" + potionString;
+				}
+			}
+
 			return result;
 		}
 
@@ -429,81 +478,48 @@ public class EnhancedItemBuilder {
 		}
 
 		public static ItemStack deserialize(Map<String, Object> serialized) {
-			if (serialized.isEmpty() || !serialized.containsKey("material"))
-				return null;
+			if (serialized.isEmpty() || !serialized.containsKey("material")) return null;
 
-			EnhancedItemBuilder itemBuilder = new EnhancedItemBuilder(
-				Material.valueOf(serialized.get("material")
-					.toString()
-					.toUpperCase()));
+			EnhancedItemBuilder itemBuilder = new EnhancedItemBuilder(Material.valueOf(serialized.get("material")
+				.toString()
+				.toUpperCase()));
 
-			validateAndCompute(
-				serialized, "amount",
-				(data) -> Integer.parseInt(String.valueOf(data)),
-				itemBuilder::amount
-			);
-			validateAndCompute(
-				serialized, "name", String::valueOf, itemBuilder::displayName);
-			validateAndCompute(
-				serialized, "lore",
-				(data) -> (List<String>) data, itemBuilder::replaceLore
-			);
-			validateAndCompute(
-				serialized, "model",
-				(data) -> Integer.parseInt(String.valueOf(data)),
-				itemBuilder::model
-			);
-			validateAndCompute(
-				serialized, "damage",
-				(data) -> Integer.parseInt(String.valueOf(data)),
-				itemBuilder::damage
-			);
-			validateAndCompute(
-				serialized, "unbreakable",
-				(data) -> Boolean.parseBoolean(String.valueOf(data)),
-				itemBuilder::unbreakable
-			);
+			validateAndCompute(serialized, "amount", (data) -> Integer.parseInt(String.valueOf(data)), itemBuilder::amount);
+			validateAndCompute(serialized, "name", String::valueOf, itemBuilder::displayName);
+			validateAndCompute(serialized, "lore", (data) -> (List<String>) data, itemBuilder::replaceLore);
+			validateAndCompute(serialized, "model", (data) -> Integer.parseInt(String.valueOf(data)), itemBuilder::model);
+			validateAndCompute(serialized, "damage", (data) -> Integer.parseInt(String.valueOf(data)), itemBuilder::damage);
+			validateAndCompute(serialized, "unbreakable", (data) -> Boolean.parseBoolean(String.valueOf(data)), itemBuilder::unbreakable);
 			validateAndCompute(
 				serialized, "enchantments", (data) -> {
 					List<String> raw = (List<String>) data;
 					Map<Enchantment, Integer> result = new HashMap<>();
 					raw.stream()
 						.map(s -> s.split(" ", 2))
-						.forEach((elements) -> result.put(
-							Enchantment.getByKey(NamespacedKey.minecraft(
-								elements[0].toLowerCase())),
-							Integer.parseInt(elements[1])
-						));
+						.forEach((elements) -> result.put(Enchantment.getByKey(NamespacedKey.minecraft(elements[0].toLowerCase())), Integer.parseInt(elements[1])));
 
 					return result;
 				}, itemBuilder::enchant
 			);
 			validateAndCompute(
-				serialized, "glow",
-				(data) -> Boolean.parseBoolean(String.valueOf(data)),
-				(state) -> {
+				serialized, "glow", (data) -> Boolean.parseBoolean(String.valueOf(data)), (state) -> {
 					if (state) itemBuilder.glow();
 				}
 			);
 			validateAndCompute(
-				serialized, "item-flags",
-				(data) -> ((List<String>) data).stream()
+				serialized, "item-flags", (data) -> ((List<String>) data).stream()
 					.map(s -> ItemFlag.valueOf(s.toUpperCase()))
 					.collect(Collectors.toList()), itemBuilder::replaceFlags
 			);
-			validateAndCompute(
-				serialized, "head", String::valueOf, itemBuilder::head);
+			validateAndCompute(serialized, "head", String::valueOf, itemBuilder::head);
 			validateAndCompute(
 				serialized, "armor-color", (data) -> {
 					String[] elements = String.valueOf(data)
 						.split(" ", 3);
-					return Color.fromRGB(
-						Integer.parseInt(elements[0]),
-						Integer.parseInt(elements[1]),
-						Integer.parseInt(elements[2])
-					);
+					return Color.fromRGB(Integer.parseInt(elements[0]), Integer.parseInt(elements[1]), Integer.parseInt(elements[2]));
 				}, itemBuilder::color
 			);
+			validateAndCompute(serialized, "potion", String::valueOf, itemBuilder::potion);
 
 			if (hasTrimSupport()) {
 				validateAndCompute(
@@ -511,15 +527,8 @@ public class EnhancedItemBuilder {
 						String[] elements = String.valueOf(data)
 							.split(" ", 2);
 						return new AbstractMap.SimpleEntry<>(
-							Registry.TRIM_MATERIAL.get(NamespacedKey.minecraft(
-								elements[0].toLowerCase())),
-							Registry.TRIM_PATTERN.get(NamespacedKey.minecraft(
-								elements[1].toLowerCase()))
-						);
-					}, (entry) -> itemBuilder.armorTrim(
-						entry.getKey(),
-						entry.getValue()
-					)
+							Registry.TRIM_MATERIAL.get(NamespacedKey.minecraft(elements[0].toLowerCase())), Registry.TRIM_PATTERN.get(NamespacedKey.minecraft(elements[1].toLowerCase())));
+					}, (entry) -> itemBuilder.armorTrim(entry.getKey(), entry.getValue())
 				);
 			}
 
@@ -531,24 +540,15 @@ public class EnhancedItemBuilder {
 						((List<String>) data).stream()
 							.map(s -> s.split(" ", 6))
 							.forEach(elements -> {
-								Attribute attribute = Attribute.valueOf(
-									elements[0].toUpperCase());
+								Attribute attribute = Attribute.valueOf(elements[0].toUpperCase());
 								UUID uuid = UUID.fromString(elements[1]);
 								String name = elements[2];
 								double amount = Double.parseDouble(elements[3]);
-								AttributeModifier.Operation operation = AttributeModifier.Operation.valueOf(
-									elements[4].toUpperCase());
+								AttributeModifier.Operation operation = AttributeModifier.Operation.valueOf(elements[4].toUpperCase());
 								EquipmentSlot slot = elements.length == 6 ?
-									EquipmentSlot.valueOf(
-										elements[5].toUpperCase()) :
+									EquipmentSlot.valueOf(elements[5].toUpperCase()) :
 									null;
-								result.put(
-									attribute,
-									new AttributeModifier(
-										uuid, name, amount,
-										operation, slot
-									)
-								);
+								result.put(attribute, new AttributeModifier(uuid, name, amount, operation, slot));
 							});
 
 						return result;
@@ -563,8 +563,7 @@ public class EnhancedItemBuilder {
 			byte[] serializedObject = Base64.getDecoder()
 				.decode(base64);
 
-			ByteArrayInputStream in = new ByteArrayInputStream(
-				serializedObject);
+			ByteArrayInputStream in = new ByteArrayInputStream(serializedObject);
 			BukkitObjectInputStream is = new BukkitObjectInputStream(in);
 
 			return (ItemStack) is.readObject();

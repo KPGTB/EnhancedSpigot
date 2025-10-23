@@ -14,16 +14,11 @@
  *    limitations under the License.
  */
 
-version = "1.0.0-SNAPSHOT"
-description = "EnhancedSpigot Utils module adds a lot of small utilities"
+package dev.projectenhanced.enhancedspigot.util;
 
-repositories {
-    mavenCentral()
-    maven { url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/" }
-    maven { url = "https://libraries.minecraft.net/" }
-}
-
-dependencies {
-    compileOnly 'org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT'
-    compileOnly 'com.mojang:authlib:1.5.25'
+public class CharacterUtil {
+	public static final String DOT = "•";
+	public static final String DOUBLE_GREATER_THAN = "»";
+	public static final String CHECK_MARK = "✔";
+	public static final String CROSS_MARK = "✘";
 }

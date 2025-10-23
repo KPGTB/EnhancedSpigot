@@ -33,9 +33,9 @@ dependencies {
     compileOnly("com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT")
     compileOnly 'me.clip:placeholderapi:2.11.6'
 
-    optionalImplementation 'net.kyori:adventure-platform-bukkit:4.4.0'
-    optionalImplementation 'net.kyori:adventure-text-serializer-legacy:4.21.0'
-    optionalImplementation "net.kyori:adventure-text-minimessage:4.21.0"
+    optionalImplementation 'net.kyori:adventure-platform-bukkit:4.4.1'
+    optionalImplementation 'net.kyori:adventure-text-serializer-legacy:4.25.0'
+    optionalImplementation "net.kyori:adventure-text-minimessage:4.25.0"
 
     implementation project(':EnhancedSpigot-Utils')
 }
