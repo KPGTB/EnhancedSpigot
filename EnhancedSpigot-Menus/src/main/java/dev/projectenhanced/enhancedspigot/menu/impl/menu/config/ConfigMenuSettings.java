@@ -28,10 +28,8 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 
 public abstract class ConfigMenuSettings {
@@ -41,7 +39,7 @@ public abstract class ConfigMenuSettings {
 
 	public abstract boolean blockClick();
 
-	public abstract Map<String, Set<String>> dynamicSlots();
+	public abstract Map<String, List<String>> dynamicSlots();
 
 	protected abstract Map<String, StaticItem> staticItems();
 
@@ -83,11 +81,11 @@ public abstract class ConfigMenuSettings {
 		return result;
 	}
 
-	public Map<String, Set<Integer>> getDynamicSlots() {
-		Map<String, Set<Integer>> result = new HashMap<>();
+	public Map<String, List<Integer>> getDynamicSlots() {
+		Map<String, List<Integer>> result = new HashMap<>();
 		this.dynamicSlots()
 			.forEach((id, slotsSet) -> {
-				result.put(id, new HashSet<>());
+				result.put(id, new ArrayList<>());
 				slotsSet.forEach((slots) -> {
 					result.get(id)
 						.addAll(this.parseSlots(slots));

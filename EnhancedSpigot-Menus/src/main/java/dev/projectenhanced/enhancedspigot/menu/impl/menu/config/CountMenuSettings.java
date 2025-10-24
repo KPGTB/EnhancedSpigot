@@ -24,18 +24,15 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class CountMenuSettings extends ConfigMenuSettings {
 	private String title = "Response";
 	private int rows = 3;
 
 	@Getter private DynamicItems dynamicItems = new DynamicItems();
-	@Getter private List<Double> values = Arrays.asList(
-		0.01, 0.1, 0.5, 1.0, 10.0, 100.0);
+	@Getter private List<Double> values = Arrays.asList(0.01, 0.1, 0.5, 1.0, 10.0, 100.0);
 
 	private Map<String, StaticItem> staticItems = this.defaultStaticItems();
 
@@ -44,8 +41,7 @@ public class CountMenuSettings extends ConfigMenuSettings {
 
 		map.put(
 			"14", new StaticItem(
-				new EnhancedItemBuilder(Material.EMERALD).displayName(
-						"<gold><value>")
+				new EnhancedItemBuilder(Material.EMERALD).displayName("<gold><value>")
 					.lore("<green><b>Click to accept")
 					.build(), Arrays.asList("[accept]")
 			)
@@ -70,8 +66,8 @@ public class CountMenuSettings extends ConfigMenuSettings {
 	}
 
 	@Override
-	public Map<String, Set<String>> dynamicSlots() {
-		Map<String, Set<String>> map = new HashMap<>();
+	public Map<String, List<String>> dynamicSlots() {
+		Map<String, List<String>> map = new HashMap<>();
 		map.put("decrease-value", this.dynamicItems.decreaseValueSlots);
 		map.put("increase-value", this.dynamicItems.increaseValueSlots);
 		return map;
@@ -83,16 +79,12 @@ public class CountMenuSettings extends ConfigMenuSettings {
 	}
 
 	@Getter @NoArgsConstructor public class DynamicItems {
-		private Set<String> decreaseValueSlots = new HashSet<>(
-			Arrays.asList("1", "10", "19", "2", "11", "20"));
-		private ItemStack decreaseValueItem = new EnhancedItemBuilder(
-			Material.LIME_DYE).displayName("<red>-<value>")
+		private List<String> decreaseValueSlots = Arrays.asList("1", "10", "19", "2", "11", "20");
+		private ItemStack decreaseValueItem = new EnhancedItemBuilder(Material.LIME_DYE).displayName("<red>-<value>")
 			.build();
 
-		private Set<String> increaseValueSlots = new HashSet<>(
-			Arrays.asList("6", "15", "24", "7", "16", "25"));
-		private ItemStack increaseValueItem = new EnhancedItemBuilder(
-			Material.LIME_DYE).displayName("<red>+<value>")
+		private List<String> increaseValueSlots = Arrays.asList("6", "15", "24", "7", "16", "25");
+		private ItemStack increaseValueItem = new EnhancedItemBuilder(Material.LIME_DYE).displayName("<red>+<value>")
 			.build();
 	}
 

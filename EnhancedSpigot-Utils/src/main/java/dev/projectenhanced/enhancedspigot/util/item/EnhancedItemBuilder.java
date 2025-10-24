@@ -459,6 +459,8 @@ public class EnhancedItemBuilder {
 						.name();
 					if (data.isExtended()) potionString = "LONG_" + potionString;
 					else if (data.isUpgraded()) potionString = "STRONG_" + potionString;
+
+					result.put("potion", potionString);
 				}
 			}
 

@@ -20,6 +20,7 @@ import dev.projectenhanced.enhancedspigot.menu.EnhancedMenu;
 import dev.projectenhanced.enhancedspigot.menu.container.PagedMenuContainer;
 import org.bukkit.entity.HumanEntity;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -36,26 +37,22 @@ public class MenuAction {
 			case "[menu-previous]":
 				return (menu) -> menu.getContainers()
 					.stream()
-					.filter(
-						container -> container instanceof PagedMenuContainer)
+					.filter(container -> container instanceof PagedMenuContainer)
 					.map(container -> (PagedMenuContainer) container)
 					.forEach(PagedMenuContainer::previousPage);
 			case "[menu-next]":
 				return (menu) -> menu.getContainers()
 					.stream()
-					.filter(
-						container -> container instanceof PagedMenuContainer)
+					.filter(container -> container instanceof PagedMenuContainer)
 					.map(container -> (PagedMenuContainer) container)
 					.forEach(PagedMenuContainer::nextPage);
 			case "[menu-close]":
-				return (menu) -> menu.getBukkitInventory()
-					.getViewers()
-					.forEach(HumanEntity::closeInventory);
+				return (menu) -> new ArrayList<>(menu.getBukkitInventory()
+					.getViewers()).forEach(HumanEntity::closeInventory);
 		}
 
 		for (Map.Entry<String, Consumer<EnhancedMenu>> entry : custom.entrySet()) {
-			if (action.equalsIgnoreCase(entry.getKey()))
-				return entry.getValue();
+			if (action.equalsIgnoreCase(entry.getKey())) return entry.getValue();
 		}
 
 		return (menu) -> {};
