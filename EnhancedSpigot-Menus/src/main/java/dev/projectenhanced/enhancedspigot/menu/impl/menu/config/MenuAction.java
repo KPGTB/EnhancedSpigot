@@ -18,6 +18,7 @@ package dev.projectenhanced.enhancedspigot.menu.impl.menu.config;
 
 import dev.projectenhanced.enhancedspigot.menu.EnhancedMenu;
 import dev.projectenhanced.enhancedspigot.menu.container.PagedMenuContainer;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
 
 import java.util.ArrayList;
@@ -49,6 +50,16 @@ public class MenuAction {
 			case "[menu-close]":
 				return (menu) -> new ArrayList<>(menu.getBukkitInventory()
 					.getViewers()).forEach(HumanEntity::closeInventory);
+			case "[player-command]":
+				return (menu) -> new ArrayList<>(menu.getBukkitInventory()
+					.getViewers()).forEach(viewer -> {
+					Bukkit.dispatchCommand(viewer, elements[1]);
+				});
+			case "[console-command]":
+				return (menu) -> new ArrayList<>(menu.getBukkitInventory()
+					.getViewers()).forEach(viewer -> {
+					Bukkit.dispatchCommand(Bukkit.getConsoleSender(), elements[1].replace("<player>", viewer.getName()));
+				});
 		}
 
 		for (Map.Entry<String, Consumer<EnhancedMenu>> entry : custom.entrySet()) {
