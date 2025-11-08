@@ -30,6 +30,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,8 +65,7 @@ public class ColorUtil {
 	 * @return formatted string
 	 */
 	public static String convertMmToString(String mm, TagResolver... placeholders) {
-		return convertComponentToString(
-			deserializeWithLegacy(mm, placeholders));
+		return convertComponentToString(deserializeWithLegacy(mm, placeholders));
 	}
 
 	/**
@@ -98,11 +98,7 @@ public class ColorUtil {
 
 	public static Component deserializeWithLegacy(String mm, TagResolver... placeholders) {
 		return MiniMessage.miniMessage()
-			.deserialize(
-				convertComponentToMm(convertLegacyStringToComponent(
-					ChatColor.translateAlternateColorCodes('&', mm))),
-				placeholders
-			);
+			.deserialize(convertComponentToMm(convertLegacyStringToComponent(ChatColor.translateAlternateColorCodes('&', mm))), placeholders);
 	}
 
 	public static ItemStack modifyItem(ItemStack is, TagResolver... placeholders) {
@@ -110,15 +106,10 @@ public class ColorUtil {
 	}
 
 	public static ItemStack modifyItem(ItemStack is, Player player, TagResolver... placeholders) {
-		if (is == null || is.getType() == Material.AIR || !is.hasItemMeta())
-			return is;
+		if (is == null || is.getType() == Material.AIR || !is.hasItemMeta()) return is;
 		ItemMeta meta = is.getItemMeta();
 		if (meta.hasDisplayName()) {
-			String display = addPAPI(
-				convertComponentToMm(
-					convertLegacyStringToComponent(meta.getDisplayName())),
-				player
-			);
+			String display = addPAPI(convertComponentToMm(convertLegacyStringToComponent(meta.getDisplayName())), player);
 			meta.setDisplayName(convertMmToString(display, placeholders));
 		}
 
@@ -129,6 +120,7 @@ public class ColorUtil {
 				.map(ColorUtil::convertComponentToMm)
 				.map(s -> addPAPI(s, player))
 				.map(s -> convertMmToString(s, placeholders))
+				.flatMap(s -> Arrays.stream(s.split("\\n")))
 				.collect(Collectors.toList());
 			meta.setLore(lore);
 		}
