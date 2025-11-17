@@ -31,7 +31,7 @@ repositories {
     mavenCentral()
 }
 
-subprojects {
+configure(subprojects - project(":EnhancedSpigot-Gradle")) {
     apply plugin: 'java-library'
     apply plugin: 'com.gradleup.shadow'
     apply plugin: 'io.freefair.lombok'
