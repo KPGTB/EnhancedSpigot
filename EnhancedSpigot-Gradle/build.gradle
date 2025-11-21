@@ -1,6 +1,6 @@
 plugins {
     id 'groovy-gradle-plugin'
-    id 'maven-publish'
+    id 'com.gradle.plugin-publish' version '2.0.0'
 }
 
 group 'dev.projectenhanced'
@@ -16,9 +16,14 @@ dependencies {
 }
 
 gradlePlugin {
+    website = 'https://projectenhanced.dev/category/enhancedspigot'
+    vcsUrl = 'https://github.com/KPGTB/EnhancedSpigot.git'
     plugins {
         enhancedSpigotPlugin {
             id = 'dev.projectenhanced.enhancedspigot'
+            displayName = 'EnhancedSpigot Gradle Plugin'
+            description = 'Gradle plugin which automatically generates proper configuration for EnhancedSpigot library'
+            tags.set(['EnhancedSpigot', 'Minecraft', 'Spigot'])
             implementationClass = 'dev.projectenhanced.EnhancedSpigotPlugin'
         }
     }

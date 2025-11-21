@@ -63,7 +63,7 @@ class EnhancedSpigotPlugin implements Plugin<Project>{
                 relocate(
                         "dev.projectenhanced.enhancedspigot",
                         ext.relocationPath.get().isEmpty() ?
-                                project.group.toString() + "." + project.name.toLowerCase() + ".libs"
+                                project.group.toString() + "." + project.name.toLowerCase() + ".lib"
                                 : ext.relocationPath.get()
 
                 )
@@ -72,6 +72,8 @@ class EnhancedSpigotPlugin implements Plugin<Project>{
                     exclude("com/j256/ormlite/**")
                     exclude("org/postgresql/**")
                     exclude("com/zaxxer/**")
+                    exclude("org/slf4j/**")
+                    exclude("org/checkerframework/**")
                 }
 
                 archiveFileName = project.name + "-" + project.version.toString() + ".jar"

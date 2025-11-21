@@ -42,7 +42,7 @@ dependencies {
 }
 
 shadowJar {
-    relocate 'org.bstats', 'dev.projectenhanced.enhancedspigot.plugin.bstats'
+    relocate 'org.bstats', 'dev.projectenhanced.enhancedspigot.plugin.lib.bstats'
 
     dependsOn ':EnhancedSpigot-Utils:shadowJar'
     dependsOn ':EnhancedSpigot-Commands:shadowJar'

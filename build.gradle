@@ -59,7 +59,7 @@ configure(subprojects - project(":EnhancedSpigot-Gradle")) {
             archiveFileName = project.name + "-" + project.version + ".jar"
             finalizedBy javadoc;
             finalizedBy sourcesJar;
-            relocate 'net.kyori', "dev.projectenhanced.enhancedspigot.locale.impl"
+            relocate 'net.kyori', "dev.projectenhanced.enhancedspigot.locale.lib"
         }
 
         publishing {
