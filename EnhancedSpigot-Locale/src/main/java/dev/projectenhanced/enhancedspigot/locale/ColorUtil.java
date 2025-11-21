@@ -120,7 +120,7 @@ public class ColorUtil {
 				.map(ColorUtil::convertComponentToMm)
 				.map(s -> addPAPI(s, player))
 				.map(s -> convertMmToString(s, placeholders))
-				.flatMap(s -> Arrays.stream(s.split("\\n")))
+				.flatMap(s -> Arrays.stream(s.split("\\\\n")))
 				.collect(Collectors.toList());
 			meta.setLore(lore);
 		}
@@ -131,7 +131,7 @@ public class ColorUtil {
 
 	public static String addPAPI(String s, Player player) {
 		if (Bukkit.getPluginManager()
-			.isPluginEnabled("PlaceholdersAPI") && player != null) {
+			.isPluginEnabled("PlaceholderAPI") && player != null) {
 			return PlaceholderAPI.setPlaceholders(player, s);
 		}
 		return s;

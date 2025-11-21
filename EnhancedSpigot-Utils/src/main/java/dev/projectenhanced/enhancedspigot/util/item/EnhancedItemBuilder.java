@@ -42,12 +42,14 @@ import org.bukkit.inventory.meta.trim.TrimPattern;
 import org.bukkit.material.MaterialData;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
+import org.bukkit.profile.PlayerProfile;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -399,14 +401,28 @@ public class EnhancedItemBuilder {
 				result.remove("item-flags");
 			}
 
-			result.put(
-				"head-owner", itemStack.getType() == Material.PLAYER_HEAD ?
-					SkullUtil.isUsingNewHead() ?
-						((SkullMeta) itemMeta).getOwningPlayer()
-							.getName() :
-						((SkullMeta) itemMeta).getOwner() :
-					null
-			);
+			if (itemMeta instanceof SkullMeta) {
+				SkullMeta sm = (SkullMeta) itemMeta;
+				String headData = null;
+
+				if (SkullUtil.isUsingNewHead()) {
+					if (sm.getOwningPlayer() != null) headData = sm.getOwningPlayer()
+						.getName();
+				} else {
+					if (sm.getOwner() != null) headData = sm.getOwner();
+				}
+
+				if (SkullUtil.hasHeadProfile() && headData == null) {
+					PlayerProfile profile = sm.getOwnerProfile();
+					if (profile != null) {
+						URL url = profile.getTextures()
+							.getSkin();
+						if (url != null) headData = "url:" + url.toString();
+					}
+				}
+
+				result.put("head", headData);
+			}
 
 			if (itemMeta instanceof LeatherArmorMeta) {
 				Color color = ((LeatherArmorMeta) itemMeta).getColor();

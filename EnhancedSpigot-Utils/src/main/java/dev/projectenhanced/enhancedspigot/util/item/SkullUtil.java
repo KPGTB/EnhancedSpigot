@@ -45,6 +45,11 @@ public class SkullUtil {
 			.isNewerOrEqual("1.13");
 	}
 
+	public static boolean hasHeadProfile() {
+		return SemanticVersion.getMinecraftVersion()
+			.isNewerOrEqual("1.18.1");
+	}
+
 	public void fromName(SkullMeta meta, String name) {
 		if (isUsingNewHead()) {
 			meta.setOwningPlayer(Bukkit.getOfflinePlayer(name));
@@ -56,8 +61,7 @@ public class SkullUtil {
 	public void fromUrl(SkullMeta meta, String url) {
 		this.fromB64(
 			meta, Base64.getEncoder()
-				.encodeToString(
-					("{\"textures\":{\"SKIN\":{\"url\":\"" + url + "\"}}}").getBytes())
+				.encodeToString(("{\"textures\":{\"SKIN\":{\"url\":\"" + url + "\"}}}").getBytes())
 		);
 	}
 
@@ -75,8 +79,7 @@ public class SkullUtil {
 
 					if (SemanticVersion.getMinecraftVersion()
 						.isNewerOrEqual("1.21")) {
-						profile = Class.forName(
-								"net.minecraft.world.item.component.ResolvableProfile")
+						profile = Class.forName("net.minecraft.world.item.component.ResolvableProfile")
 							.getConstructor(GameProfile.class)
 							.newInstance((GameProfile) profile);
 					}
@@ -104,16 +107,12 @@ public class SkullUtil {
 
 		return TryCatchUtil.tryOrDefault(
 			() -> {
-				Class<?> gameProfileClass = Class.forName(
-					"com.mojang.authlib.GameProfile");
-				Class<?> propertyClass = Class.forName(
-					"com.mojang.authlib.properties.Property");
+				Class<?> gameProfileClass = Class.forName("com.mojang.authlib.GameProfile");
+				Class<?> propertyClass = Class.forName("com.mojang.authlib.properties.Property");
 
-				GameProfile fakeProfileInstance = (GameProfile) gameProfileClass.getConstructor(
-						UUID.class, String.class)
+				GameProfile fakeProfileInstance = (GameProfile) gameProfileClass.getConstructor(UUID.class, String.class)
 					.newInstance(id, "es");
-				Object propertyInstance = propertyClass.getConstructor(
-						String.class, String.class)
+				Object propertyInstance = propertyClass.getConstructor(String.class, String.class)
 					.newInstance("textures", b64);
 
 				Method getProperties = fakeProfileInstance.getClass()
