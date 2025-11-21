@@ -42,14 +42,14 @@ class EnhancedSpigotPlugin implements Plugin<Project>{
             }
 
             project.dependencies {
-                if (!ext.commandsModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Commands:" + ext.commandsModule.get()
-                if (!ext.configsModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Configs:" + ext.configsModule.get()
-                if (!ext.dataModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Data:" + ext.dataModule.get()
-                if (!ext.itemsModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Items:" + ext.itemsModule.get()
-                if (!ext.localeModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Locale:" + ext.localeModule.get()
-                if (!ext.menusModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Menus:" + ext.menusModule.get()
-                if (!ext.pluginModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Plugin:" + ext.pluginModule.get()
                 if (!ext.utilsModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Utils:" + ext.utilsModule.get()
+                if (!ext.configsModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Configs:" + ext.configsModule.get()
+                if (!ext.localeModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Locale:" + ext.localeModule.get()
+                if (!ext.dataModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Data:" + ext.dataModule.get()
+                if (!ext.commandsModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Commands:" + ext.commandsModule.get()
+                if (!ext.menusModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Menus:" + ext.menusModule.get()
+                if (!ext.itemsModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Items:" + ext.itemsModule.get()
+                if (!ext.pluginModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Plugin:" + ext.pluginModule.get()
 
                 if(ext.importVault.get()) compileOnly "com.github.MilkBowl:VaultAPI:1.7"
                 if(ext.importPapi.get()) compileOnly 'me.clip:placeholderapi:2.11.7'

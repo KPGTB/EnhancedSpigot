@@ -1,0 +1,34 @@
+plugins {
+    id 'groovy-gradle-plugin'
+    id 'maven-publish'
+}
+
+group 'dev.projectenhanced'
+version '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("io.freefair.lombok:io.freefair.lombok.gradle.plugin:8.11")
+    implementation("com.gradleup.shadow:com.gradleup.shadow.gradle.plugin:8.3.0")
+}
+
+gradlePlugin {
+    plugins {
+        enhancedSpigotPlugin {
+            id = 'dev.projectenhanced.enhancedspigot'
+            implementationClass = 'dev.projectenhanced.EnhancedSpigotPlugin'
+        }
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "localRepo"
+            url = layout.buildDirectory.dir('local-repo').get().asFile.toURI()
+        }
+    }
+}

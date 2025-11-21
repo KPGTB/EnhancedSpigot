@@ -13,7 +13,7 @@ abstract class EnhancedSpigotLibrariesTask extends DefaultTask{
 
     @TaskAction
     void run() {
-        if(!getDataModule().get().isEmpty() && !getExcludeDependencies().get()) {
+        if(!getDataModule().get().isEmpty() && getExcludeDependencies().get()) {
             println 'libraries:'
             println '- com.j256.ormlite.ormlite-jdbc:6.1'
             println '- org.postgresql:postgresql:42.7.5'
