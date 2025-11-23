@@ -44,26 +44,26 @@ import java.util.concurrent.ConcurrentMap;
  * @param <K>
  * @param <V>
  */
-public class LiveCache<K, V extends ICached<K>> extends AsyncDataCache<K, V> {
+public class RealtimeCache<K, V extends ICached<K>> extends AsyncDataCache<K, V> {
 	private final long changesWaitingTIme;
 	private final long changesMaxWaitingTime;
-	@Getter private final AsyncLivePriorityMap asyncLivePriorityMap;
+	@Getter private final AsyncRealtimePriorityMap asyncRealtimePriorityMap;
 
 	private final ConcurrentMap<K, ConcurrentMap<String, PendingChange<?>>> pendingChanges;
 
-	public LiveCache(DatabaseController controller, JavaPlugin plugin, long changesWaitingTIme, long changesMaxWaitingTime, AsyncLivePriorityMap asyncLivePriorityMap) {
-		super(controller, plugin, asyncLivePriorityMap.getAsyncPriorityMap());
+	public RealtimeCache(DatabaseController controller, JavaPlugin plugin, long changesWaitingTIme, long changesMaxWaitingTime, AsyncRealtimePriorityMap asyncRealtimePriorityMap) {
+		super(controller, plugin, asyncRealtimePriorityMap.getAsyncPriorityMap());
 		this.changesWaitingTIme = changesWaitingTIme;
 		this.changesMaxWaitingTime = changesMaxWaitingTime;
-		this.asyncLivePriorityMap = asyncLivePriorityMap;
+		this.asyncRealtimePriorityMap = asyncRealtimePriorityMap;
 		this.pendingChanges = new ConcurrentHashMap<>();
 	}
 
-	public LiveCache(DatabaseController controller, Class<K> keyClass, Class<V> valueClass, JavaPlugin plugin, long changesWaitingTIme, long changesMaxWaitingTime, AsyncLivePriorityMap asyncLivePriorityMap) {
-		super(controller, keyClass, valueClass, plugin, asyncLivePriorityMap.getAsyncPriorityMap());
+	public RealtimeCache(DatabaseController controller, Class<K> keyClass, Class<V> valueClass, JavaPlugin plugin, long changesWaitingTIme, long changesMaxWaitingTime, AsyncRealtimePriorityMap asyncRealtimePriorityMap) {
+		super(controller, keyClass, valueClass, plugin, asyncRealtimePriorityMap.getAsyncPriorityMap());
 		this.changesWaitingTIme = changesWaitingTIme;
 		this.changesMaxWaitingTime = changesMaxWaitingTime;
-		this.asyncLivePriorityMap = asyncLivePriorityMap;
+		this.asyncRealtimePriorityMap = asyncRealtimePriorityMap;
 		this.pendingChanges = new ConcurrentHashMap<>();
 	}
 
@@ -77,7 +77,7 @@ public class LiveCache<K, V extends ICached<K>> extends AsyncDataCache<K, V> {
 			change.task.cancel();
 
 			if (System.currentTimeMillis() - change.firstChangeTime >= this.changesMaxWaitingTime) {
-				change.saveAsync(this.asyncLivePriorityMap.progressPriority, System.currentTimeMillis());
+				change.saveAsync(this.asyncRealtimePriorityMap.progressPriority, System.currentTimeMillis());
 				userChanges.remove(changeKey);
 				return;
 			}
@@ -87,7 +87,7 @@ public class LiveCache<K, V extends ICached<K>> extends AsyncDataCache<K, V> {
 
 		SchedulerUtil.Task task = SchedulerUtil.runTaskLater(
 			this.plugin, () -> {
-				change.saveAsync(this.asyncLivePriorityMap.progressPriority, System.currentTimeMillis());
+				change.saveAsync(this.asyncRealtimePriorityMap.progressPriority, System.currentTimeMillis());
 				userChanges.remove(changeKey);
 			}, this.changesWaitingTIme / 50
 		);
@@ -176,12 +176,12 @@ public class LiveCache<K, V extends ICached<K>> extends AsyncDataCache<K, V> {
 			.forEach(this::cancelAllPending);
 	}
 
-	@Getter @Builder @NoArgsConstructor @AllArgsConstructor public static class AsyncLivePriorityMap {
+	@Getter @Builder @NoArgsConstructor @AllArgsConstructor public static class AsyncRealtimePriorityMap {
 		private AsyncPriorityMap asyncPriorityMap;
 		private int progressPriority;
 		private int liveActionPriority;
 
-		public AsyncLivePriorityMap(int generalPriority) {
+		public AsyncRealtimePriorityMap(int generalPriority) {
 			this.asyncPriorityMap = new AsyncPriorityMap(generalPriority);
 			this.progressPriority = generalPriority;
 			this.liveActionPriority = generalPriority;

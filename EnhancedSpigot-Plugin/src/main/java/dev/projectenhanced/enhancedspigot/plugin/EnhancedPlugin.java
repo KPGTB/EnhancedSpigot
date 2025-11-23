@@ -21,6 +21,7 @@ import dev.projectenhanced.enhancedspigot.command.CommandLocale;
 import dev.projectenhanced.enhancedspigot.config.EnhancedConfig;
 import dev.projectenhanced.enhancedspigot.data.DatabaseController;
 import dev.projectenhanced.enhancedspigot.data.connection.DatabaseOptions;
+import dev.projectenhanced.enhancedspigot.data.migration.MigrationController;
 import dev.projectenhanced.enhancedspigot.item.ItemController;
 import dev.projectenhanced.enhancedspigot.item.recipe.RecipeController;
 import dev.projectenhanced.enhancedspigot.locale.EnhancedLocale;
@@ -36,6 +37,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.logging.Level;
 
 public abstract class EnhancedPlugin extends JavaPlugin {
@@ -102,6 +105,14 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 		controller.connect();
 		this.dependencyProvider.register(controller);
 		return controller;
+	}
+
+	protected MigrationController enableMigrations(int currentVersion, Map<Integer, BiConsumer<JavaPlugin, DatabaseController>> migrations) {
+		MigrationController migrationController = new MigrationController(this, this.dependencyProvider.provide(DatabaseController.class), this.getTag(), currentVersion);
+		migrations.forEach(migrationController::registerMigration);
+		migrationController.migrate();
+		this.dependencyProvider.register(migrationController);
+		return migrationController;
 	}
 
 	protected RecipeController enableRecipes() {
