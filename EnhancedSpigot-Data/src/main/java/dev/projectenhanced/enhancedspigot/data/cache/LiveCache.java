@@ -147,7 +147,7 @@ public class LiveCache<K, V extends ICached<K>> extends AsyncDataCache<K, V> {
 
 	@Override
 	protected void saveToDb(V value) {
-		if (value instanceof ISavableLifecycle savable) savable.beforeSave(this.plugin);
+		if (value instanceof ISavableLifecycle) ((ISavableLifecycle) value).beforeSave(this.plugin);
 		TryCatchUtil.tryRun(() -> this.dao.update(value));
 		this.saveAllPending(
 			value.getKey(), this.getAsyncPriorityMap()

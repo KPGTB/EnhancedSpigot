@@ -30,7 +30,7 @@ public class LiveCacheUtil {
 	}
 
 	public static <V extends ICached<?>> CompletableFuture<Void> saveAsyncFull(IAsyncSavableCache<?, V> cache, V value, boolean highPriority) {
-		if (cache instanceof LiveCache<?, V>) {
+		if (cache instanceof LiveCache<?, ?>) {
 			LiveCache<?, V> lc = (LiveCache<?, V>) cache;
 			return lc.saveAsyncFull(
 				value, highPriority ?
@@ -44,7 +44,7 @@ public class LiveCacheUtil {
 	}
 
 	public static <K, T> void addPendingChange(IAsyncSavableCache<K, ?> cache, K key, String changeKey, T value, ForeignCollection<T> collection) {
-		if (cache instanceof LiveCache<K, ?>) ((LiveCache<K, ?>) cache).addPendingChange(key, changeKey, value, collection);
+		if (cache instanceof LiveCache<?, ?>) ((LiveCache<K, ?>) cache).addPendingChange(key, changeKey, value, collection);
 	}
 
 	public static <T> void createForeign(IAsyncSavableCache<?, ?> cache, T foreign, ForeignCollection<T> collection) {

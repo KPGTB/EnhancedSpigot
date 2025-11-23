@@ -57,7 +57,7 @@ public class SavingController {
 			this.savable = savable;
 			this.bukkitTask = SchedulerUtil.runTaskTimerAsynchronously(
 				plugin, () -> {
-					if (this.savable instanceof IAsyncSavableCache<?, ?> async) async.saveAsyncAll();
+					if (this.savable instanceof IAsyncSavableCache<?, ?>) ((IAsyncSavableCache<?, ?>) this.savable).saveAsyncAll();
 					else savable.saveAll();
 				}, interval, interval
 			);

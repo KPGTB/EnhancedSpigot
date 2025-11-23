@@ -64,7 +64,7 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 		}
 
 		load();
-		SchedulerUtil.runTaskLater(this, (task) -> postLoad(), 1);
+		SchedulerUtil.runTaskLater(this, this::postLoad, 1);
 	}
 
 	@Override

@@ -58,7 +58,7 @@ public class EnhancedCountMenu extends EnhancedConfigMenu<CountMenuSettings> {
 		setCloseAction(e -> {
 			if (!this.responded) {
 				this.response.accept(null);
-				if (this.lastMenu != null) SchedulerUtil.runTaskLater(plugin, (task) -> this.lastMenu.open(viewer), 3);
+				if (this.lastMenu != null) SchedulerUtil.runTaskLater(plugin, () -> this.lastMenu.open(viewer), 3);
 			}
 		});
 	}

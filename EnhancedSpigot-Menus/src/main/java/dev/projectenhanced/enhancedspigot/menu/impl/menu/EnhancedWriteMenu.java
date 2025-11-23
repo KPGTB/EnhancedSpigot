@@ -55,7 +55,7 @@ public class EnhancedWriteMenu implements Listener {
 				response.accept(null);
 				responded = true;
 				if (this.lastMenu != null) SchedulerUtil.runTaskLater(
-					this.plugin, (task) -> {
+					this.plugin, () -> {
 						this.lastMenu.open(stateSnapshot.getPlayer());
 					}, 3
 				);

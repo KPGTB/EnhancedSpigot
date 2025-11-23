@@ -228,7 +228,7 @@ import java.util.function.Consumer;
 		if (!this.isMenu(inv)) return;
 
 		SchedulerUtil.runTaskLater(
-			this.plugin, (task) -> {
+			this.plugin, () -> {
 				for (int i = 0; i < inv.getContents().length; i++) {
 					ItemStack realIS = inv.getItem(i);
 					MenuContainer container = getContainerAt(i);
