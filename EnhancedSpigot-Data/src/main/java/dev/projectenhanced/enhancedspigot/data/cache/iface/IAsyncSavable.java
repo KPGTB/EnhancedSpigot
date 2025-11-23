@@ -16,16 +16,18 @@
 
 package dev.projectenhanced.enhancedspigot.data.cache.iface;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
-public interface IAsyncSavable<K, V> extends ISavable<K, V> {
+public interface IAsyncSavable<K, V extends ICached<K>> extends ISavable<K, V> {
 	CompletableFuture<V> loadAsync(K key);
 
-	CompletableFuture<Set<V>> loadAsyncAll();
+	CompletableFuture<Collection<V>> loadAsyncAll();
 
-	CompletableFuture<Set<V>> loadAsyncAll(boolean ignoreCached);
+	CompletableFuture<Collection<V>> loadAsyncAll(boolean ignoreCached);
 
 	CompletableFuture<Void> modifyAsync(K key, Consumer<V> action);
 
@@ -35,7 +37,7 @@ public interface IAsyncSavable<K, V> extends ISavable<K, V> {
 
 	CompletableFuture<Void> loopAsyncAll(Consumer<V> action);
 
-	CompletableFuture<Set<V>> loopAsyncAll();
+	CompletableFuture<Collection<V>> loopAsyncAll();
 
 	CompletableFuture<Void> saveAsync(K key);
 
@@ -43,11 +45,13 @@ public interface IAsyncSavable<K, V> extends ISavable<K, V> {
 
 	CompletableFuture<Void> saveAsyncAll();
 
-	CompletableFuture<Void> createAsync(K key, V value);
+	CompletableFuture<V> createAsync(K key, V value);
 
-	CompletableFuture<Void> createAsync(V value);
+	CompletableFuture<V> createAsync(V value);
 
 	CompletableFuture<Void> removeAsync(K key);
+
+	CompletableFuture<Void> removeAsyncIf(BiPredicate<K, V> predicate);
 
 	CompletableFuture<Void> removeAsyncAll();
 

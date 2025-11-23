@@ -23,7 +23,7 @@ import lombok.Getter;
 import java.util.Map;
 import java.util.function.Function;
 
-@Getter @AllArgsConstructor public class ForeignMapper<T> {
+@Getter @AllArgsConstructor public class ForeignMapper<T extends ICached<Integer>> {
 	private final ForeignCollection<T> foreign;
 	private final Map<String, T> cache;
 	private final Function<T, String> keyExtractor;

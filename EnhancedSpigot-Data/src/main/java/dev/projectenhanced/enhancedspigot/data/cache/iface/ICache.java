@@ -20,8 +20,10 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-public interface ICache<K, V> {
+public interface ICache<K, V extends ICached<K>> {
 	V get(K key);
+
+	V getOrNull(K key);
 
 	Set<K> keySet();
 

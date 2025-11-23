@@ -16,15 +16,17 @@
 
 package dev.projectenhanced.enhancedspigot.data.cache.iface;
 
+import java.util.Collection;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
-public interface ISavable<K, V> {
+public interface ISavable<K, V extends ICached<K>> {
 	V load(K key);
 
-	Set<V> loadAll();
+	Collection<V> loadAll();
 
-	Set<V> loadAll(boolean ignoreCached);
+	Collection<V> loadAll(boolean ignoreCached);
 
 	void modify(K key, Consumer<V> action);
 
@@ -34,7 +36,7 @@ public interface ISavable<K, V> {
 
 	void loopAll(Consumer<V> action);
 
-	Set<V> loopAll();
+	Collection<V> loopAll();
 
 	void save(K key);
 
@@ -42,15 +44,15 @@ public interface ISavable<K, V> {
 
 	void saveAll();
 
-	void create(K key, V value);
+	V create(K key, V value);
 
-	void create(V value);
+	V create(V value);
 
 	void remove(K key);
+
+	void removeIf(BiPredicate<K, V> predicate);
 
 	void removeAll();
 
 	boolean exists(K key);
-
-	boolean runningAsync();
 }

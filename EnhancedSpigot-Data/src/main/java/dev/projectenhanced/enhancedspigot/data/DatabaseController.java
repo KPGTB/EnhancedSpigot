@@ -44,16 +44,19 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.postgresql.util.PSQLException;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 @Getter @Setter public class DatabaseController implements IClosable {
 	private final JavaPlugin plugin;
@@ -79,20 +82,18 @@ import java.util.concurrent.Executors;
 		switch (this.options.getType()) {
 			case MYSQL:
 				this.handler = new MySQLConnectionHandler();
-				this.executor = Executors.newFixedThreadPool(10);
 				break;
 			case POSTGRESQL:
 				this.handler = new PostgreSQLConnectionHandler();
-				this.executor = Executors.newFixedThreadPool(10);
 				break;
 			case SQLITE:
 				this.handler = new SQLiteConnectionHandler(this.plugin.getDataFolder());
-				this.executor = Executors.newSingleThreadExecutor();
 				break;
 			default:
 				throw new UnsupportedOperationException("Unsupported connection type: " + this.options.getType()
 					.name());
 		}
+		this.executor = new ThreadPoolExecutor(this.options.getThreads(), this.options.getThreads(), 0L, TimeUnit.MILLISECONDS, new PriorityBlockingQueue<>());
 		this.handler.retrieveCredentials(this.options);
 		this.source = TryCatchUtil.tryAndReturn(() -> this.options.getHikariOptions()
 			.isEnabled() ?
@@ -119,39 +120,41 @@ import java.util.concurrent.Executors;
 
 	public void registerEntities(String packageName) {
 		if (this.source == null) return;
+		ReflectionUtil.getAllClassesInPackage(this.jarFile, packageName)
+			.forEach(this::registerEntity);
+	}
 
-		for (Class<?> clazz : ReflectionUtil.getAllClassesInPackage(this.jarFile, packageName)) {
-			if (clazz.getDeclaredAnnotation(DatabaseTable.class) == null) continue;
+	public void registerEntity(Class<?> clazz) {
+		if (this.source == null) return;
+		if (clazz.getDeclaredAnnotation(DatabaseTable.class) == null) return;
 
-			Field idField = Arrays.stream(clazz.getDeclaredFields())
-				.filter(f -> {
-					DatabaseField ann = f.getDeclaredAnnotation(DatabaseField.class);
-					if (ann == null) return false;
-					return ann.id() || ann.generatedId() || !ann.generatedIdSequence()
-						.isEmpty();
-				})
-				.findAny()
-				.orElse(null);
+		Field idField = Arrays.stream(clazz.getDeclaredFields())
+			.filter(f -> {
+				DatabaseField ann = f.getDeclaredAnnotation(DatabaseField.class);
+				if (ann == null) return false;
+				return ann.id() || ann.generatedId() || !ann.generatedIdSequence()
+					.isEmpty();
+			})
+			.findAny()
+			.orElse(null);
+		if (idField == null) return;
 
-			if (idField == null) continue;
+		TryCatchUtil.tryRun(
+			() -> TableUtils.createTableIfNotExists(this.source, clazz), (ex) -> {
+				Throwable cause = ex.getCause();
+				if (cause instanceof PSQLException && cause.getMessage()
+					.contains("already exists")) {
+					return;
+				}
 
-			try {
-				TableUtils.createTableIfNotExists(this.source, clazz);
-			} catch (SQLException e) {
-				e.printStackTrace();
-				continue;
+				this.plugin.getLogger()
+					.log(Level.SEVERE, "Something went wrong!", ex);
 			}
+		);
 
-			Dao<?, ?> dao;
-			try {
-				dao = DaoManager.createDao(this.source, clazz);
-				dao.setObjectCache(false);
-			} catch (SQLException e) {
-				e.printStackTrace();
-				continue;
-			}
-			this.daoMap.put(clazz, dao);
-		}
+		Dao<?, ?> dao = TryCatchUtil.tryAndReturn(() -> DaoManager.createDao(this.source, clazz));
+		TryCatchUtil.tryRun(() -> dao.setObjectCache(false));
+		this.daoMap.put(clazz, dao);
 	}
 
 	@SuppressWarnings("unchecked")

@@ -19,8 +19,10 @@ package dev.projectenhanced.enhancedspigot.data.cache.iface;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
-public interface IAsyncCache<K, V> extends ICache<K, V> {
+public interface IAsyncCache<K, V extends ICached<K>> extends ICache<K, V> {
 	CompletableFuture<V> getAsync(K key);
+
+	CompletableFuture<V> getAsyncOrNull(K key);
 
 	ExecutorService getExecutor();
 

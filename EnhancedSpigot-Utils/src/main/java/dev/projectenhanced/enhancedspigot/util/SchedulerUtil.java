@@ -27,11 +27,7 @@ import java.util.function.Function;
 
 public class SchedulerUtil {
 	public static final boolean USING_FOLIA = checkFolia();
-	private static final Class<?> PAPER_SCHEDULED_TASK = TryCatchUtil.tryOrDefault(
-		() -> Class.forName(
-			"io.papermc.paper.threadedregions.scheduler.ScheduledTask"), null,
-		(e) -> {}
-	);
+	private static final Class<?> PAPER_SCHEDULED_TASK = TryCatchUtil.tryOrDefault(() -> Class.forName("io.papermc.paper.threadedregions.scheduler.ScheduledTask"), null, (e) -> {});
 	private static final Object PAPER_GLOBAL_REGION_SCHEDULER = TryCatchUtil.tryOrDefault(
 		() -> Bukkit.class.getMethod("getGlobalRegionScheduler")
 			.invoke(null), null, (e) -> {}
@@ -47,109 +43,77 @@ public class SchedulerUtil {
 	}
 
 	public static void runTask(Plugin plugin, Runnable runnable) {
-		if (USING_FOLIA) TryCatchUtil.tryRun(
-			() -> PAPER_GLOBAL_REGION_SCHEDULER.getClass()
-				.getMethod("execute", Plugin.class, Runnable.class)
-				.invoke(PAPER_GLOBAL_REGION_SCHEDULER, plugin, runnable));
+		if (USING_FOLIA) TryCatchUtil.tryRun(() -> PAPER_GLOBAL_REGION_SCHEDULER.getClass()
+			.getMethod("execute", Plugin.class, Runnable.class)
+			.invoke(PAPER_GLOBAL_REGION_SCHEDULER, plugin, runnable));
 		else Bukkit.getScheduler()
 			.runTask(plugin, runnable);
 	}
 
-	public static Task runTaskLater(Plugin plugin, Consumer<Task> consumer, long delayTicks) {
+	public static Task runTaskLater(Plugin plugin, Runnable runnable, long delayTicks) {
 		return Task.of((task) -> USING_FOLIA ?
-			TryCatchUtil.tryAndReturn(
-				() -> PAPER_GLOBAL_REGION_SCHEDULER.getClass()
-					.getMethod(
-						"runDelayed", Plugin.class, Consumer.class,
-						long.class
-					)
-					.invoke(
-						PAPER_GLOBAL_REGION_SCHEDULER, plugin,
-						(Consumer<Object>) st -> consumer.accept(task),
-						delayTicks
-					)) :
+			TryCatchUtil.tryAndReturn(() -> PAPER_GLOBAL_REGION_SCHEDULER.getClass()
+				.getMethod("runDelayed", Plugin.class, Consumer.class, long.class)
+				.invoke(PAPER_GLOBAL_REGION_SCHEDULER, plugin, (Consumer<Object>) st -> runnable.run(), delayTicks)) :
 			Bukkit.getScheduler()
-				.runTaskLater(plugin, () -> consumer.accept(task), delayTicks));
+				.runTaskLater(plugin, runnable, delayTicks));
+	}
+
+	public static Task runTaskTimer(Plugin plugin, Runnable runnable, long delayTicks, long periodTicks) {
+		return runTaskTimer(plugin, (task) -> runnable.run(), delayTicks, periodTicks);
 	}
 
 	public static Task runTaskTimer(Plugin plugin, Consumer<Task> consumer, long delayTicks, long periodTicks) {
 		return Task.of((task) -> USING_FOLIA ?
-			TryCatchUtil.tryAndReturn(
-				() -> PAPER_GLOBAL_REGION_SCHEDULER.getClass()
-					.getMethod(
-						"runAtFixedRate", Plugin.class, Consumer.class,
-						long.class, long.class
-					)
-					.invoke(
-						PAPER_GLOBAL_REGION_SCHEDULER, plugin,
-						(Consumer<Object>) st -> consumer.accept(task),
-						delayTicks < 1 ?
-							1 :
-							delayTicks, periodTicks
-					)) :
+			TryCatchUtil.tryAndReturn(() -> PAPER_GLOBAL_REGION_SCHEDULER.getClass()
+				.getMethod("runAtFixedRate", Plugin.class, Consumer.class, long.class, long.class)
+				.invoke(
+					PAPER_GLOBAL_REGION_SCHEDULER, plugin, (Consumer<Object>) st -> consumer.accept(task), delayTicks < 1 ?
+						1 :
+						delayTicks, periodTicks
+				)) :
 			Bukkit.getScheduler()
-				.runTaskTimer(
-					plugin, () -> consumer.accept(task), delayTicks,
-					periodTicks
-				));
+				.runTaskTimer(plugin, () -> consumer.accept(task), delayTicks, periodTicks));
 	}
 
 	public static void runTaskAsynchronously(Plugin plugin, Runnable runnable) {
-		if (USING_FOLIA) TryCatchUtil.tryRun(
-			() -> PAPER_GLOBAL_REGION_SCHEDULER.getClass()
-				.getMethod("execute", Plugin.class, Runnable.class)
-				.invoke(PAPER_GLOBAL_REGION_SCHEDULER, plugin, runnable));
+		if (USING_FOLIA) TryCatchUtil.tryRun(() -> PAPER_GLOBAL_REGION_SCHEDULER.getClass()
+			.getMethod("execute", Plugin.class, Runnable.class)
+			.invoke(PAPER_GLOBAL_REGION_SCHEDULER, plugin, runnable));
 		else Bukkit.getScheduler()
 			.runTaskAsynchronously(plugin, runnable);
 	}
 
-	public static Task runTaskLaterAsynchronously(Plugin plugin, Consumer<Task> consumer, long delayTicks) {
+	public static Task runTaskLaterAsynchronously(Plugin plugin, Runnable runnable, long delayTicks) {
 		return Task.of((task) -> USING_FOLIA ?
-			TryCatchUtil.tryAndReturn(
-				() -> PAPER_GLOBAL_REGION_SCHEDULER.getClass()
-					.getMethod(
-						"runDelayed", Plugin.class, Consumer.class,
-						long.class
-					)
-					.invoke(
-						PAPER_GLOBAL_REGION_SCHEDULER, plugin,
-						(Consumer<Object>) st -> consumer.accept(task),
-						delayTicks
-					)) :
+			TryCatchUtil.tryAndReturn(() -> PAPER_GLOBAL_REGION_SCHEDULER.getClass()
+				.getMethod("runDelayed", Plugin.class, Consumer.class, long.class)
+				.invoke(PAPER_GLOBAL_REGION_SCHEDULER, plugin, (Consumer<Object>) st -> runnable.run(), delayTicks)) :
 			Bukkit.getScheduler()
-				.runTaskLaterAsynchronously(
-					plugin, () -> consumer.accept(task),
-					delayTicks
-				));
+				.runTaskLaterAsynchronously(plugin, runnable, delayTicks));
 	}
 
+	public static Task runTaskTimerAsynchronously(Plugin plugin, Runnable runnable, long delayTicks, long periodTicks) {
+		return runTaskTimerAsynchronously(plugin, (task) -> runnable.run(), delayTicks, periodTicks);
+	}
+	
 	public static Task runTaskTimerAsynchronously(Plugin plugin, Consumer<Task> consumer, long delayTicks, long periodTicks) {
 		return Task.of((task) -> USING_FOLIA ?
-			TryCatchUtil.tryAndReturn(
-				() -> PAPER_GLOBAL_REGION_SCHEDULER.getClass()
-					.getMethod(
-						"runAtFixedRate", Plugin.class, Consumer.class,
-						long.class, long.class
-					)
-					.invoke(
-						PAPER_GLOBAL_REGION_SCHEDULER, plugin,
-						(Consumer<Object>) st -> consumer.accept(task),
-						delayTicks < 1 ?
-							1 :
-							delayTicks, periodTicks
-					)) :
+			TryCatchUtil.tryAndReturn(() -> PAPER_GLOBAL_REGION_SCHEDULER.getClass()
+				.getMethod("runAtFixedRate", Plugin.class, Consumer.class, long.class, long.class)
+				.invoke(
+					PAPER_GLOBAL_REGION_SCHEDULER, plugin, (Consumer<Object>) st -> consumer.accept(task), delayTicks < 1 ?
+						1 :
+						delayTicks, periodTicks
+				)) :
 			Bukkit.getScheduler()
-				.runTaskTimerAsynchronously(
-					plugin, () -> consumer.accept(task), delayTicks,
-					periodTicks
-				));
+				.runTaskTimerAsynchronously(plugin, () -> consumer.accept(task), delayTicks, periodTicks));
 	}
 
 	public static void cancelAll(Plugin plugin) {
-		if (USING_FOLIA) TryCatchUtil.tryAndReturn(
-			() -> PAPER_GLOBAL_REGION_SCHEDULER.getClass()
-				.getMethod("cancelTasks", Plugin.class)
-				.invoke(PAPER_GLOBAL_REGION_SCHEDULER, plugin));
+		if (USING_FOLIA) TryCatchUtil.tryAndReturn(() -> PAPER_GLOBAL_REGION_SCHEDULER.getClass()
+			.getMethod("cancelTasks", Plugin.class)
+			.invoke(PAPER_GLOBAL_REGION_SCHEDULER, plugin));
 		else Bukkit.getScheduler()
 			.cancelTasks(plugin);
 	}
@@ -161,17 +125,14 @@ public class SchedulerUtil {
 		public static Task of(Function<Task, Object> func) {
 			Task task = new Task();
 			Object result = func.apply(task);
-			if (PAPER_SCHEDULED_TASK != null && PAPER_SCHEDULED_TASK.isAssignableFrom(
-				result.getClass())) task.setFoliaTask(result);
-			else if (result instanceof BukkitTask) task.setBukkitTask(
-				(BukkitTask) result);
+			if (PAPER_SCHEDULED_TASK != null && PAPER_SCHEDULED_TASK.isAssignableFrom(result.getClass())) task.setFoliaTask(result);
+			else if (result instanceof BukkitTask) task.setBukkitTask((BukkitTask) result);
 			return task;
 		}
 
 		public void cancel() {
-			if (foliaTask != null) TryCatchUtil.tryRun(
-				() -> PAPER_SCHEDULED_TASK.getMethod("cancel")
-					.invoke(foliaTask));
+			if (foliaTask != null) TryCatchUtil.tryRun(() -> PAPER_SCHEDULED_TASK.getMethod("cancel")
+				.invoke(foliaTask));
 			else if (bukkitTask != null) bukkitTask.cancel();
 		}
 	}

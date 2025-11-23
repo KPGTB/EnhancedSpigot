@@ -14,16 +14,16 @@
  *    limitations under the License.
  */
 
-package dev.projectenhanced.enhancedspigot.data.cache.iface;
+package dev.projectenhanced.enhancedspigot.data.migration;
 
-import com.j256.ormlite.dao.ForeignCollection;
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-public interface IForeignMapping {
-	Map<ForeignCollection<? extends ICached<Integer>>, Collection<? extends ICached<Integer>>> getForeignMapping();
-
-	List<ForeignMapper<?>> getForeignMappers();
+@DatabaseTable(tableName = "enhancedspigot_database_info") @AllArgsConstructor @NoArgsConstructor @Getter @Setter public class MigrationEntity {
+	@DatabaseField(id = true) String pluginName;
+	@DatabaseField int version;
 }

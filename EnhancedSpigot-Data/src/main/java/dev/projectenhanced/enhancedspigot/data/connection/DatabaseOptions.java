@@ -32,6 +32,7 @@ import lombok.Setter;
 	@Comment({"Configure only when using MySQL or PostgreSQL", "Don't change if you don't know what it is!"})
 	@Serializer(BaseSerializer.class)
 	private HikariOptions hikariOptions = new HikariOptions();
+	@Comment("Number of platform threads used for database operations") private int threads = 10;
 
 	@Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class Credentials {
 		private String host = "localhost";

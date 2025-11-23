@@ -16,14 +16,6 @@
 
 package dev.projectenhanced.enhancedspigot.data.cache.iface;
 
-import com.j256.ormlite.dao.ForeignCollection;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-public interface IForeignMapping {
-	Map<ForeignCollection<? extends ICached<Integer>>, Collection<? extends ICached<Integer>>> getForeignMapping();
-
-	List<ForeignMapper<?>> getForeignMappers();
+public interface ICached<K> {
+	K getKey();
 }

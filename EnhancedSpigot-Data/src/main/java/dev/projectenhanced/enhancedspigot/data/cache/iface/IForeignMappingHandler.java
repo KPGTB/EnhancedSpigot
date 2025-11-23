@@ -16,8 +16,16 @@
 
 package dev.projectenhanced.enhancedspigot.data.cache.iface;
 
+import com.j256.ormlite.dao.ForeignCollection;
+
+import java.util.Collection;
+
 public interface IForeignMappingHandler {
 	void dbToJava(IForeignMapping entity);
 
 	void javaToDb(IForeignMapping entity);
+
+	void refreshForeign(ForeignCollection<? extends ICached<Integer>> foreign, Collection<? extends ICached<Integer>> collection);
+
+	void refreshForeign(ForeignMapper<?> mapper);
 }

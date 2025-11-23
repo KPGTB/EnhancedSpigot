@@ -16,7 +16,6 @@
 
 package dev.projectenhanced.enhancedspigot.data.connection;
 
-import com.j256.ormlite.jdbc.JdbcPooledConnectionSource;
 import com.j256.ormlite.jdbc.db.SqliteDatabaseType;
 import com.j256.ormlite.support.BaseConnectionSource;
 
@@ -52,8 +51,7 @@ public class SQLiteConnectionHandler implements IConnectionHandler {
 		}
 
 		String connectionUrl = "jdbc:sqlite:" + this.file.getAbsolutePath();
-		return new JdbcPooledConnectionSource(
-			connectionUrl, new SqliteDatabaseType());
+		return new SqliteConnectionSource(connectionUrl, new SqliteDatabaseType());
 	}
 
 	@Override

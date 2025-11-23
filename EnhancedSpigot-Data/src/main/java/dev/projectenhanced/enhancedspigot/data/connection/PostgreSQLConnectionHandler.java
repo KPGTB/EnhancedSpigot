@@ -45,26 +45,20 @@ public class PostgreSQLConnectionHandler implements IConnectionHandler {
 	@Override
 	public BaseConnectionSource connect() throws IOException, SQLException {
 		String url = "jdbc:postgresql://" + this.credentials.getHost() + ":" + this.credentials.getPort() + "/" + this.credentials.getDatabase() + "&autoReconnect=true";
-		return new JdbcPooledConnectionSource(
-			url, this.credentials.getUsername(), this.credentials.getPassword(),
-			new PostgresDatabaseType()
-		);
+		return new JdbcPooledConnectionSource(url, this.credentials.getUsername(), this.credentials.getPassword(), new PostgresDatabaseType());
 	}
 
 	@Override
 	public BaseConnectionSource connectHikari(DatabaseOptions.HikariOptions options) throws IOException, SQLException {
 		HikariConfig config = new HikariConfig();
-		config.setJdbcUrl(
-			"jdbc:postgresql://" + this.credentials.getHost() + ":" + this.credentials.getPort() + "/" + this.credentials.getDatabase());
+		config.setJdbcUrl("jdbc:postgresql://" + this.credentials.getHost() + ":" + this.credentials.getPort() + "/" + this.credentials.getDatabase());
 		config.setUsername(this.credentials.getUsername());
 		config.setPassword(this.credentials.getPassword());
 
 		TryCatchUtil.tryAndReturn(() -> Class.forName("org.postgresql.Driver"));
-		this.dataSource = new HikariDataSource(
-			HikariHandler.configure(config, options));
+		this.dataSource = new HikariDataSource(HikariHandler.configure(config, options));
 
-		return new DataSourceConnectionSource(
-			this.dataSource, this.dataSource.getJdbcUrl());
+		return new DataSourceConnectionSource(this.dataSource, this.dataSource.getJdbcUrl());
 	}
 
 	@Override

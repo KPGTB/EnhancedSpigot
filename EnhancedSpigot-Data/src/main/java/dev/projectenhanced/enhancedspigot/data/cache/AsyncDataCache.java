@@ -18,16 +18,28 @@ package dev.projectenhanced.enhancedspigot.data.cache;
 
 import dev.projectenhanced.enhancedspigot.data.DatabaseController;
 import dev.projectenhanced.enhancedspigot.data.cache.iface.IAsyncSavableCache;
+import dev.projectenhanced.enhancedspigot.data.cache.iface.ICached;
+import dev.projectenhanced.enhancedspigot.data.cache.iface.IForeignMapping;
+import dev.projectenhanced.enhancedspigot.data.cache.iface.ISavableLifecycle;
+import dev.projectenhanced.enhancedspigot.data.util.AsyncPriorityMap;
+import dev.projectenhanced.enhancedspigot.data.util.PriorityCompletableUtil;
+import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
+import lombok.Getter;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
-public class AsyncDataCache<K, V> extends DataCache<K, V> implements IAsyncSavableCache<K, V> {
-	private final JavaPlugin plugin;
+public class AsyncDataCache<K, V extends ICached<K>> extends DataCache<K, V> implements IAsyncSavableCache<K, V> {
+	@Getter private final AsyncPriorityMap asyncPriorityMap;
 	private ExecutorService executor;
 
 	/**
@@ -38,116 +50,187 @@ public class AsyncDataCache<K, V> extends DataCache<K, V> implements IAsyncSavab
 	 * @param plugin     Plugin instance
 	 */
 	public AsyncDataCache(DatabaseController controller, JavaPlugin plugin) {
+		this(controller, plugin, new AsyncPriorityMap(0));
+	}
+
+	public AsyncDataCache(DatabaseController controller, JavaPlugin plugin, AsyncPriorityMap asyncPriorityMap) {
 		super(controller, plugin);
-		this.plugin = plugin;
 		this.executor = controller.getExecutor();
+		this.asyncPriorityMap = asyncPriorityMap;
 	}
 
 	public AsyncDataCache(DatabaseController controller, Class<K> keyClass, Class<V> valueClass, JavaPlugin plugin) {
+		this(controller, keyClass, valueClass, plugin, new AsyncPriorityMap(0));
+	}
+
+	public AsyncDataCache(DatabaseController controller, Class<K> keyClass, Class<V> valueClass, JavaPlugin plugin, AsyncPriorityMap asyncPriorityMap) {
 		super(controller, plugin, keyClass, valueClass);
-		this.plugin = plugin;
 		this.executor = controller.getExecutor();
+		this.asyncPriorityMap = asyncPriorityMap;
 	}
 
 	@Override
 	public CompletableFuture<V> getAsync(K key) {
-		return this.supplyAsync(() -> this.get(key));
+		return this.supplyAsync(() -> this.get(key), this.asyncPriorityMap.getGetPriority(), System.currentTimeMillis());
+	}
+
+	@Override
+	public CompletableFuture<V> getAsyncOrNull(K key) {
+		return this.supplyAsync(() -> this.getOrNull(key), this.asyncPriorityMap.getGetPriority(), System.currentTimeMillis());
 	}
 
 	@Override
 	public CompletableFuture<V> loadAsync(K key) {
-		return this.supplyAsync(() -> this.load(key));
+		return this.supplyAsync(() -> this.load(key), this.asyncPriorityMap.getLoadPriority(), System.currentTimeMillis());
 	}
 
 	@Override
-	public CompletableFuture<Set<V>> loadAsyncAll() {
-		return this.supplyAsync(this::loadAll);
+	public CompletableFuture<Collection<V>> loadAsyncAll() {
+		return this.loadAsyncAll(false);
 	}
 
 	@Override
-	public CompletableFuture<Set<V>> loadAsyncAll(boolean ignoreCached) {
-		return this.supplyAsync(() -> this.loadAll(ignoreCached));
+	public CompletableFuture<Collection<V>> loadAsyncAll(boolean ignoreCached) {
+		long operationId = System.currentTimeMillis();
+		return this.supplyAsync(() -> TryCatchUtil.tryOrDefault(this.dao::queryForAll, new ArrayList<V>()), this.asyncPriorityMap.getLoadAllPriority(), operationId)
+			.thenCompose(entities -> CompletableFuture.allOf(entities.stream()
+				.map(entity -> {
+					if (ignoreCached && this.contains(entity.getKey())) return CompletableFuture.completedFuture(null);
+					return this.runAsync(() -> this.loadValueIntoCache(entity.getKey(), entity), this.asyncPriorityMap.getLoadAllPriority(), operationId);
+				})
+				.toArray(CompletableFuture[]::new)))
+			.thenApply(v -> this.values());
 	}
 
 	@Override
 	public CompletableFuture<Void> modifyAsync(K key, Consumer<V> action) {
-		return this.runAsync(() -> this.modify(key, action));
+		return this.runAsync(() -> this.modify(key, action), this.asyncPriorityMap.getModifyPriority(), System.currentTimeMillis());
 	}
 
 	@Override
 	public CompletableFuture<Void> modifyAsyncMultiple(Set<K> keys, Consumer<V> action) {
-		return this.runAsync(() -> this.modifyMultiple(keys, action));
+		return this.loopAsyncAll(value -> {
+			if (!keys.contains(value.getKey())) return;
+			action.accept(value);
+			if (!this.contains(value.getKey())) this.saveValue(value);
+		});
 	}
 
 	@Override
 	public CompletableFuture<Void> modifyAsyncAll(Consumer<V> action) {
-		return this.runAsync(() -> this.modifyAll(action));
+		return this.loopAsyncAll(value -> {
+			action.accept(value);
+			if (!this.contains(value.getKey())) this.saveValue(value);
+		});
 	}
 
 	@Override
 	public CompletableFuture<Void> loopAsyncAll(Consumer<V> action) {
-		return this.runAsync(() -> this.loopAll(action));
+		long operationId = System.currentTimeMillis();
+		return this.loopAsyncAll()
+			.thenCompose(entities -> CompletableFuture.allOf(entities.stream()
+				.map(entity -> this.runAsync(() -> action.accept(entity), this.asyncPriorityMap.getModifyAllPriority(), operationId))
+				.toArray(CompletableFuture[]::new)));
 	}
 
 	@Override
-	public CompletableFuture<Set<V>> loopAsyncAll() {
-		return this.supplyAsync(this::loopAll);
+	public CompletableFuture<Collection<V>> loopAsyncAll() {
+		long operationId = System.currentTimeMillis();
+		Set<V> values = new HashSet<>(this.values());
+
+		return this.supplyAsync(() -> TryCatchUtil.tryOrDefault(this.dao::queryForAll, new ArrayList<V>()), this.asyncPriorityMap.getModifyAllPriority(), operationId)
+			.thenCompose(entities -> CompletableFuture.allOf(entities.stream()
+				.map(entity -> {
+					if (this.contains(entity.getKey())) return CompletableFuture.completedFuture(null);
+					return this.runAsync(
+						() -> {
+							this.loadValue(entity.getKey(), entity);
+							values.add(entity);
+						}, this.asyncPriorityMap.getLoadAllPriority(), operationId
+					);
+				})
+				.toArray(CompletableFuture[]::new)))
+			.thenApply(v -> values);
 	}
 
 	@Override
 	public CompletableFuture<Void> saveAsync(K key) {
-		return this.runAsync(() -> this.save(key));
+		return this.getAsyncOrNull(key)
+			.thenCompose(value -> {
+				if (value == null) return CompletableFuture.completedFuture(null);
+				return this.saveAsyncValue(value);
+			});
 	}
 
 	@Override
 	public CompletableFuture<Void> saveAsyncValue(V value) {
-		return this.runAsync(() -> this.saveAsyncValue(value));
+		long operationId = System.currentTimeMillis();
+		return this.saveToDbAsync(value, this.asyncPriorityMap.getSavePriority(), operationId);
 	}
 
 	@Override
 	public CompletableFuture<Void> saveAsyncAll() {
-		return this.runAsync(this::saveAll);
+		long operationId = System.currentTimeMillis();
+		return CompletableFuture.allOf(this.values()
+			.stream()
+			.map(value -> this.saveToDbAsync(value, this.asyncPriorityMap.getSaveAllPriority(), operationId))
+			.toArray(CompletableFuture[]::new));
+	}
+
+	protected CompletableFuture<Void> saveToDbAsync(V value, int priority, long operationId) {
+		return this.runAsync(
+				() -> {
+					if (!this.contains(value.getKey())) return;
+					if (value instanceof ISavableLifecycle) ((ISavableLifecycle) value).beforeSave(this.plugin);
+				}, priority, operationId
+			)
+			.thenCompose(v -> {
+				if (this.contains(value.getKey()) && value instanceof IForeignMapping) return this.javaToDbAsync((IForeignMapping) value, priority, operationId);
+				return CompletableFuture.completedFuture(null);
+			})
+			.thenCompose(v -> this.runAsync(
+				() -> {
+					if (!this.contains(value.getKey())) return;
+					TryCatchUtil.tryRun(() -> this.dao.update(value));
+				}, priority, operationId
+			));
 	}
 
 	@Override
-	public CompletableFuture<Void> createAsync(K key, V value) {
-		return this.runAsync(() -> this.create(key, value));
+	public CompletableFuture<V> createAsync(K key, V value) {
+		return this.supplyAsync(() -> this.create(key, value), this.asyncPriorityMap.getCreatePriority(), System.currentTimeMillis());
 	}
 
 	@Override
-	public CompletableFuture<Void> createAsync(V value) {
-		return this.runAsync(() -> this.create(value));
+	public CompletableFuture<V> createAsync(V value) {
+		return this.supplyAsync(() -> this.create(value), this.asyncPriorityMap.getCreatePriority(), System.currentTimeMillis());
 	}
 
 	@Override
 	public CompletableFuture<Void> removeAsync(K key) {
-		return this.runAsync(() -> this.remove(key));
+		return this.runAsync(() -> this.remove(key), this.asyncPriorityMap.getRemovePriority(), System.currentTimeMillis());
+	}
+
+	@Override
+	public CompletableFuture<Void> removeAsyncIf(BiPredicate<K, V> predicate) {
+		long operationId = System.currentTimeMillis();
+		return CompletableFuture.allOf(this.entrySet()
+			.stream()
+			.map(entry -> {
+				if (predicate.test(entry.getKey(), entry.getValue())) return this.runAsync(() -> this.remove(entry.getKey()), this.asyncPriorityMap.getRemovePriority(), operationId);
+				return CompletableFuture.completedFuture(null);
+			})
+			.toArray(CompletableFuture[]::new));
 	}
 
 	@Override
 	public CompletableFuture<Void> removeAsyncAll() {
-		return this.runAsync(this::removeAll);
+		return this.runAsync(this::removeAll, this.asyncPriorityMap.getRemovePriority(), System.currentTimeMillis());
 	}
 
 	@Override
 	public CompletableFuture<Boolean> existsAsync(K key) {
-		return this.supplyAsync(() -> this.exists(key));
-	}
-
-	private <T> CompletableFuture<T> supplyAsync(Supplier<T> supplier) {
-		if (DisableLock.IS_LOCKED) {
-			supplier.get();
-			return null;
-		}
-		return CompletableFuture.supplyAsync(supplier, this.executor);
-	}
-
-	private CompletableFuture<Void> runAsync(Runnable runnable) {
-		if (DisableLock.IS_LOCKED) {
-			runnable.run();
-			return null;
-		}
-		return CompletableFuture.runAsync(runnable, this.executor);
+		return this.supplyAsync(() -> this.exists(key), this.asyncPriorityMap.getExistsPriority(), System.currentTimeMillis());
 	}
 
 	@Override
@@ -160,8 +243,45 @@ public class AsyncDataCache<K, V> extends DataCache<K, V> implements IAsyncSavab
 		this.executor = executorService;
 	}
 
-	@Override
-	public boolean runningAsync() {
-		return true;
+	public CompletableFuture<Void> javaToDbAsync(IForeignMapping entity, int priority, long operationId) {
+		return CompletableFuture.allOf(Stream.concat(
+				entity.getForeignMapping()
+					.entrySet()
+					.stream()
+					.map((entry) -> this.runAsync(
+						() -> {
+							entry.getKey()
+								.removeIf(o -> !entry.getValue()
+									.contains(o));
+							entry.getValue()
+								.forEach(obj -> {
+									if (obj.getKey() != null) updateForeign(entry.getKey(), obj);
+									else addToForeign(entry.getKey(), obj);
+								});
+						}, priority, operationId
+					)), entity.getForeignMappers()
+					.stream()
+					.map(mapper -> this.runAsync(
+						() -> {
+							mapper.getForeign()
+								.removeIf(o -> !mapper.getCache()
+									.containsKey(this.extractKeyFromMapper(mapper, o)));
+							mapper.getCache()
+								.forEach((key, obj) -> {
+									if (obj.getKey() != null) updateForeign(mapper.getForeign(), obj);
+									else addToForeign(mapper.getForeign(), obj);
+								});
+						}, priority, operationId
+					))
+			)
+			.toArray(CompletableFuture[]::new));
+	}
+
+	public <T> CompletableFuture<T> supplyAsync(Supplier<T> supplier, int priority, long operationId) {
+		return PriorityCompletableUtil.supplyAsync(supplier, this.executor, priority, operationId);
+	}
+
+	public CompletableFuture<Void> runAsync(Runnable runnable, int priority, long operationId) {
+		return PriorityCompletableUtil.runAsync(runnable, this.executor, priority, operationId);
 	}
 }
