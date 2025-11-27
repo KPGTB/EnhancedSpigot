@@ -43,7 +43,7 @@ import lombok.Setter;
 	}
 
 	@Getter @Setter @NoArgsConstructor @AllArgsConstructor public static class HikariOptions {
-		private boolean enabled = false;
+		private boolean enabled = true;
 		private String poolName = "hikari";
 		private int maximumPoolSize = 5;
 		private int minimumIdle = 15;
