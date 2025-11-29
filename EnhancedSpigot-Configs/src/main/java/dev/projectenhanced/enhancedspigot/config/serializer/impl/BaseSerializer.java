@@ -37,7 +37,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.AbstractMap;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -190,7 +190,7 @@ public class BaseSerializer implements ISerializer<Object> {
 		}
 
 		private Map<Object, Object> handleMap(Map<?, ?> value, Serializer serializerAnn, EnhancedConfig config) {
-			Map<Object, Object> result = new HashMap<>();
+			Map<Object, Object> result = new LinkedHashMap<>();
 			value.forEach((k, v) -> {
 				result.put(k, handleObject(v, serializerAnn, config));
 			});
@@ -235,7 +235,7 @@ public class BaseSerializer implements ISerializer<Object> {
 
 		public Map<Object, Object> handleMapDeserialization(Map<?, ?> value, Type valueType, Serializer serializerAnn, EnhancedConfig config) {
 			Map.Entry<Class<?>, Type[]> typeData = extractTypeData(valueType);
-			Map<Object, Object> result = new HashMap<>();
+			Map<Object, Object> result = new LinkedHashMap<>();
 
 			value.forEach((k, v) -> {
 				Object obj = handleObject(v, typeData.getKey(), typeData.getValue(), serializerAnn, config);
