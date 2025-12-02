@@ -299,7 +299,7 @@ import java.util.function.Consumer;
 
 	public boolean isMenu(Inventory inv) {
 		if (inv == null) return false;
-		return inv.equals(this.bukkitInventory);
+		return inv == this.bukkitInventory;
 		/*if (inv == null || inv.getHolder() == null) return false;
 		if (!(inv.getHolder() instanceof EnhancedMenuHolder)) return false;
 		return ((EnhancedMenuHolder) inv.getHolder()).getMenu()
