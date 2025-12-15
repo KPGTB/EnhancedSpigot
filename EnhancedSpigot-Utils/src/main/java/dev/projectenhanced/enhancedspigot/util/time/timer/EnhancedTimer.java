@@ -170,8 +170,7 @@ import java.util.stream.Collectors;
 		}
 
 		if (this.type == TimerType.BOSSBAR) {
-			this.bossBar = Bukkit.createBossBar(
-				"", this.bossBarColor, this.bossBarStyle);
+			this.bossBar = Bukkit.createBossBar("", this.bossBarColor, this.bossBarStyle);
 
 			this.getViewers()
 				.forEach(p -> {
@@ -233,7 +232,7 @@ import java.util.stream.Collectors;
 		started = false;
 		ended = true;
 		timeLeft = seconds;
-		this.bossBar.removeAll();
+		if (this.bossBar != null) this.bossBar.removeAll();
 		bossBar = null;
 		if (task != null) {
 			task.cancel();
@@ -261,10 +260,7 @@ import java.util.stream.Collectors;
 						break;
 					case ACTIONBAR:
 						viewer.spigot()
-							.sendMessage(
-								ChatMessageType.ACTION_BAR,
-								TextComponent.fromLegacyText(message)
-							);
+							.sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
 						break;
 					case TITLE:
 						String[] elements = message.split("\n", 2);
