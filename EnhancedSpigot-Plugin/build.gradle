@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ dependencies {
     compileOnly "com.github.MilkBowl:VaultAPI:1.7"
     optionalImplementation 'org.bstats:bstats-bukkit:3.0.2'
 
+    implementation project(':EnhancedSpigot-Commons')
     implementation project(':EnhancedSpigot-Utils')
     compileOnly project(':EnhancedSpigot-Commands')
     compileOnly project(':EnhancedSpigot-Configs')
@@ -44,6 +45,7 @@ dependencies {
 shadowJar {
     relocate 'org.bstats', 'dev.projectenhanced.enhancedspigot.plugin.lib.bstats'
 
+    dependsOn ':EnhancedSpigot-Commons:shadowJar'
     dependsOn ':EnhancedSpigot-Utils:shadowJar'
     dependsOn ':EnhancedSpigot-Commands:shadowJar'
     dependsOn ':EnhancedSpigot-Configs:shadowJar'

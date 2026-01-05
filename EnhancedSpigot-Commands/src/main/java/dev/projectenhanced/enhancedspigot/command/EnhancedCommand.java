@@ -23,6 +23,7 @@ import dev.projectenhanced.enhancedspigot.command.annotation.MainCommand;
 import dev.projectenhanced.enhancedspigot.command.model.CommandArgument;
 import dev.projectenhanced.enhancedspigot.command.model.CommandInfo;
 import dev.projectenhanced.enhancedspigot.command.model.CommandPath;
+import dev.projectenhanced.enhancedspigot.common.IDependencyProvider;
 import dev.projectenhanced.enhancedspigot.common.annotation.Converter;
 import dev.projectenhanced.enhancedspigot.common.annotation.Description;
 import dev.projectenhanced.enhancedspigot.common.annotation.Filter;
@@ -58,7 +59,7 @@ import java.util.Map;
  */
 public abstract class EnhancedCommand extends Command {
 	protected final JavaPlugin plugin;
-	protected final DependencyProvider provider;
+	protected final IDependencyProvider provider;
 
 	private final String groupPath;
 	private final CommandLocale locale;
@@ -70,7 +71,7 @@ public abstract class EnhancedCommand extends Command {
 	private final Map<CommandPath, List<CommandInfo>> subCommands;
 	private String cmdName;
 
-	private EnhancedCommand(JavaPlugin plugin, DependencyProvider provider, CommandLocale locale, String groupPath) {
+	private EnhancedCommand(JavaPlugin plugin, IDependencyProvider provider, CommandLocale locale, String groupPath) {
 		super("");
 
 		this.plugin = plugin;
@@ -553,25 +554,17 @@ public abstract class EnhancedCommand extends Command {
 
 		subCommands.forEach((path, commands) -> {
 			commands.forEach(command -> {
-				if (!hasPermission(sender, command)) {
-					return;
-				}
-				if (command.isHidden()) {
-					return;
-				}
-				if (command.isPlayerRequired() && !(sender instanceof Player)) {
-					return;
-				}
+				if (!hasPermission(sender, command)) return;
+				if (command.isHidden()) return;
+				if (command.isPlayerRequired() && !(sender instanceof Player)) return;
 
 				componentsToSend.addAll(this.locale.getHelpLine()
 					.asComponents(Placeholder.parsed("command", getCommandStr(command)), Placeholder.unparsed("description", command.getDescription())));
 			});
 		});
 
-		if (componentsToSend.isEmpty()) {
-			componentsToSend.addAll(this.locale.getHelpNoInfo()
-				.asComponents());
-		}
+		if (componentsToSend.isEmpty()) componentsToSend.addAll(this.locale.getHelpNoInfo()
+			.asComponents());
 
 		componentsToSend.addAll(
 			0, this.locale.getHelpStart()
@@ -613,14 +606,10 @@ public abstract class EnhancedCommand extends Command {
 	private <T> List<String> getCompleterThatPass(List<String> complete, CommandArgument<T> arg, CommandSender sender) {
 		List<String> result = new ArrayList<>();
 		complete.forEach(s -> {
-			T obj;
-
-			if (arg.hasCustomConverter()) {
-				obj = arg.getCustomConverter()
-					.fromString(s, plugin);
-			} else {
-				obj = this.converterRegistry.convert(s, arg.getClazz(), plugin);
-			}
+			T obj = arg.hasCustomConverter() ?
+				arg.getCustomConverter()
+					.fromString(s, plugin) :
+				this.converterRegistry.convert(s, arg.getClazz(), plugin);
 
 			if (arg.getFilters()
 				.passFilters(obj, this.plugin, sender)

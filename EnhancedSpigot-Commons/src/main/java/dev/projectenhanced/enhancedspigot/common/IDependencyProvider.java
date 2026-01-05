@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -14,18 +14,17 @@
  *    limitations under the License.
  */
 
-package dev.projectenhanced.enhancedspigot.command.annotation;
+package dev.projectenhanced.enhancedspigot.common;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import dev.projectenhanced.enhancedspigot.common.stereotype.lifecycle.IClosable;
+import dev.projectenhanced.enhancedspigot.common.stereotype.lifecycle.IReloadable;
 
-/**
- * Description of subcommand or command
- */
-@Target({ElementType.TYPE, ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Description {
-	String value() default "";
+public interface IDependencyProvider extends IClosable, IReloadable {
+	<T> T register(T dependency, Class<?>... classes);
+
+	<T> T register(T dependency);
+
+	boolean isRegistered(Class<?> clazz);
+
+	<T> T provide(Class<T> clazz);
 }

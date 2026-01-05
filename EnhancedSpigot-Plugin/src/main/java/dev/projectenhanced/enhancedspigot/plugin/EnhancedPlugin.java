@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -53,8 +53,8 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 
 		boolean passRequirements = true;
 		for (String requiredPlugin : this.requiredPlugins()) {
-			if (!Bukkit.getPluginManager()
-				.isPluginEnabled(requiredPlugin)) {
+			if (Bukkit.getPluginManager()
+				.getPlugin(requiredPlugin) == null) {
 				passRequirements = false;
 				this.getLogger()
 					.severe("This plugin requires " + requiredPlugin + " to be enabled.");
@@ -66,14 +66,14 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 			return;
 		}
 
-		load();
+		this.load();
 		SchedulerUtil.runTaskLater(this, this::postLoad, 1);
 	}
 
 	@Override
 	public final void onDisable() {
 		unload();
-		this.dependencyProvider.closeAll();
+		this.dependencyProvider.close();
 	}
 
 	public abstract void load();
@@ -81,7 +81,7 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 	public abstract void postLoad();
 
 	public void reload() {
-		this.dependencyProvider.reloadAll();
+		this.dependencyProvider.reload();
 		this.reloadImpl();
 	}
 
@@ -93,7 +93,7 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 
 	protected CommandController enableCommands(CommandLocale locale) {
 		CommandController controller = new CommandController(this.dependencyProvider, locale);
-		controller.init();
+		controller.start();
 		this.dependencyProvider.register(controller);
 		return controller;
 	}

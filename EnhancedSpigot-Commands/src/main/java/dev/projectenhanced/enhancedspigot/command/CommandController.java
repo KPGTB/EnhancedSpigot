@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package dev.projectenhanced.enhancedspigot.command;
 
+import dev.projectenhanced.enhancedspigot.common.IDependencyProvider;
+import dev.projectenhanced.enhancedspigot.common.stereotype.Controller;
 import dev.projectenhanced.enhancedspigot.util.DependencyProvider;
 import dev.projectenhanced.enhancedspigot.util.ReflectionUtil;
 import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
@@ -29,39 +31,29 @@ import java.lang.reflect.Field;
 /**
  * CommandManager handles all commands in plugin
  */
-public class CommandController {
-	private final DependencyProvider provider;
-	private final JavaPlugin plugin;
+public class CommandController extends Controller {
 	private final CommandLocale locale;
 	private final File jarFile;
 	private final String pluginTag;
 
-	/**
-	 * Constructor of manager
-	 *
-	 * @param provider DependencyProvider
-	 * @param locale   CommandLocale object
-	 */
-	public CommandController(DependencyProvider provider, CommandLocale locale) {
-		this.provider = provider;
-		this.plugin = provider.provide(JavaPlugin.class);
+	public CommandController(JavaPlugin plugin, CommandLocale locale) {
+		super(plugin);
 		this.locale = locale;
 		this.jarFile = ReflectionUtil.getJarFile(plugin);
-		this.pluginTag = plugin.getName()
-			.toLowerCase()
-			.replace("-", "_");
+		this.pluginTag = this.generateTag();
 	}
 
-	/**
-	 * Init commands file
-	 */
-	public void init() {
-		File dataFolder = this.plugin.getDataFolder();
-		dataFolder.mkdirs();
-		File commandsFile = new File(dataFolder, "commands.yml");
-		if (!commandsFile.exists()) {
-			TryCatchUtil.tryRun(commandsFile::createNewFile);
-		}
+	public CommandController(DependencyProvider provider, CommandLocale locale) {
+		super(provider);
+		this.locale = locale;
+		this.jarFile = ReflectionUtil.getJarFile(this.plugin);
+		this.pluginTag = this.generateTag();
+	}
+
+	protected String generateTag() {
+		return this.plugin.getName()
+			.toLowerCase()
+			.replace("-", "_");
 	}
 
 	/**
@@ -74,40 +66,48 @@ public class CommandController {
 			.getClass()
 			.getDeclaredField("commandMap"));
 		f.setAccessible(true);
-		CommandMap commandMap = (CommandMap) TryCatchUtil.tryAndReturn(
-			() -> f.get(Bukkit.getServer()));
+		CommandMap commandMap = (CommandMap) TryCatchUtil.tryAndReturn(() -> f.get(Bukkit.getServer()));
 
-		ReflectionUtil.getAllClassesInPackage(
-				jarFile, commandsPackage,
-				EnhancedCommand.class
-			)
+		ReflectionUtil.getAllClassesInPackage(jarFile, commandsPackage, EnhancedCommand.class)
 			.forEach(clazz -> {
 				String[] groupPath = clazz.getName()
 					.split("\\.");
 				StringBuilder finalPath = new StringBuilder();
 
-				for (int i = commandsPackage.split(
-					"\\.").length; i < (groupPath.length - 1); i++) {
+				for (int i = commandsPackage.split("\\.").length; i < (groupPath.length - 1); i++) {
 					finalPath.append(groupPath[i])
 						.append(".");
 				}
 
-				if (finalPath.length() > 0) finalPath.deleteCharAt(
-					finalPath.length() - 1);
+				if (!finalPath.isEmpty()) finalPath.deleteCharAt(finalPath.length() - 1);
 
-				EnhancedCommand command = (EnhancedCommand) TryCatchUtil.tryAndReturn(
-					() -> clazz.getDeclaredConstructor(
-							DependencyProvider.class, CommandLocale.class,
-							String.class
-						)
-						.newInstance(
-							this.provider, this.locale,
-							finalPath.toString()
-						));
+				EnhancedCommand command;
+				if (this.dependencyProvider != null) {
+					command = (EnhancedCommand) TryCatchUtil.tryAndReturn(() -> clazz.getDeclaredConstructor(IDependencyProvider.class, CommandLocale.class, String.class)
+						.newInstance(this.dependencyProvider, this.locale, finalPath.toString()));
+				} else {
+					command = (EnhancedCommand) TryCatchUtil.tryAndReturn(() -> clazz.getDeclaredConstructor(JavaPlugin.class, CommandLocale.class, String.class)
+						.newInstance(this.plugin, this.locale, finalPath.toString()));
+				}
+
 				TryCatchUtil.tryRun(command::prepareCommand);
 				commandMap.register(pluginTag, command);
 			});
 
 		f.setAccessible(false);
 	}
+
+	@Override
+	public void start() {
+		File dataFolder = this.plugin.getDataFolder();
+		dataFolder.mkdirs();
+		File commandsFile = new File(dataFolder, "commands.yml");
+		if (!commandsFile.exists()) TryCatchUtil.tryRun(commandsFile::createNewFile);
+	}
+
+	@Override
+	public void reload() {}
+
+	@Override
+	public void close() {}
 }

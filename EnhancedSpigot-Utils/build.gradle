@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -26,4 +26,10 @@ repositories {
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT'
     compileOnly 'com.mojang:authlib:1.5.25'
+
+    implementation project(':EnhancedSpigot-Commons')
+}
+
+shadowJar {
+    dependsOn ':EnhancedSpigot-Commons:shadowJar'
 }

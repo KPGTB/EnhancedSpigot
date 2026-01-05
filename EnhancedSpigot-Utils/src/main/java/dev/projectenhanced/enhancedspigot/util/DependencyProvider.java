@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,19 +16,21 @@
 
 package dev.projectenhanced.enhancedspigot.util;
 
-import dev.projectenhanced.enhancedspigot.util.lifecycle.IClosable;
-import dev.projectenhanced.enhancedspigot.util.lifecycle.IReloadable;
+import dev.projectenhanced.enhancedspigot.common.IDependencyProvider;
+import dev.projectenhanced.enhancedspigot.common.stereotype.lifecycle.IClosable;
+import dev.projectenhanced.enhancedspigot.common.stereotype.lifecycle.IReloadable;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class DependencyProvider {
+public class DependencyProvider implements IDependencyProvider {
 	private final Map<Class<?>, Object> dependencies;
 
 	public DependencyProvider() {
 		this.dependencies = new HashMap<>();
 	}
 
+	@Override
 	public <T> T register(T dependency, Class<?>... classes) {
 		for (Class<?> clazz : classes) {
 			this.dependencies.put(clazz, dependency);
@@ -36,32 +38,37 @@ public class DependencyProvider {
 		return dependency;
 	}
 
+	@Override
 	public <T> T register(T dependency) {
 		return this.register(dependency, dependency.getClass());
 	}
 
+	@Override
 	public boolean isRegistered(Class<?> clazz) {
 		return this.dependencies.containsKey(clazz);
 	}
 
 	@SuppressWarnings("unchecked")
+	@Override
 	public <T> T provide(Class<T> clazz) {
 		return (T) this.dependencies.get(clazz);
 	}
 
-	public void reloadAll() {
-		dependencies.values()
-			.stream()
-			.filter(obj -> obj instanceof IReloadable)
-			.map(obj -> (IReloadable) obj)
-			.forEach(IReloadable::reload);
-	}
-
-	public void closeAll() {
+	@Override
+	public void close() {
 		dependencies.values()
 			.stream()
 			.filter(obj -> obj instanceof IClosable)
 			.map(obj -> (IClosable) obj)
 			.forEach(IClosable::close);
+	}
+
+	@Override
+	public void reload() {
+		dependencies.values()
+			.stream()
+			.filter(obj -> obj instanceof IReloadable)
+			.map(obj -> (IReloadable) obj)
+			.forEach(IReloadable::reload);
 	}
 }
