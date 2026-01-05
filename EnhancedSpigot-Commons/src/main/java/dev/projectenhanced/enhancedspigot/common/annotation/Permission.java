@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -14,14 +14,13 @@
  *    limitations under the License.
  */
 
-rootProject.name = "EnhancedSpigot"
-include "EnhancedSpigot-Utils"
-include "EnhancedSpigot-Data"
-include 'EnhancedSpigot-Configs'
-include 'EnhancedSpigot-Locale'
-include 'EnhancedSpigot-Commands'
-include 'EnhancedSpigot-Plugin'
-include 'EnhancedSpigot-Menus'
-include 'EnhancedSpigot-Items'
-include 'EnhancedSpigot-Gradle'
-include 'EnhancedSpigot-Commons'
+package dev.projectenhanced.enhancedspigot.common.annotation;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target({ElementType.METHOD, ElementType.TYPE}) @Retention(RetentionPolicy.RUNTIME) public @interface Permission {
+	String value();
+}

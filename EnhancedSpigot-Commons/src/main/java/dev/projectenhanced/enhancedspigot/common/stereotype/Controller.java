@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -14,14 +14,17 @@
  *    limitations under the License.
  */
 
-rootProject.name = "EnhancedSpigot"
-include "EnhancedSpigot-Utils"
-include "EnhancedSpigot-Data"
-include 'EnhancedSpigot-Configs'
-include 'EnhancedSpigot-Locale'
-include 'EnhancedSpigot-Commands'
-include 'EnhancedSpigot-Plugin'
-include 'EnhancedSpigot-Menus'
-include 'EnhancedSpigot-Items'
-include 'EnhancedSpigot-Gradle'
-include 'EnhancedSpigot-Commons'
+package dev.projectenhanced.enhancedspigot.common.stereotype;
+
+import dev.projectenhanced.enhancedspigot.common.IDependencyProvider;
+import org.bukkit.plugin.java.JavaPlugin;
+
+public abstract class Controller extends Component {
+	public Controller(JavaPlugin plugin) {
+		super(plugin);
+	}
+
+	public Controller(IDependencyProvider dependencyProvider) {
+		super(dependencyProvider);
+	}
+}

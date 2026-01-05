@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-version = "1.0.0-SNAPSHOT"
+version = "2.0.0-SNAPSHOT"
 description = "EnhancedSpigot Commands module adds an advanced commands system with auto-generated configs, permissions, parameters etc."
 
 repositories {
@@ -28,11 +28,13 @@ dependencies {
     compileOnly 'net.kyori:adventure-platform-bukkit:4.4.0'
     compileOnly "net.kyori:adventure-text-minimessage:4.21.0"
 
+    implementation project(':EnhancedSpigot-Commons')
     implementation project(':EnhancedSpigot-Utils')
     implementation project(':EnhancedSpigot-Locale')
 }
 
 shadowJar {
+    dependsOn ':EnhancedSpigot-Commons:shadowJar'
     dependsOn ':EnhancedSpigot-Utils:shadowJar'
     dependsOn ':EnhancedSpigot-Locale:shadowJar'
 }
