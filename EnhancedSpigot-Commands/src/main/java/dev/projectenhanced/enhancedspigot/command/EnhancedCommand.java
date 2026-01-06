@@ -53,6 +53,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Abstract class that handles process of creating commands
@@ -159,62 +160,6 @@ public abstract class EnhancedCommand extends Command {
 		this.saveCommandsFile();
 	}
 
-	private List<String> generatePermissions(Method method, String name, CommandPath path, boolean mainCommand, String customGlobalPermission, boolean globalWithoutPermission) {
-		Permission customPermissionAnn = method.getDeclaredAnnotation(Permission.class);
-		String customPermission = customPermissionAnn != null ?
-			customPermissionAnn.value() :
-			null;
-		boolean withoutPermission = method.getDeclaredAnnotation(WithoutPermission.class) != null;
-
-		List<String> permissions = new ArrayList<>();
-		if (!withoutPermission && !globalWithoutPermission) {
-			if (mainCommand) {
-				permissions.add(("command." + this.groupPath + "." + this.cmdName + "." + path.getPermissionStr() + "." + name).replace("..", "."));
-			} else {
-				permissions.add(("command." + this.groupPath + "." + this.cmdName + "." + path.getPermissionStr()).replace("..", "."));
-			}
-			CommandPath permissionsPath = new CommandPath();
-			int permissionsPathMaxLength = path.getPath().length;
-			if (!mainCommand) {
-				permissionsPathMaxLength--;
-			}
-			for (int i = 0; i < permissionsPathMaxLength; i++) {
-				permissionsPath.add(path.getPath()[i]);
-				permissions.add(("command." + this.groupPath + "." + this.cmdName + "." + permissionsPath.getPermissionStr() + ".*").replace("..", "."));
-			}
-			permissions.add(("command." + this.groupPath + "." + this.cmdName + ".*").replace("..", "."));
-			if (!this.groupPath.isEmpty()) {
-				permissions.add(("command." + this.groupPath + ".*").replace("..", "."));
-			}
-			permissions.add("command.*");
-
-			if (customGlobalPermission != null) {
-				permissions.add(customGlobalPermission);
-			}
-			if (customPermission != null) {
-				permissions.add(customPermission);
-			}
-		}
-
-		return permissions;
-	}
-
-	@SuppressWarnings("unchecked")
-	private <T> CommandArgument<T> handleParameter(Parameter parameter) {
-		String paramName = parameter.getName();
-		Class<T> paramClass = (Class<T>) parameter.getType();
-
-		Filter paramFiltersAnn = parameter.getDeclaredAnnotation(Filter.class);
-		FilterContainer<T> filters = null;
-		if (paramFiltersAnn != null) filters = new FilterContainer<>(paramFiltersAnn);
-
-		Converter customConverterAnn = parameter.getDeclaredAnnotation(Converter.class);
-		Class<? extends IStringConverter<T>> customConverter = null;
-		if (customConverterAnn != null) customConverter = (Class<? extends IStringConverter<T>>) customConverterAnn.value();
-
-		return new CommandArgument<T>(paramClass, customConverter, filters, paramName);
-	}
-
 	private void handleMethod(Method method, Object invoker, CommandPath path, String customGlobalPermission, boolean globalWithoutPermission) {
 		// === Name & Path
 		String name = method.getName()
@@ -285,8 +230,64 @@ public abstract class EnhancedCommand extends Command {
 		setVariantInfo(variantName, "hidden", hidden);
 	}
 
+	@SuppressWarnings("unchecked")
+	private <T> CommandArgument<T> handleParameter(Parameter parameter) {
+		String paramName = parameter.getName();
+		Class<T> paramClass = (Class<T>) parameter.getType();
+
+		Filter paramFiltersAnn = parameter.getDeclaredAnnotation(Filter.class);
+		FilterContainer<T> filters = null;
+		if (paramFiltersAnn != null) filters = new FilterContainer<>(paramFiltersAnn);
+
+		Converter customConverterAnn = parameter.getDeclaredAnnotation(Converter.class);
+		Class<? extends IStringConverter<T>> customConverter = null;
+		if (customConverterAnn != null) customConverter = (Class<? extends IStringConverter<T>>) customConverterAnn.value();
+
+		return new CommandArgument<T>(paramClass, customConverter, filters, paramName);
+	}
+
+	private List<String> generatePermissions(Method method, String name, CommandPath path, boolean mainCommand, String customGlobalPermission, boolean globalWithoutPermission) {
+		Permission customPermissionAnn = method.getDeclaredAnnotation(Permission.class);
+		String customPermission = customPermissionAnn != null ?
+			customPermissionAnn.value() :
+			null;
+		boolean withoutPermission = method.getDeclaredAnnotation(WithoutPermission.class) != null;
+
+		List<String> permissions = new ArrayList<>();
+		if (!withoutPermission && !globalWithoutPermission) {
+			if (mainCommand) {
+				permissions.add(("command." + this.groupPath + "." + this.cmdName + "." + path.getPermissionStr() + "." + name).replace("..", "."));
+			} else {
+				permissions.add(("command." + this.groupPath + "." + this.cmdName + "." + path.getPermissionStr()).replace("..", "."));
+			}
+			CommandPath permissionsPath = new CommandPath();
+			int permissionsPathMaxLength = path.getPath().length;
+			if (!mainCommand) {
+				permissionsPathMaxLength--;
+			}
+			for (int i = 0; i < permissionsPathMaxLength; i++) {
+				permissionsPath.add(path.getPath()[i]);
+				permissions.add(("command." + this.groupPath + "." + this.cmdName + "." + permissionsPath.getPermissionStr() + ".*").replace("..", "."));
+			}
+			permissions.add(("command." + this.groupPath + "." + this.cmdName + ".*").replace("..", "."));
+			if (!this.groupPath.isEmpty()) {
+				permissions.add(("command." + this.groupPath + ".*").replace("..", "."));
+			}
+			permissions.add("command.*");
+
+			if (customGlobalPermission != null) {
+				permissions.add(customGlobalPermission);
+			}
+			if (customPermission != null) {
+				permissions.add(customPermission);
+			}
+		}
+
+		return permissions;
+	}
+
 	//
-	//  Overrides
+	//  Command Execution
 	//
 
 	@Override
@@ -302,7 +303,7 @@ public abstract class EnhancedCommand extends Command {
 				.subList(path.getPath().length, args.length));
 
 			for (CommandInfo command : commands) {
-				if (!this.validateArgsTypes(command, actualArgs)) continue;
+				if (!this.validateAllArgsTypes(command, actualArgs)) continue;
 
 				if (command.isPlayerRequired() && !(sender instanceof Player)) {
 					found = true;
@@ -356,7 +357,7 @@ public abstract class EnhancedCommand extends Command {
 				.to(sender);
 			return false;
 		}
-		this.sendHelp(sender);
+		this.sendHelp(sender, commandLabel);
 		return true;
 	}
 
@@ -376,14 +377,20 @@ public abstract class EnhancedCommand extends Command {
 			.toList();
 	}
 
-	private boolean validateArgsTypes(CommandInfo command, List<String> actualArgs) {
+	private boolean validateAllArgsTypes(CommandInfo command, List<String> actualArgs) {
 		if (!command.isEndless() && command.getArgs()
 			.size() != actualArgs.size()) return false;
 		if (command.isEndless() && command.getArgs()
 			.size() > actualArgs.size()) return false;
 
-		for (int i = 0; i < command.getArgs()
-			.size(); i++) {
+		return this.validateArgsTypesUntil(
+			command, actualArgs, command.getArgs()
+				.size()
+		);
+	}
+
+	private boolean validateArgsTypesUntil(CommandInfo command, List<String> actualArgs, int untilIdx) {
+		for (int i = 0; i < untilIdx; i++) {
 			if (command.isEndless() && command.getArgs()
 				.size() == i + 1) {
 				break;
@@ -435,105 +442,56 @@ public abstract class EnhancedCommand extends Command {
 			.passFilters(object, plugin, sender);
 	}
 
+	//
+	//  Tab Completer
+	//
+
 	@Override
 	public final List<String> tabComplete(CommandSender sender, String alias, String[] args) throws IllegalArgumentException {
 		List<String> result = new LinkedList<>();
 		if (args.length == 0) return result;
+		int lastArgIndex = args.length - 1;
 
 		this.subCommands.forEach((path, commands) -> {
 			commands.forEach(command -> {
-				if (!hasPermission(sender, command)) {
-					return;
-				}
-				if (command.isHidden()) {
-					return;
-				}
-				if (command.isPlayerRequired() && !(sender instanceof Player)) {
-					return;
-				}
+				if (!hasPermission(sender, command) || command.isHidden()) return;
+				if (command.isPlayerRequired() && !(sender instanceof Player)) return;
 				if (args.length > command.getArgs()
 					.size() + path.getPath().length && !command.isEndless()) {
 					return;
 				}
 
-				boolean correctPath = true;
-				boolean inPath = false;
+				// === Check path
 				for (int i = 0; i < path.getPath().length; i++) {
-					if (i < args.length - 1) {
-						if (!args[i].equalsIgnoreCase(path.getPath()[i])) {
-							correctPath = false;
-							break;
-						}
-					}
-					if (i == args.length - 1) {
-						inPath = true;
-						String resultPath = path.getPath()[i];
-						if (resultPath.startsWith(args[args.length - 1])) {
-							result.add(path.getPath()[i]);
-						}
-						break;
-					}
-				}
-
-				if (!correctPath) {
-					return;
-				}
-
-				if (inPath) {
-					return;
-				}
-
-				List<String> fixedArgs = new ArrayList<>(Arrays.asList(args)
-					.subList(path.getPath().length, args.length));
-
-				boolean correctTypes = true;
-				for (int i = 0; i < Math.min(
-					fixedArgs.size() - 1, command.getArgs()
-						.size() - 1
-				); i++) {
-					CommandArgument arg = command.getArgs()
-						.get(i);
-					if (arg.hasCustomConverter()) {
-						if (!arg.getCustomConverter()
-							.canConvert(fixedArgs.get(i), plugin)) {
-							correctTypes = false;
-							break;
-						}
+					String currentPath = path.getPath()[i];
+					if (i < lastArgIndex) {
+						if (!args[i].equalsIgnoreCase(currentPath)) return;
 					} else {
-						if (!converterRegistry.canConvert(fixedArgs.get(i), arg.getClazz(), plugin)) {
-							correctTypes = false;
-							break;
-						}
+						if (currentPath.startsWith(args[lastArgIndex])) result.add(currentPath);
+						return;
 					}
 				}
 
-				if (!correctTypes) {
-					return;
-				}
+				// === Check args
+				List<String> actualArgs = new LinkedList<>(Arrays.asList(args)
+					.subList(path.getPath().length, args.length));
+				int lastCommandArgIndex = Math.min(
+					actualArgs.size(), command.getArgs()
+						.size()
+				) - 1;
 
-				CommandArgument finalArg = command.isEndless() ?
-					command.getArgs()
-						.get(command.getArgs()
-							.size() - 1) :
-					null;
-				if (fixedArgs.size() <= command.getArgs()
-					.size()) {
-					finalArg = command.getArgs()
-						.get(fixedArgs.size() - 1);
-				}
-				if (finalArg == null) {
-					return;
-				}
-				List<String> complete;
-				if (finalArg.hasCustomConverter()) {
-					complete = finalArg.getCustomConverter()
-						.complete(args[args.length - 1], sender, plugin);
-				} else {
-					complete = converterRegistry.complete(args[args.length - 1], sender, finalArg.getClazz(), plugin);
-					;
-				}
-				result.add("<" + finalArg.getName() + ">");
-				result.addAll(getCompleterThatPass(complete, finalArg, sender));
+				if (!this.validateArgsTypesUntil(command, actualArgs, lastCommandArgIndex)) return;
+
+				CommandArgument<?> lastArg = command.getArgs()
+					.get(lastCommandArgIndex);
+
+				List<String> complete = lastArg.hasCustomConverter() ?
+					lastArg.getCustomConverter()
+						.complete(args[lastArgIndex], sender, this.plugin) :
+					this.converterRegistry.complete(args[args.length - 1], sender, lastArg.getClazz(), this.plugin);
+
+				result.add("<" + lastArg.getName() + ">");
+				result.addAll(this.getCompleterThatPassFilters(complete, lastArg, sender));
 			});
 		});
 
@@ -549,7 +507,7 @@ public abstract class EnhancedCommand extends Command {
 	 *
 	 * @param sender Command Sender
 	 */
-	public void sendHelp(CommandSender sender) {
+	public void sendHelp(CommandSender sender, String label) {
 		List<Component> componentsToSend = new LinkedList<>();
 
 		subCommands.forEach((path, commands) -> {
@@ -586,7 +544,7 @@ public abstract class EnhancedCommand extends Command {
 
 	private String getCommandStr(CommandInfo command) {
 		CommandPath path = command.getPath();
-		StringBuilder cmdStr = new StringBuilder("/");
+		StringBuilder cmdStr = new StringBuilder();
 		cmdStr.append(this.cmdName);
 		if (path.getPath().length > 0) {
 			cmdStr.append(" ")
@@ -603,7 +561,7 @@ public abstract class EnhancedCommand extends Command {
 		return cmdStr.toString();
 	}
 
-	private <T> List<String> getCompleterThatPass(List<String> complete, CommandArgument<T> arg, CommandSender sender) {
+	private <T> List<String> getCompleterThatPassFilters(List<String> complete, CommandArgument<T> arg, CommandSender sender) {
 		List<String> result = new ArrayList<>();
 		complete.forEach(s -> {
 			T obj = arg.hasCustomConverter() ?
@@ -650,5 +608,17 @@ public abstract class EnhancedCommand extends Command {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	@Override
+	public boolean equals(Object object) {
+		if (object == null || getClass() != object.getClass()) return false;
+		EnhancedCommand that = (EnhancedCommand) object;
+		return Objects.equals(groupPath, that.groupPath) && Objects.equals(cmdName, that.cmdName);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(groupPath, cmdName);
 	}
 }

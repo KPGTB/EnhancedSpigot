@@ -22,11 +22,16 @@ import dev.projectenhanced.enhancedspigot.util.DependencyProvider;
 import dev.projectenhanced.enhancedspigot.util.ReflectionUtil;
 import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandMap;
+import org.bukkit.command.Command;
+import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * CommandManager handles all commands in plugin
@@ -35,12 +40,14 @@ public class CommandController extends Controller {
 	private final CommandLocale locale;
 	private final File jarFile;
 	private final String pluginTag;
+	private final List<Command> registeredCommands;
 
 	public CommandController(JavaPlugin plugin, CommandLocale locale) {
 		super(plugin);
 		this.locale = locale;
 		this.jarFile = ReflectionUtil.getJarFile(plugin);
 		this.pluginTag = this.generateTag();
+		this.registeredCommands = new ArrayList<>();
 	}
 
 	public CommandController(DependencyProvider provider, CommandLocale locale) {
@@ -48,6 +55,7 @@ public class CommandController extends Controller {
 		this.locale = locale;
 		this.jarFile = ReflectionUtil.getJarFile(this.plugin);
 		this.pluginTag = this.generateTag();
+		this.registeredCommands = new ArrayList<>();
 	}
 
 	protected String generateTag() {
@@ -62,38 +70,47 @@ public class CommandController extends Controller {
 	 * @param commandsPackage Package with commands
 	 */
 	public void registerCommands(String commandsPackage) {
+		this.applyInCommandMap(commandMap -> {
+			ReflectionUtil.getAllClassesInPackage(jarFile, commandsPackage, EnhancedCommand.class)
+				.forEach(clazz -> {
+					String[] groupPath = clazz.getName()
+						.split("\\.");
+					StringBuilder finalPath = new StringBuilder();
+
+					for (int i = commandsPackage.split("\\.").length; i < (groupPath.length - 1); i++) {
+						finalPath.append(groupPath[i])
+							.append(".");
+					}
+
+					if (!finalPath.isEmpty()) finalPath.deleteCharAt(finalPath.length() - 1);
+
+					EnhancedCommand command;
+					if (this.dependencyProvider != null) {
+						command = (EnhancedCommand) TryCatchUtil.tryAndReturn(() -> clazz.getDeclaredConstructor(IDependencyProvider.class, CommandLocale.class, String.class)
+							.newInstance(this.dependencyProvider, this.locale, finalPath.toString()));
+					} else {
+						command = (EnhancedCommand) TryCatchUtil.tryAndReturn(() -> clazz.getDeclaredConstructor(JavaPlugin.class, CommandLocale.class, String.class)
+							.newInstance(this.plugin, this.locale, finalPath.toString()));
+					}
+
+					TryCatchUtil.tryRun(command::prepareCommand);
+					commandMap.register(pluginTag, command);
+					this.registeredCommands.add(command);
+				});
+		});
+	}
+
+	public void updateCommandLocale(CommandLocale newLocale) {
+		this.locale.update(newLocale);
+	}
+
+	private void applyInCommandMap(Consumer<SimpleCommandMap> consumer) {
 		Field f = TryCatchUtil.tryAndReturn(() -> Bukkit.getServer()
 			.getClass()
 			.getDeclaredField("commandMap"));
 		f.setAccessible(true);
-		CommandMap commandMap = (CommandMap) TryCatchUtil.tryAndReturn(() -> f.get(Bukkit.getServer()));
-
-		ReflectionUtil.getAllClassesInPackage(jarFile, commandsPackage, EnhancedCommand.class)
-			.forEach(clazz -> {
-				String[] groupPath = clazz.getName()
-					.split("\\.");
-				StringBuilder finalPath = new StringBuilder();
-
-				for (int i = commandsPackage.split("\\.").length; i < (groupPath.length - 1); i++) {
-					finalPath.append(groupPath[i])
-						.append(".");
-				}
-
-				if (!finalPath.isEmpty()) finalPath.deleteCharAt(finalPath.length() - 1);
-
-				EnhancedCommand command;
-				if (this.dependencyProvider != null) {
-					command = (EnhancedCommand) TryCatchUtil.tryAndReturn(() -> clazz.getDeclaredConstructor(IDependencyProvider.class, CommandLocale.class, String.class)
-						.newInstance(this.dependencyProvider, this.locale, finalPath.toString()));
-				} else {
-					command = (EnhancedCommand) TryCatchUtil.tryAndReturn(() -> clazz.getDeclaredConstructor(JavaPlugin.class, CommandLocale.class, String.class)
-						.newInstance(this.plugin, this.locale, finalPath.toString()));
-				}
-
-				TryCatchUtil.tryRun(command::prepareCommand);
-				commandMap.register(pluginTag, command);
-			});
-
+		SimpleCommandMap commandMap = (SimpleCommandMap) TryCatchUtil.tryAndReturn(() -> f.get(Bukkit.getServer()));
+		consumer.accept(commandMap);
 		f.setAccessible(false);
 	}
 
@@ -108,6 +125,24 @@ public class CommandController extends Controller {
 	@Override
 	public void reload() {}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public void close() {}
+	public void close() {
+		this.applyInCommandMap(commandMap -> {
+			Field field = TryCatchUtil.tryAndReturn(() -> SimpleCommandMap.class.getDeclaredField("knownCommands"));
+			field.setAccessible(true);
+			Map<String, Command> knownCommands = (Map<String, Command>) TryCatchUtil.tryAndReturn(() -> field.get(commandMap));
+			List<String> toRemove = new ArrayList<>();
+
+			knownCommands.forEach((name, command) -> {
+				if (this.registeredCommands.contains(command)) {
+					System.out.println("Unregistering command: " + name);
+					toRemove.add(name);
+				}
+			});
+
+			toRemove.forEach(knownCommands::remove);
+			field.setAccessible(false);
+		});
+	}
 }
