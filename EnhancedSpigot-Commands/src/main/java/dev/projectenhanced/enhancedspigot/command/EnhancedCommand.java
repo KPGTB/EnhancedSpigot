@@ -41,6 +41,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -70,6 +71,7 @@ public abstract class EnhancedCommand extends Command {
 	private final YamlConfiguration commandsConf;
 
 	private final Map<CommandPath, List<CommandInfo>> subCommands;
+	protected int commandsPerHelpPage;
 	private String cmdName;
 
 	private EnhancedCommand(JavaPlugin plugin, IDependencyProvider provider, CommandLocale locale, String groupPath) {
@@ -86,6 +88,7 @@ public abstract class EnhancedCommand extends Command {
 		this.commandsConf = YamlConfiguration.loadConfiguration(this.commandsFile);
 
 		this.subCommands = new LinkedHashMap<>();
+		this.commandsPerHelpPage = 5;
 	}
 
 	public EnhancedCommand(JavaPlugin plugin, CommandLocale locale, String groupPath) {
@@ -221,7 +224,7 @@ public abstract class EnhancedCommand extends Command {
 		CommandInfo info = new CommandInfo(path, permissions, playerRequired, sourceFilters, args, invoker, method, endless, hidden, description);
 		commands.add(info);
 
-		String variantName = getCommandStr(info);
+		String variantName = getCommandStr(info, this.cmdName);
 		info.setDescription(String.valueOf(this.getVariantInfo(variantName, "description", info.getDescription())));
 
 		setVariantInfo(variantName, "description", info.getDescription());
@@ -291,7 +294,7 @@ public abstract class EnhancedCommand extends Command {
 	//
 
 	@Override
-	public final boolean execute(CommandSender sender, String commandLabel, String[] args) {
+	public final boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, String[] args) {
 		List<CommandPath> possiblePaths = this.getPossiblePaths(args);
 
 		boolean found = false;
@@ -357,7 +360,13 @@ public abstract class EnhancedCommand extends Command {
 				.to(sender);
 			return false;
 		}
-		this.sendHelp(sender, commandLabel);
+		int helpPage = 1;
+		if (args.length > 0) {
+			try {
+				helpPage = Integer.parseInt(args[args.length - 1]);
+			} catch (Exception ignored) {}
+		}
+		this.sendHelp(sender, commandLabel, helpPage);
 		return true;
 	}
 
@@ -447,7 +456,7 @@ public abstract class EnhancedCommand extends Command {
 	//
 
 	@Override
-	public final List<String> tabComplete(CommandSender sender, String alias, String[] args) throws IllegalArgumentException {
+	public final @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, String[] args) throws IllegalArgumentException {
 		List<String> result = new LinkedList<>();
 		if (args.length == 0) return result;
 		int lastArgIndex = args.length - 1;
@@ -507,8 +516,8 @@ public abstract class EnhancedCommand extends Command {
 	 *
 	 * @param sender Command Sender
 	 */
-	public void sendHelp(CommandSender sender, String label) {
-		List<Component> componentsToSend = new LinkedList<>();
+	public void sendHelp(CommandSender sender, String label, int page) {
+		List<CommandInfo> commandsToShow = new LinkedList<>();
 
 		subCommands.forEach((path, commands) -> {
 			commands.forEach(command -> {
@@ -516,22 +525,41 @@ public abstract class EnhancedCommand extends Command {
 				if (command.isHidden()) return;
 				if (command.isPlayerRequired() && !(sender instanceof Player)) return;
 
-				componentsToSend.addAll(this.locale.getHelpLine()
-					.asComponents(Placeholder.parsed("command", getCommandStr(command)), Placeholder.unparsed("description", command.getDescription())));
+				commandsToShow.add(command);
 			});
 		});
 
-		if (componentsToSend.isEmpty()) componentsToSend.addAll(this.locale.getHelpNoInfo()
-			.asComponents());
+		List<Component> componentsToSend = new LinkedList<>();
+
+		int pages;
+		if (commandsToShow.isEmpty()) {
+			componentsToSend.addAll(this.locale.getHelpNoInfo()
+				.asComponents());
+			pages = 0;
+		} else {
+			int commands = commandsToShow.size();
+			pages = (int) Math.ceil((double) commands / this.commandsPerHelpPage);
+			if (page < 1) page = 1;
+			if (page > pages) page = pages;
+
+			int start = this.commandsPerHelpPage * (page - 1);
+			int end = Math.min(start + this.commandsPerHelpPage, commandsToShow.size());
+
+			commandsToShow.subList(start, end)
+				.forEach(command -> {
+					componentsToSend.addAll(this.locale.getHelpLine()
+						.asComponents(Placeholder.parsed("command", this.getCommandStr(command, label)), Placeholder.unparsed("description", command.getDescription())));
+				});
+		}
 
 		componentsToSend.addAll(
 			0, this.locale.getHelpStart()
-				.asComponents(Placeholder.parsed("command", cmdName))
+				.asComponents(Placeholder.parsed("command", label), Placeholder.unparsed("page", String.valueOf(page)), Placeholder.unparsed("pages", String.valueOf(pages)))
 		);
 		componentsToSend.add(0, Component.text(" "));
 
 		componentsToSend.addAll(this.locale.getHelpEnd()
-			.asComponents(Placeholder.parsed("command", cmdName)));
+			.asComponents(Placeholder.parsed("command", label), Placeholder.unparsed("page", String.valueOf(page)), Placeholder.unparsed("pages", String.valueOf(pages))));
 		componentsToSend.add(Component.text(" "));
 
 		componentsToSend.forEach(comp -> this.locale.getBridge()
@@ -542,10 +570,10 @@ public abstract class EnhancedCommand extends Command {
 	// Utilities
 	//
 
-	private String getCommandStr(CommandInfo command) {
+	private String getCommandStr(CommandInfo command, String label) {
 		CommandPath path = command.getPath();
 		StringBuilder cmdStr = new StringBuilder();
-		cmdStr.append(this.cmdName);
+		cmdStr.append(label);
 		if (path.getPath().length > 0) {
 			cmdStr.append(" ")
 				.append(path.getPathStr());

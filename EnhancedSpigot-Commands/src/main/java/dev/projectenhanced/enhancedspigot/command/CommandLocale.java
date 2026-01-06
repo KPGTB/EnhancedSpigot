@@ -30,8 +30,8 @@ import lombok.NoArgsConstructor;
 	@LocaleDefault(language = "en", def = "<red>This command can be used only by players")
 	@LocaleDefault(language = "pl", def = "<red>Ta komenda może być użyta tylko przez gracza")
 	LocaleObject onlyPlayer;
-	@LocaleDefault(language = "en", def = "<dark_green><st>─────┤</st> /<green><command> <aqua>• <dark_green>Help Page")
-	@LocaleDefault(language = "pl", def = "<dark_green><st>─────┤</st> /<green><command> <aqua>• <dark_green>Pomoc")
+	@LocaleDefault(language = "en", def = "<dark_green><st>─────┤</st> /<green><command> <aqua>• <dark_green>Help Page <dark_gray>(<gray><page><dark_gray>/<gray><pages><dark_gray>)")
+	@LocaleDefault(language = "pl", def = "<dark_green><st>─────┤</st> /<green><command> <aqua>• <dark_green>Pomoc <dark_gray>(<gray><page><dark_gray>/<gray><pages><dark_gray>)")
 	LocaleObject helpStart;
 	@LocaleDefault(language = "en", def = "<dark_gray>» <red>There isn't any help for you.")
 	@LocaleDefault(language = "pl", def = "<dark_gray>» <red>Brak pomocy")
@@ -39,8 +39,8 @@ import lombok.NoArgsConstructor;
 	@LocaleDefault(language = "en", def = "<dark_gray>» <dark_green>/<green><command> <dark_gray>• <gray><description>")
 	@LocaleDefault(language = "pl", def = "<dark_gray>» <dark_green>/<green><command> <dark_gray>• <gray><description>")
 	LocaleObject helpLine;
-	@LocaleDefault(language = "en", def = "<dark_green><st>─────┤</st> /<green><command> <aqua>• <dark_green>Help Page")
-	@LocaleDefault(language = "pl", def = "<dark_green><st>─────┤</st> /<green><command> <aqua>• <dark_green>Pomoc")
+	@LocaleDefault(language = "en", def = "<dark_green><st>─────┤</st> /<green><command> <aqua>• <dark_green>Help Page <dark_gray>(<gray><page><dark_gray>/<gray><pages><dark_gray>)")
+	@LocaleDefault(language = "pl", def = "<dark_green><st>─────┤</st> /<green><command> <aqua>• <dark_green>Pomoc <dark_gray>(<gray><page><dark_gray>/<gray><pages><dark_gray>)")
 	LocaleObject helpEnd;
 
 	@InjectBridge IPlatformBridge bridge;
