@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ class EnhancedSpigotPlugin implements Plugin<Project> {
         ext.menusModule.convention("")
         ext.pluginModule.convention("")
         ext.utilsModule.convention("")
+        ext.commonsModule.convention("")
 
         project.getPluginManager().apply("io.freefair.lombok")
         project.getPluginManager().apply("com.gradleup.shadow")
@@ -58,6 +59,7 @@ class EnhancedSpigotPlugin implements Plugin<Project> {
             }
 
             project.dependencies {
+                if (!ext.commonsModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Commons:" + ext.commonsModule.get()
                 if (!ext.utilsModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Utils:" + ext.utilsModule.get()
                 if (!ext.configsModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Configs:" + ext.configsModule.get()
                 if (!ext.localeModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Locale:" + ext.localeModule.get()
