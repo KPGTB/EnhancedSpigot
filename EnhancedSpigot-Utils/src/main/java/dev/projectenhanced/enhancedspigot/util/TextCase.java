@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -21,15 +21,15 @@ public class TextCase {
 		String regex = "([a-z])([A-Z]+)";
 		String replacement = "$1-$2";
 		str = str.replaceAll(regex, replacement)
-				 .toLowerCase();
+			.toLowerCase();
 		return str;
 	}
 
-	public static String camelToSneakCase(String str) {
+	public static String camelToSnakeCase(String str) {
 		String regex = "([a-z])([A-Z]+)";
 		String replacement = "$1_$2";
 		str = str.replaceAll(regex, replacement)
-				 .toLowerCase();
+			.toLowerCase();
 		return str;
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -26,8 +26,6 @@ import java.lang.annotation.Target;
 /**
  * This annotation is used to use custom serializer for a field
  */
-@Target({ElementType.FIELD})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Serializer {
+@Target({ElementType.TYPE, ElementType.FIELD}) @Retention(RetentionPolicy.RUNTIME) public @interface Serializer {
 	Class<? extends ISerializer<?>> value();
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import com.j256.ormlite.logger.LoggerFactory;
 import com.j256.ormlite.support.BaseConnectionSource;
 import com.j256.ormlite.table.DatabaseTable;
 import com.j256.ormlite.table.TableUtils;
+import dev.projectenhanced.enhancedspigot.common.stereotype.Controller;
 import dev.projectenhanced.enhancedspigot.data.connection.DatabaseOptions;
 import dev.projectenhanced.enhancedspigot.data.connection.IConnectionHandler;
 import dev.projectenhanced.enhancedspigot.data.connection.MySQLConnectionHandler;
@@ -39,7 +40,6 @@ import dev.projectenhanced.enhancedspigot.data.persister.base.OfflinePlayerPersi
 import dev.projectenhanced.enhancedspigot.data.persister.base.WorldPersister;
 import dev.projectenhanced.enhancedspigot.util.ReflectionUtil;
 import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
-import dev.projectenhanced.enhancedspigot.util.lifecycle.IClosable;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -58,8 +58,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
-@Getter @Setter public class DatabaseController implements IClosable {
-	private final JavaPlugin plugin;
+@Getter @Setter public class DatabaseController extends Controller {
 	private final File jarFile;
 	private final DatabaseOptions options;
 	private IConnectionHandler handler;
@@ -70,7 +69,7 @@ import java.util.logging.Level;
 	private Map<Class<?>, Dao<?, ?>> daoMap;
 
 	public DatabaseController(JavaPlugin plugin, DatabaseOptions options) {
-		this.plugin = plugin;
+		super(plugin);
 		this.jarFile = ReflectionUtil.getJarFile(plugin);
 		this.options = options;
 
@@ -102,20 +101,6 @@ import java.util.logging.Level;
 		this.registerDefaultPersisters();
 
 		if (!this.debug) LoggerFactory.setLogBackendFactory(LogBackendType.NULL);
-	}
-
-	/**
-	 * Close database connection
-	 */
-	@SneakyThrows
-	@Override
-	public void close() {
-		if (this.executor != null) this.executor.shutdownNow();
-		if (this.source == null) return;
-		this.source.close();
-		this.source = null;
-		this.handler.close();
-		this.daoMap = new HashMap<>();
 	}
 
 	public void registerEntities(String packageName) {
@@ -194,5 +179,26 @@ import java.util.logging.Level;
 
 	private void registerDefaultPersisters() {
 		registerPersisters(new ItemStackPersister(), new ListPersister(), new LocationPersister(), new MapPersister(), new OfflinePlayerPersister(), new WorldPersister());
+	}
+
+	@Override
+	public void start() {
+
+	}
+
+	@Override
+	public void reload() {
+
+	}
+
+	@SneakyThrows
+	@Override
+	public void close() {
+		if (this.executor != null) this.executor.shutdownNow();
+		if (this.source == null) return;
+		this.source.close();
+		this.source = null;
+		this.handler.close();
+		this.daoMap = new HashMap<>();
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,18 +16,13 @@
 
 package dev.projectenhanced.enhancedspigot.config.serializer;
 
-import dev.projectenhanced.enhancedspigot.config.serializer.impl.BaseSerializer;
-import dev.projectenhanced.enhancedspigot.config.serializer.impl.EnhancedTimeSerializer;
-import dev.projectenhanced.enhancedspigot.config.serializer.impl.EnumSerializer;
-import dev.projectenhanced.enhancedspigot.config.serializer.impl.ExactItemStackSerializer;
-import dev.projectenhanced.enhancedspigot.config.serializer.impl.ItemStackSerializer;
-import dev.projectenhanced.enhancedspigot.config.serializer.impl.LocationSerializer;
-import dev.projectenhanced.enhancedspigot.config.serializer.impl.WorldSerializer;
+import dev.projectenhanced.enhancedspigot.config.serializer.impl.*;
 import dev.projectenhanced.enhancedspigot.util.time.EnhancedTime;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.inventory.ItemStack;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,6 +33,7 @@ public class ConfigSerializerRegistry {
 	private static final class Holder {
 		static final ConfigSerializerRegistry INSTANCE = new ConfigSerializerRegistry();
 	}
+
 	private final Map<Class<?>, ISerializer<?>> serializers;
 
 	protected ConfigSerializerRegistry() {
@@ -47,6 +43,7 @@ public class ConfigSerializerRegistry {
 		this.registerSerializer(new LocationSerializer(), Location.class);
 		this.registerSerializer(new ItemStackSerializer(), ItemStack.class);
 		this.registerSerializer(new EnhancedTimeSerializer(), EnhancedTime.class);
+		this.registerSerializer(new BigDecimalSerializer(), BigDecimal.class);
 	}
 
 	public static ConfigSerializerRegistry getInstance() {

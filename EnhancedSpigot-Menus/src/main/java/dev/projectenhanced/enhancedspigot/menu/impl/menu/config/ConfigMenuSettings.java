@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package dev.projectenhanced.enhancedspigot.menu.impl.menu.config;
 
+import dev.projectenhanced.enhancedspigot.config.annotation.Serializer;
+import dev.projectenhanced.enhancedspigot.config.serializer.impl.BaseSerializer;
 import dev.projectenhanced.enhancedspigot.locale.ColorUtil;
 import dev.projectenhanced.enhancedspigot.menu.EnhancedMenu;
 import dev.projectenhanced.enhancedspigot.menu.item.MenuItem;
@@ -122,7 +124,7 @@ public abstract class ConfigMenuSettings {
 		return result;
 	}
 
-	@Getter @NoArgsConstructor @AllArgsConstructor public static class StaticItem {
+	@Serializer(BaseSerializer.class) @Getter @NoArgsConstructor @AllArgsConstructor public static class StaticItem {
 		private ItemStack item;
 		private List<String> actions;
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -24,12 +24,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor public class DatabaseOptions {
+@Serializer(BaseSerializer.class) @Getter @Setter @NoArgsConstructor @AllArgsConstructor public class DatabaseOptions {
 	@Comment("Supported types: SQLITE, MYSQL, POSTGRESQL") private ConnectionType type = ConnectionType.SQLITE;
 	@Comment({"Configure only when using MySQL or PostgreSQL"})
 	@Serializer(BaseSerializer.class)
 	private Credentials credentials = new Credentials();
-	@Comment({"Configure only when using MySQL or PostgreSQL", "Don't change if you don't know what it is!"})
+	@Comment({"HikariCP options", "Don't change if you don't know what it is!"})
 	@Serializer(BaseSerializer.class)
 	private HikariOptions hikariOptions = new HikariOptions();
 	@Comment("Number of platform threads used for database operations") private int threads = 10;
@@ -46,7 +46,7 @@ import lombok.Setter;
 		private boolean enabled = true;
 		private String poolName = "hikari";
 		private int maximumPoolSize = 5;
-		private int minimumIdle = 15;
+		private int minimumIdle = 5;
 		private long idleTimeout = 600000L;
 		private long maxLifetime = 1800000L;
 		private long connectionTimeout = 30000L;

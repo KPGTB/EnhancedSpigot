@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,10 +16,11 @@
 
 package dev.projectenhanced.enhancedspigot.config;
 
+import dev.projectenhanced.enhancedspigot.common.stereotype.lifecycle.IReloadable;
+import dev.projectenhanced.enhancedspigot.common.stereotype.lifecycle.IStartable;
 import dev.projectenhanced.enhancedspigot.config.annotation.Comment;
 import dev.projectenhanced.enhancedspigot.config.serializer.ConfigSerializerRegistry;
 import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
-import dev.projectenhanced.enhancedspigot.util.lifecycle.IReloadable;
 import lombok.Getter;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -30,17 +31,17 @@ import java.util.Map;
 
 /**
  * Representation of config managed by EnhancedSpigot<br />
- * Library automatically maps all the fields (except those with {@link dev.projectenhanced.enhancedspigot.config.annotation.Ignore} annotation)<br />
+ * Library automatically maps all the fields (except those with {@link dev.projectenhanced.enhancedspigot.common.annotation.Ignore} annotation)<br />
  * By inline initialization you can set default values<br />
  * Nested configuration can be made using inner classes and fields with their type<br />
  * <strong>All classes have to contain empty constructor for serialization purposes</strong><br />
  * <br />
  * Other useful annotations: {@link dev.projectenhanced.enhancedspigot.config.annotation}
  */
-@Getter public abstract class EnhancedConfig implements IReloadable {
-	private JavaPlugin plugin;
-	private File configFile;
-	private YamlConfiguration configuration;
+@Getter public abstract class EnhancedConfig implements IStartable, IReloadable {
+	protected JavaPlugin plugin;
+	protected File configFile;
+	protected YamlConfiguration configuration;
 
 	/**
 	 * Empty constructor for serialization purposes<br />
@@ -68,7 +69,8 @@ import java.util.Map;
 	/**
 	 * Creates config file and loads configuration
 	 */
-	public void init() {
+	@Override
+	public void start() {
 		boolean newConfig = !this.configFile.exists();
 		if (newConfig) {
 			this.configFile.getParentFile()

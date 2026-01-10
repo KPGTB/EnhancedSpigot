@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,15 +16,16 @@
 
 package dev.projectenhanced.enhancedspigot.config.serializer.impl;
 
+import dev.projectenhanced.enhancedspigot.common.annotation.Ignore;
 import dev.projectenhanced.enhancedspigot.config.EnhancedConfig;
 import dev.projectenhanced.enhancedspigot.config.annotation.Comment;
 import dev.projectenhanced.enhancedspigot.config.annotation.DoNotRecover;
-import dev.projectenhanced.enhancedspigot.config.annotation.Ignore;
 import dev.projectenhanced.enhancedspigot.config.annotation.InjectKey;
 import dev.projectenhanced.enhancedspigot.config.annotation.Serializer;
 import dev.projectenhanced.enhancedspigot.config.serializer.ConfigSerializerRegistry;
 import dev.projectenhanced.enhancedspigot.config.serializer.ISerializer;
 import dev.projectenhanced.enhancedspigot.config.util.SectionUtil;
+import dev.projectenhanced.enhancedspigot.util.Pair;
 import dev.projectenhanced.enhancedspigot.util.TextCase;
 import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
 import org.bukkit.configuration.ConfigurationSection;
@@ -35,8 +36,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.AbstractMap;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,9 +62,10 @@ public class BaseSerializer implements ISerializer<Object> {
 			.forEach(field -> {
 				Ignore ignoreAnn = field.getDeclaredAnnotation(Ignore.class);
 				InjectKey injectKeyAnn = field.getDeclaredAnnotation(InjectKey.class);
-				Comment commentAnn = field.getDeclaredAnnotation(Comment.class);
-				Serializer serializerAnn = field.getDeclaredAnnotation(Serializer.class);
 				if (ignoreAnn != null || injectKeyAnn != null) return;
+
+				Comment commentAnn = field.getDeclaredAnnotation(Comment.class);
+				Serializer serializerAnn = this.extractSerializerFromField(field);
 
 				String key = TextCase.camelToKebabCase(field.getName());
 
@@ -92,23 +94,21 @@ public class BaseSerializer implements ISerializer<Object> {
 			.forEach(field -> {
 				Ignore ignoreAnn = field.getDeclaredAnnotation(Ignore.class);
 				InjectKey injectKeyAnn = field.getDeclaredAnnotation(InjectKey.class);
-				Serializer serializerAnn = field.getDeclaredAnnotation(Serializer.class);
 				if (ignoreAnn != null || injectKeyAnn != null) return;
+
+				Serializer serializerAnn = this.extractSerializerFromField(field);
 
 				String key = TextCase.camelToKebabCase(field.getName());
 				Object configValue = section.get(key);
 
 				field.setAccessible(true);
-				Type generic = field.getGenericType();
-				Type[] typeArgs = generic instanceof ParameterizedType ?
-					((ParameterizedType) generic).getActualTypeArguments() :
-					null;
 
 				TryCatchUtil.tryRun(() -> field.set(
 					to, deserializationHandler.handleObject(
 						configValue != null ?
 							configValue :
-							this.handleDefaults(field, config), field.getType(), typeArgs, serializerAnn, config
+							this.handleDefaults(field, config), field.getType(), this.extractTypeData(field.getGenericType())
+							.getSecond(), serializerAnn, config
 					)
 				));
 				field.setAccessible(false);
@@ -131,22 +131,21 @@ public class BaseSerializer implements ISerializer<Object> {
 
 	private Object getClassInstance(Class<?> clazz, EnhancedConfig source) {
 		try {
-			return getAccessibleInstance(clazz.getDeclaredConstructor());
-		} catch (Exception e) {
-		}
+			return this.getAccessibleInstance(clazz.getDeclaredConstructor());
+		} catch (Exception ignored) {}
 
 		Class<?> enclosing = clazz.getEnclosingClass();
 		Object invoker = null;
 
 		if (enclosing != null) {
 			if (EnhancedConfig.class.isAssignableFrom(enclosing)) invoker = source;
-			else invoker = getClassInstance(enclosing, source);
+			else invoker = this.getClassInstance(enclosing, source);
 		}
 
 		Object finalInvoker = invoker;
 		return TryCatchUtil.tryAndReturn(() -> finalInvoker != null ?
-			getAccessibleInstance(clazz.getDeclaredConstructor(enclosing), finalInvoker) :
-			getAccessibleInstance(clazz.getDeclaredConstructor()));
+			this.getAccessibleInstance(clazz.getDeclaredConstructor(enclosing), finalInvoker) :
+			this.getAccessibleInstance(clazz.getDeclaredConstructor()));
 	}
 
 	private Object getAccessibleInstance(Constructor<?> constructor, Object... initArgs) throws InvocationTargetException, InstantiationException, IllegalAccessException {
@@ -163,6 +162,47 @@ public class BaseSerializer implements ISerializer<Object> {
 			enclosing = enclosing.getEnclosingClass();
 		}
 		return false;
+	}
+
+	private Serializer extractSerializerFromField(Field field) {
+		Serializer annotation = field.getAnnotation(Serializer.class);
+		if (annotation != null) return annotation;
+
+		Type type = field.getGenericType();
+
+		Class<?> actualClass;
+		boolean isCollection;
+		boolean isMap;
+		do {
+			Pair<Class<?>, Type[]> typeData = this.extractTypeData(type);
+
+			actualClass = typeData.getFirst();
+			isCollection = Collection.class.isAssignableFrom(actualClass);
+			isMap = Map.class.isAssignableFrom(actualClass);
+
+			type = typeData.getSecond()[isCollection ?
+				0 :
+				1];
+		} while (isCollection || isMap);
+
+		return actualClass.getDeclaredAnnotation(Serializer.class);
+	}
+
+	private Pair<Class<?>, Type[]> extractTypeData(Type type) {
+		Class<?> clazz;
+		Type[] typeArgs;
+		if (type instanceof Class) {
+			clazz = (Class<?>) type;
+			typeArgs = null;
+		} else if (type instanceof ParameterizedType) {
+			ParameterizedType pt = (ParameterizedType) type;
+			clazz = (Class<?>) pt.getRawType();
+			typeArgs = pt.getActualTypeArguments();
+		} else {
+			clazz = null;
+			typeArgs = null;
+		}
+		return new Pair<>(clazz, typeArgs);
 	}
 
 	class SerializationHandler {
@@ -226,19 +266,19 @@ public class BaseSerializer implements ISerializer<Object> {
 		}
 
 		private List<Object> handleList(List<?> value, Type valueType, Serializer serializerAnn, EnhancedConfig config) {
-			Map.Entry<Class<?>, Type[]> typeData = extractTypeData(valueType);
+			Pair<Class<?>, Type[]> typeData = extractTypeData(valueType);
 
 			return value.stream()
-				.map(element -> handleObject(element, typeData.getKey(), typeData.getValue(), serializerAnn, config))
+				.map(element -> handleObject(element, typeData.getFirst(), typeData.getSecond(), serializerAnn, config))
 				.collect(Collectors.toList());
 		}
 
 		public Map<Object, Object> handleMapDeserialization(Map<?, ?> value, Type valueType, Serializer serializerAnn, EnhancedConfig config) {
-			Map.Entry<Class<?>, Type[]> typeData = extractTypeData(valueType);
+			Pair<Class<?>, Type[]> typeData = extractTypeData(valueType);
 			Map<Object, Object> result = new LinkedHashMap<>();
 
 			value.forEach((k, v) -> {
-				Object obj = handleObject(v, typeData.getKey(), typeData.getValue(), serializerAnn, config);
+				Object obj = handleObject(v, typeData.getFirst(), typeData.getSecond(), serializerAnn, config);
 				injectKey(obj, k);
 				result.put(k, obj);
 			});
@@ -248,30 +288,9 @@ public class BaseSerializer implements ISerializer<Object> {
 
 		@SuppressWarnings("unchecked")
 		private <T> Object useDeserializer(ISerializer<T> serializer, Object obj, Class<?> targetClass, EnhancedConfig config) {
-			if (targetClass.isAssignableFrom(obj.getClass())) {
-				return obj;
-			}
-			if (serializer.convertToSection() && !(obj instanceof MemorySection)) {
-				obj = SectionUtil.create((Map<?, ?>) obj);
-			}
+			if (targetClass.isAssignableFrom(obj.getClass())) return obj;
+			if (serializer.convertToSection() && !(obj instanceof MemorySection)) obj = SectionUtil.create((Map<?, ?>) obj);
 			return serializer.deserialize((T) obj, (Class<? extends T>) targetClass, config);
-		}
-
-		private Map.Entry<Class<?>, Type[]> extractTypeData(Type type) {
-			Class<?> clazz;
-			Type[] typeArgs;
-			if (type instanceof Class) {
-				clazz = (Class<?>) type;
-				typeArgs = null;
-			} else if (type instanceof ParameterizedType) {
-				ParameterizedType pt = (ParameterizedType) type;
-				clazz = (Class<?>) pt.getRawType();
-				typeArgs = pt.getActualTypeArguments();
-			} else {
-				clazz = null;
-				typeArgs = null;
-			}
-			return new AbstractMap.SimpleEntry<>(clazz, typeArgs);
 		}
 
 		public void injectKey(Object obj, Object key) {

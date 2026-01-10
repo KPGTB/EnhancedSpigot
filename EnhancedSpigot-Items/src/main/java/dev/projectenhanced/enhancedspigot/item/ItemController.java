@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -58,15 +58,12 @@ public class ItemController {
 		PluginManager pluginManager = Bukkit.getPluginManager();
 		List<String> tags = new ArrayList<>();
 
-		for (Class<?> clazz : ReflectionUtil.getAllClassesInPackage(
-			jarFile, itemsPackage, EnhancedItem.class)) {
+		for (Class<?> clazz : ReflectionUtil.getAllClassesInPackage(jarFile, itemsPackage, EnhancedItem.class)) {
 			try {
-				String itemName = TextCase.camelToSneakCase(
-					clazz.getSimpleName()
-						.replace("Item", ""));
+				String itemName = TextCase.camelToSnakeCase(clazz.getSimpleName()
+					.replace("Item", ""));
 
-				EnhancedItem item = (EnhancedItem) clazz.getDeclaredConstructor(
-						DependencyProvider.class, String.class)
+				EnhancedItem item = (EnhancedItem) clazz.getDeclaredConstructor(DependencyProvider.class, String.class)
 					.newInstance(this.provider, itemName);
 
 				pluginManager.registerEvents(item, this.plugin);
@@ -130,7 +127,7 @@ public class ItemController {
 	 */
 	@Nullable
 	public ItemStack getCustomItem(Class<? extends EnhancedItem> itemClass) {
-		String itemName = TextCase.camelToSneakCase(itemClass.getSimpleName()
+		String itemName = TextCase.camelToSnakeCase(itemClass.getSimpleName()
 			.replace("Item", ""));
 		return customItems.get(itemName)
 			.getItem()
@@ -156,7 +153,7 @@ public class ItemController {
 	 */
 	@Nullable
 	public EnhancedItem getCustomItemObj(Class<? extends EnhancedItem> itemClass) {
-		String itemName = TextCase.camelToSneakCase(itemClass.getSimpleName()
+		String itemName = TextCase.camelToSnakeCase(itemClass.getSimpleName()
 			.replace("Item", ""));
 		return customItems.get(itemName);
 	}

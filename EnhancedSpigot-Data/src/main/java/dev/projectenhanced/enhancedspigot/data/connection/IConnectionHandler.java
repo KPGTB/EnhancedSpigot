@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package dev.projectenhanced.enhancedspigot.data.connection;
 
 import com.j256.ormlite.support.BaseConnectionSource;
-import dev.projectenhanced.enhancedspigot.util.lifecycle.IClosable;
+import dev.projectenhanced.enhancedspigot.common.stereotype.lifecycle.IClosable;
 
 import java.io.IOException;
 import java.sql.SQLException;
