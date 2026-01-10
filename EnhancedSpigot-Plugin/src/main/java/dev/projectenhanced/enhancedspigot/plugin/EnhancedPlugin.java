@@ -134,7 +134,7 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 	}
 
 	protected <T extends EnhancedConfig> T useConfiguration(T config) {
-		config.init();
+		config.start();
 		this.dependencyProvider.register(config);
 		return config;
 	}
