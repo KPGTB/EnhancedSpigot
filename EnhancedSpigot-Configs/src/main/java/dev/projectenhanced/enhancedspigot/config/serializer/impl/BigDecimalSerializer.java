@@ -24,7 +24,7 @@ import java.math.BigDecimal;
 public class BigDecimalSerializer implements ISerializer<BigDecimal> {
 	@Override
 	public Object serialize(BigDecimal object, Class<? extends BigDecimal> objectClass, EnhancedConfig config) {
-		return object;
+		return object.toPlainString();
 	}
 
 	@Override
