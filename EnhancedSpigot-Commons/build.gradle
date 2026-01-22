@@ -19,7 +19,7 @@ plugins {
 }
 
 
-version = "1.0.0-SNAPSHOT"
+version = "2.0.0-SNAPSHOT"
 description = "EnhancedSpigot Commons module adds some common classes"
 
 repositories {

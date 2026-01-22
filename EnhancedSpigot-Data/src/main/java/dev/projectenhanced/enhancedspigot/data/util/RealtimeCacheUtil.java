@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.j256.ormlite.dao.ForeignCollection;
 import dev.projectenhanced.enhancedspigot.data.cache.RealtimeCache;
 import dev.projectenhanced.enhancedspigot.data.cache.iface.IAsyncSavableCache;
 import dev.projectenhanced.enhancedspigot.data.cache.iface.ICached;
+import dev.projectenhanced.enhancedspigot.data.cache.iface.ISavable;
 import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
 
 import java.util.concurrent.CompletableFuture;
@@ -27,6 +28,11 @@ import java.util.concurrent.CompletableFuture;
 public class RealtimeCacheUtil {
 	private static boolean isLiveCache(IAsyncSavableCache<?, ?> cache) {
 		return cache instanceof RealtimeCache<?, ?>;
+	}
+
+	public static <V extends ICached<?>> void saveSyncFull(ISavable<?, V> cache, V value) {
+		if (cache instanceof RealtimeCache<?, V>) ((RealtimeCache<?, V>) cache).saveFull(value);
+		else cache.saveValue(value);
 	}
 
 	public static <V extends ICached<?>> CompletableFuture<Void> saveAsyncFull(IAsyncSavableCache<?, V> cache, V value, boolean highPriority) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,14 +17,9 @@
 package dev.projectenhanced.enhancedspigot.data.cache.iface;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 
 public interface IAsyncCache<K, V extends ICached<K>> extends ICache<K, V> {
 	CompletableFuture<V> getAsync(K key);
 
 	CompletableFuture<V> getAsyncOrNull(K key);
-
-	ExecutorService getExecutor();
-
-	void setExecutor(ExecutorService executorService);
 }

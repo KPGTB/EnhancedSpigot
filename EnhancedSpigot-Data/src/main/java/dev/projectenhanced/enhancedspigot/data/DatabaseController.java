@@ -26,7 +26,9 @@ import com.j256.ormlite.logger.LoggerFactory;
 import com.j256.ormlite.support.BaseConnectionSource;
 import com.j256.ormlite.table.DatabaseTable;
 import com.j256.ormlite.table.TableUtils;
+import dev.projectenhanced.enhancedspigot.common.IDependencyProvider;
 import dev.projectenhanced.enhancedspigot.common.stereotype.Controller;
+import dev.projectenhanced.enhancedspigot.data.connection.ConnectionType;
 import dev.projectenhanced.enhancedspigot.data.connection.DatabaseOptions;
 import dev.projectenhanced.enhancedspigot.data.connection.IConnectionHandler;
 import dev.projectenhanced.enhancedspigot.data.connection.MySQLConnectionHandler;
@@ -63,7 +65,9 @@ import java.util.logging.Level;
 	private final DatabaseOptions options;
 	private IConnectionHandler handler;
 	private BaseConnectionSource source;
-	private ExecutorService executor;
+
+	private ExecutorService readExecutor;
+	private ExecutorService writeExecutor;
 
 	private boolean debug;
 	private Map<Class<?>, Dao<?, ?>> daoMap;
@@ -77,30 +81,13 @@ import java.util.logging.Level;
 		this.daoMap = new HashMap<>();
 	}
 
-	public void connect() {
-		switch (this.options.getType()) {
-			case MYSQL:
-				this.handler = new MySQLConnectionHandler();
-				break;
-			case POSTGRESQL:
-				this.handler = new PostgreSQLConnectionHandler();
-				break;
-			case SQLITE:
-				this.handler = new SQLiteConnectionHandler(this.plugin.getDataFolder());
-				break;
-			default:
-				throw new UnsupportedOperationException("Unsupported connection type: " + this.options.getType()
-					.name());
-		}
-		this.executor = new ThreadPoolExecutor(this.options.getThreads(), this.options.getThreads(), 0L, TimeUnit.MILLISECONDS, new PriorityBlockingQueue<>());
-		this.handler.retrieveCredentials(this.options);
-		this.source = TryCatchUtil.tryAndReturn(() -> this.options.getHikariOptions()
-			.isEnabled() ?
-			this.handler.connectHikari(this.options.getHikariOptions()) :
-			this.handler.connect());
-		this.registerDefaultPersisters();
+	public DatabaseController(IDependencyProvider dependencyProvider, DatabaseOptions options) {
+		super(dependencyProvider);
+		this.jarFile = ReflectionUtil.getJarFile(this.plugin);
+		this.options = options;
 
-		if (!this.debug) LoggerFactory.setLogBackendFactory(LogBackendType.NULL);
+		this.debug = false;
+		this.daoMap = new HashMap<>();
 	}
 
 	public void registerEntities(String packageName) {
@@ -183,7 +170,33 @@ import java.util.logging.Level;
 
 	@Override
 	public void start() {
+		switch (this.options.getType()) {
+			case MYSQL:
+				this.handler = new MySQLConnectionHandler();
+				break;
+			case POSTGRESQL:
+				this.handler = new PostgreSQLConnectionHandler();
+				break;
+			case SQLITE:
+				this.handler = new SQLiteConnectionHandler(this.plugin.getDataFolder());
+				break;
+			default:
+				throw new UnsupportedOperationException("Unsupported connection type: " + this.options.getType()
+					.name());
+		}
+		this.readExecutor = new ThreadPoolExecutor(this.options.getThreads(), this.options.getThreads(), 0L, TimeUnit.MILLISECONDS, new PriorityBlockingQueue<>());
+		this.writeExecutor = this.options.getType() == ConnectionType.SQLITE ?
+			new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new PriorityBlockingQueue<>()) :
+			this.readExecutor;
 
+		this.handler.retrieveCredentials(this.options);
+		this.source = TryCatchUtil.tryAndReturn(() -> this.options.getHikariOptions()
+			.isEnabled() ?
+			this.handler.connectHikari(this.options.getHikariOptions()) :
+			this.handler.connect());
+		this.registerDefaultPersisters();
+
+		if (!this.debug) LoggerFactory.setLogBackendFactory(LogBackendType.NULL);
 	}
 
 	@Override
@@ -194,7 +207,8 @@ import java.util.logging.Level;
 	@SneakyThrows
 	@Override
 	public void close() {
-		if (this.executor != null) this.executor.shutdownNow();
+		if (this.readExecutor != null) this.readExecutor.shutdownNow();
+		if (this.writeExecutor != null && !this.writeExecutor.equals(this.readExecutor)) this.writeExecutor.shutdownNow();
 		if (this.source == null) return;
 		this.source.close();
 		this.source = null;

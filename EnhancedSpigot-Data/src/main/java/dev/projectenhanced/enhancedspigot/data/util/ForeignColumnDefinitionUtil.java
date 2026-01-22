@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package dev.projectenhanced.enhancedspigot.data.util;
 
 public class ForeignColumnDefinitionUtil {
-	public static String getDefinition(String parentTable, String parentColumn, String parentType, String childTable) {
-		return parentType + " NOT NULL CONSTRAINT " + ("fk_" + parentTable.toLowerCase() + "_" + childTable + "_" + parentColumn) + " REFERENCES " + parentTable + "(" + parentColumn + ") ON DELETE CASCADE";
+	public static String getDefinition(String parentTable, String parentColumn, String parentType, String childTable, String childColumn) {
+		return parentType + " NOT NULL,  CONSTRAINT " + ("fk_" + parentTable.toLowerCase() + "_" + childTable + "_" + parentColumn) + " FOREIGN KEY (" + childColumn + ") REFERENCES " + parentTable + "(" + parentColumn + ") ON DELETE CASCADE";
 	}
 }

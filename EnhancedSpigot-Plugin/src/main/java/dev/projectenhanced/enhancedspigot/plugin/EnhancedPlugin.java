@@ -102,15 +102,15 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 		DatabaseController controller = new DatabaseController(this, options);
 		if (this.getLogger()
 			.getLevel() == Level.FINE) controller.setDebug(true);
-		controller.connect();
+		controller.start();
 		this.dependencyProvider.register(controller);
 		return controller;
 	}
 
 	protected MigrationController enableMigrations(int currentVersion, Map<Integer, BiConsumer<JavaPlugin, DatabaseController>> migrations) {
-		MigrationController migrationController = new MigrationController(this, this.dependencyProvider.provide(DatabaseController.class), this.getTag(), currentVersion);
+		MigrationController migrationController = new MigrationController(this.dependencyProvider, this.getTag(), currentVersion);
 		migrations.forEach(migrationController::registerMigration);
-		migrationController.migrate();
+		migrationController.start();
 		this.dependencyProvider.register(migrationController);
 		return migrationController;
 	}

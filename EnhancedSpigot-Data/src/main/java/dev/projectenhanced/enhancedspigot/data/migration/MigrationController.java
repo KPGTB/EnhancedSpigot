@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package dev.projectenhanced.enhancedspigot.data.migration;
 
 import com.j256.ormlite.dao.Dao;
+import dev.projectenhanced.enhancedspigot.common.IDependencyProvider;
+import dev.projectenhanced.enhancedspigot.common.stereotype.Controller;
 import dev.projectenhanced.enhancedspigot.data.DatabaseController;
 import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -25,8 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-public class MigrationController {
-	private final JavaPlugin plugin;
+public class MigrationController extends Controller {
 	private final DatabaseController databaseController;
 
 	private final String tag;
@@ -36,8 +37,20 @@ public class MigrationController {
 	private final Dao<MigrationEntity, String> migrationDao;
 
 	public MigrationController(JavaPlugin plugin, DatabaseController databaseController, String tag, int currentVersion) {
-		this.plugin = plugin;
+		super(plugin);
 		this.databaseController = databaseController;
+		this.tag = tag;
+		this.currentVersion = currentVersion;
+		this.migrations = new HashMap<>();
+
+		this.databaseController.registerEntity(MigrationEntity.class);
+		this.migrationDao = this.databaseController.getDao(MigrationEntity.class, String.class);
+		this.checkAndCreateInfo();
+	}
+
+	public MigrationController(IDependencyProvider provider, String tag, int currentVersion) {
+		super(provider);
+		this.databaseController = provider.provide(DatabaseController.class);
 		this.tag = tag;
 		this.currentVersion = currentVersion;
 		this.migrations = new HashMap<>();
@@ -53,7 +66,24 @@ public class MigrationController {
 		return this;
 	}
 
-	public void migrate() {
+	private void checkAndCreateInfo() {
+		if (TryCatchUtil.tryAndReturn(() -> this.migrationDao.idExists(tag))) return;
+
+		TryCatchUtil.tryRun(() -> this.migrationDao.create(new MigrationEntity(tag, currentVersion)));
+	}
+
+	@Override
+	public void close() {
+
+	}
+
+	@Override
+	public void reload() {
+
+	}
+
+	@Override
+	public void start() {
 		this.checkAndCreateInfo();
 		MigrationEntity entity = TryCatchUtil.tryAndReturn(() -> this.migrationDao.queryForId(this.tag));
 		int dbVersion = entity.getVersion();
@@ -67,11 +97,5 @@ public class MigrationController {
 
 		entity.setVersion(this.currentVersion);
 		TryCatchUtil.tryRun(() -> this.migrationDao.update(entity));
-	}
-
-	private void checkAndCreateInfo() {
-		if (TryCatchUtil.tryAndReturn(() -> this.migrationDao.idExists(tag))) return;
-
-		TryCatchUtil.tryRun(() -> this.migrationDao.create(new MigrationEntity(tag, currentVersion)));
 	}
 }
