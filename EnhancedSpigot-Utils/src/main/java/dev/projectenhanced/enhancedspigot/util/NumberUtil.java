@@ -14,24 +14,12 @@
  *    limitations under the License.
  */
 
-version = "2.0.0-SNAPSHOT"
-description = "EnhancedSpigot Utils module adds a lot of small utilities"
+package dev.projectenhanced.enhancedspigot.util;
 
-repositories {
-    mavenCentral()
-    maven { url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/" }
-    maven { url = "https://libraries.minecraft.net/" }
-}
+import java.text.DecimalFormat;
 
-dependencies {
-    compileOnly 'org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT'
-    compileOnly 'com.mojang:authlib:1.5.25'
-
-    implementation 'com.ezylang:EvalEx:3.5.0'
-
-    implementation project(':EnhancedSpigot-Commons')
-}
-
-shadowJar {
-    dependsOn ':EnhancedSpigot-Commons:shadowJar'
+public class NumberUtil {
+	public static String showNumber(double number) {
+		return new DecimalFormat("0.##").format(number);
+	}
 }

@@ -44,6 +44,10 @@ import java.util.logging.Level;
 public abstract class EnhancedPlugin extends JavaPlugin {
 	@Getter protected DependencyProvider dependencyProvider;
 
+	public static DependencyProvider providerFromJavaPlugin(JavaPlugin plugin) {
+		return ((EnhancedPlugin) plugin).getDependencyProvider();
+	}
+
 	@Override
 	public final void onEnable() {
 		TryCatchUtil.usePluginLogger(this);

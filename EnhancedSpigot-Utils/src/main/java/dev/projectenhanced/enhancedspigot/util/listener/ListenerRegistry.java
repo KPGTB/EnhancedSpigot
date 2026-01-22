@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -24,17 +24,22 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ListenerRegistry {
+	public static void register(JavaPlugin plugin, String listenersPackage) {
+		register(null, plugin, listenersPackage);
+	}
+
 	public static void register(DependencyProvider dependencyProvider, JavaPlugin plugin, String listenersPackage) {
 		PluginManager pluginManager = Bukkit.getPluginManager();
-		ReflectionUtil.getAllClassesInPackage(
-				ReflectionUtil.getJarFile(plugin), listenersPackage,
-				EnhancedListener.class
-			)
+		ReflectionUtil.getAllClassesInPackage(ReflectionUtil.getJarFile(plugin), listenersPackage, EnhancedListener.class)
 			.forEach(clazz -> {
-				EnhancedListener listener = TryCatchUtil.tryAndReturn(
-					() -> (EnhancedListener) clazz.getDeclaredConstructor(
-							DependencyProvider.class)
+				EnhancedListener listener;
+				if (dependencyProvider != null) {
+					listener = TryCatchUtil.tryAndReturn(() -> (EnhancedListener) clazz.getDeclaredConstructor(DependencyProvider.class)
 						.newInstance(dependencyProvider));
+				} else {
+					listener = TryCatchUtil.tryAndReturn(() -> (EnhancedListener) clazz.getDeclaredConstructor(JavaPlugin.class)
+						.newInstance(plugin));
+				}
 				pluginManager.registerEvents(listener, plugin);
 			});
 	}

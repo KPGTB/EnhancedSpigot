@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -122,5 +123,28 @@ public class ItemUtil {
 	public static boolean validateBlock(Block block) {
 		return block != null && !block.getType()
 			.isAir();
+	}
+
+	public boolean canGetItems(Inventory inventory, ItemStack is) {
+		int freeSpace = 0;
+		for (int i = 0; i < 36; i++) {
+			ItemStack item = inventory.getItem(i);
+			if (!validateItem(item)) {
+				freeSpace += is.getType()
+					.getMaxStackSize();
+			} else if (item.isSimilar(is)) {
+				freeSpace += is.getType()
+					.getMaxStackSize() - item.getAmount();
+			}
+		}
+		return freeSpace >= is.getAmount();
+	}
+
+	public boolean hasEmptySlot(Inventory inventory) {
+		for (int i = 0; i < 36; i++) {
+			ItemStack item = inventory.getItem(i);
+			if (!validateItem(item)) return true;
+		}
+		return false;
 	}
 }

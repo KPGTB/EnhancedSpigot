@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -52,6 +52,14 @@ import java.util.regex.Pattern;
 		this.millis = this.toMillis(text);
 		this.text = this.defaultFormat();
 		this.input = text;
+	}
+
+	public static String from(long millis) {
+		return new EnhancedTime(millis).getText();
+	}
+
+	public static long from(String time) {
+		return new EnhancedTime(time).getMillis();
 	}
 
 	/**

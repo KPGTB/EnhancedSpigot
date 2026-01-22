@@ -45,6 +45,7 @@ class EnhancedSpigotPlugin implements Plugin<Project> {
             group = 'enhancedspigot'
             description = 'Print all libraries required in plugin.yml'
             dataModule.set(ext.dataModule)
+            utilsModule.set(ext.utilsModule)
             excludeDependencies.set(ext.excludeDependencies)
         }
 
@@ -92,6 +93,7 @@ class EnhancedSpigotPlugin implements Plugin<Project> {
                     exclude("com/zaxxer/**")
                     exclude("org/slf4j/**")
                     exclude("org/checkerframework/**")
+                    exclude("com/ezylang/**")
                 }
 
                 archiveFileName = project.name + "-" + project.version.toString() + ".jar"
