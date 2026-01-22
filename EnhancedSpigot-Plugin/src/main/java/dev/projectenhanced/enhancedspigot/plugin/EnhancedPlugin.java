@@ -128,7 +128,7 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 	}
 
 	protected <T extends EnhancedLocale> T useLocale(T locale) {
-		locale.init();
+		locale.start();
 		this.dependencyProvider.register(locale);
 		return locale;
 	}

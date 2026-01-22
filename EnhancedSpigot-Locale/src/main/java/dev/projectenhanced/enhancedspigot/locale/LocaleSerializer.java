@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package dev.projectenhanced.enhancedspigot.locale;
 
-import dev.projectenhanced.enhancedspigot.locale.annotation.Ignore;
+import dev.projectenhanced.enhancedspigot.common.annotation.Ignore;
 import dev.projectenhanced.enhancedspigot.locale.annotation.InjectBridge;
 import dev.projectenhanced.enhancedspigot.locale.annotation.LocaleDefault;
 import dev.projectenhanced.enhancedspigot.locale.annotation.WithPrefix;
@@ -45,24 +45,22 @@ public class LocaleSerializer {
 			.filter(field -> !field.isSynthetic())
 			.forEach(field -> {
 				Ignore ignoreAnn = field.getDeclaredAnnotation(Ignore.class);
-				LocaleDefault[] defaults = field.getDeclaredAnnotationsByType(
-					LocaleDefault.class);
+				LocaleDefault[] defaults = field.getDeclaredAnnotationsByType(LocaleDefault.class);
 				LocaleDefault def = Arrays.stream(defaults)
 					.filter(ann -> ann.language()
-						.equalsIgnoreCase(locale.getLocale()))
+						.equalsIgnoreCase(locale.getLocale()) || (locale.supportedLocales()
+						.size() <= 1 && ann.language()
+						.isEmpty()))
 					.findAny()
 					.orElse(null);
-				InjectBridge bridgeAnn = field.getDeclaredAnnotation(
-					InjectBridge.class);
+				InjectBridge bridgeAnn = field.getDeclaredAnnotation(InjectBridge.class);
 				if (ignoreAnn != null || bridgeAnn != null) return;
 
 				String key = TextCase.camelToKebabCase(field.getName());
 
 				field.setAccessible(true);
-				Object value = TryCatchUtil.tryAndReturn(
-					() -> field.get(object));
-				if (value == null && LocaleObject.class.isAssignableFrom(
-					field.getType())) value = new LocaleObject(
+				Object value = TryCatchUtil.tryAndReturn(() -> field.get(object));
+				if (value == null && LocaleObject.class.isAssignableFrom(field.getType())) value = new LocaleObject(
 					locale, false, def != null ?
 					def.def() :
 					new String[]{}
@@ -84,17 +82,16 @@ public class LocaleSerializer {
 			.filter(field -> !field.isSynthetic())
 			.forEach(field -> {
 				Ignore ignoreAnn = field.getDeclaredAnnotation(Ignore.class);
-				LocaleDefault[] defaults = field.getDeclaredAnnotationsByType(
-					LocaleDefault.class);
+				LocaleDefault[] defaults = field.getDeclaredAnnotationsByType(LocaleDefault.class);
 				LocaleDefault def = Arrays.stream(defaults)
 					.filter(ann -> ann.language()
-						.equalsIgnoreCase(locale.getLocale()))
+						.equalsIgnoreCase(locale.getLocale()) || (locale.supportedLocales()
+						.size() <= 1 && ann.language()
+						.isEmpty()))
 					.findAny()
 					.orElse(null);
-				WithPrefix withPrefix = field.getDeclaredAnnotation(
-					WithPrefix.class);
-				InjectBridge bridgeAnn = field.getDeclaredAnnotation(
-					InjectBridge.class);
+				WithPrefix withPrefix = field.getDeclaredAnnotation(WithPrefix.class);
+				InjectBridge bridgeAnn = field.getDeclaredAnnotation(InjectBridge.class);
 				if (ignoreAnn != null) return;
 
 				String key = TextCase.camelToKebabCase(field.getName());
@@ -102,26 +99,18 @@ public class LocaleSerializer {
 
 				field.setAccessible(true);
 				if (bridgeAnn != null) {
-					TryCatchUtil.tryRun(
-						() -> field.set(to, locale.getBridge()));
+					TryCatchUtil.tryRun(() -> field.set(to, locale.getBridge()));
 				} else {
 					TryCatchUtil.tryRun(() -> field.set(
 						to, configValue != null ?
-							deserializationHandler.handleObject(
-								configValue, field.getType(), locale,
-								withPrefix != null
-							) :
-							LocaleObject.class.isAssignableFrom(
-								field.getType()) ?
+							deserializationHandler.handleObject(configValue, field.getType(), locale, withPrefix != null) :
+							LocaleObject.class.isAssignableFrom(field.getType()) ?
 								new LocaleObject(
 									locale, withPrefix != null, def != null ?
 									def.def() :
 									new String[]{}
 								) :
-								deserializationHandler.handleObject(
-									new MemoryConfiguration(), field.getType(),
-									locale, withPrefix != null
-								)
+								deserializationHandler.handleObject(new MemoryConfiguration(), field.getType(), locale, withPrefix != null)
 					));
 				}
 				field.setAccessible(false);
@@ -138,17 +127,13 @@ public class LocaleSerializer {
 		Object invoker = null;
 
 		if (enclosing != null) {
-			if (EnhancedLocale.class.isAssignableFrom(enclosing))
-				invoker = source;
+			if (EnhancedLocale.class.isAssignableFrom(enclosing)) invoker = source;
 			else invoker = getClassInstance(enclosing, source);
 		}
 
 		Object finalInvoker = invoker;
 		return TryCatchUtil.tryAndReturn(() -> finalInvoker != null ?
-			getAccessibleInstance(
-				clazz.getDeclaredConstructor(enclosing),
-				finalInvoker
-			) :
+			getAccessibleInstance(clazz.getDeclaredConstructor(enclosing), finalInvoker) :
 			getAccessibleInstance(clazz.getDeclaredConstructor()));
 	}
 
@@ -162,8 +147,7 @@ public class LocaleSerializer {
 	class SerializationHandler {
 		private Object handleObject(Object value, EnhancedLocale locale) {
 			if (value == null) return null;
-			if (value instanceof LocaleObject)
-				return ((LocaleObject) value).toConfig();
+			if (value instanceof LocaleObject) return ((LocaleObject) value).toConfig();
 			return serialize(value, value.getClass(), locale);
 		}
 	}
@@ -173,13 +157,10 @@ public class LocaleSerializer {
 		private Object handleObject(Object configValue, Class<?> clazz, EnhancedLocale locale, boolean withPrefix) {
 			if (configValue == null) return null;
 			if (LocaleObject.class.isAssignableFrom(clazz)) {
-				if (configValue instanceof List) return new LocaleObject(
-					locale, withPrefix, (List<String>) configValue);
-				return new LocaleObject(
-					locale, withPrefix, String.valueOf(configValue));
+				if (configValue instanceof List) return new LocaleObject(locale, withPrefix, (List<String>) configValue);
+				return new LocaleObject(locale, withPrefix, String.valueOf(configValue));
 			}
-			return deserialize(
-				(ConfigurationSection) configValue, clazz, locale);
+			return deserialize((ConfigurationSection) configValue, clazz, locale);
 		}
 	}
 }

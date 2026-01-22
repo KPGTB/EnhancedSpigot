@@ -22,8 +22,9 @@ import dev.projectenhanced.enhancedspigot.locale.annotation.LocaleDefault;
 import dev.projectenhanced.enhancedspigot.locale.bridge.IPlatformBridge;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@NoArgsConstructor @Getter public class CommandLocale {
+@NoArgsConstructor @Setter @Getter public class CommandLocale {
 	@LocaleDefault(language = "en", def = "<red>You don't have enough permissions to use this command")
 	@LocaleDefault(language = "pl", def = "<red>Nie masz wystarczająco permisji, aby użyć tej komendy")
 	LocaleObject noPermission;
@@ -44,6 +45,15 @@ import lombok.NoArgsConstructor;
 	LocaleObject helpEnd;
 
 	@InjectBridge IPlatformBridge bridge;
+
+	public CommandLocale(LocaleObject noPermission, LocaleObject onlyPlayer, LocaleObject helpStart, LocaleObject helpNoInfo, LocaleObject helpLine, LocaleObject helpEnd) {
+		this.noPermission = noPermission;
+		this.onlyPlayer = onlyPlayer;
+		this.helpStart = helpStart;
+		this.helpNoInfo = helpNoInfo;
+		this.helpLine = helpLine;
+		this.helpEnd = helpEnd;
+	}
 
 	public void update(CommandLocale newLocale) {
 		this.noPermission = newLocale.noPermission;

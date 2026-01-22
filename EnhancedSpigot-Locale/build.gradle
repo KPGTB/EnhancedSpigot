@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-version = "1.0.0-SNAPSHOT"
+version = "2.0.0-SNAPSHOT"
 description = "EnhancedSpigot Locale module adds locales support basing on POJO and MiniMessages"
 
 repositories {
@@ -37,9 +37,11 @@ dependencies {
     optionalImplementation 'net.kyori:adventure-text-serializer-legacy:4.25.0'
     optionalImplementation "net.kyori:adventure-text-minimessage:4.25.0"
 
+    implementation project(':EnhancedSpigot-Commons')
     implementation project(':EnhancedSpigot-Utils')
 }
 
 shadowJar {
+    dependsOn ':EnhancedSpigot-Commons:shadowJar'
     dependsOn ':EnhancedSpigot-Utils:shadowJar'
 }

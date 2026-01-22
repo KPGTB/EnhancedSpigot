@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@
 
 package dev.projectenhanced.enhancedspigot.locale;
 
+import dev.projectenhanced.enhancedspigot.common.stereotype.Component;
 import dev.projectenhanced.enhancedspigot.locale.bridge.IPlatformBridge;
 import dev.projectenhanced.enhancedspigot.locale.bridge.SpigotBridge;
+import dev.projectenhanced.enhancedspigot.util.DependencyProvider;
 import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
-import dev.projectenhanced.enhancedspigot.util.lifecycle.IClosable;
-import dev.projectenhanced.enhancedspigot.util.lifecycle.IReloadable;
 import lombok.Getter;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -28,8 +28,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.util.List;
 
-public abstract class EnhancedLocale implements IClosable, IReloadable {
-	private final JavaPlugin plugin;
+public abstract class EnhancedLocale extends Component {
 	private final LocaleSerializer serializer;
 	private final File folder;
 	private File file;
@@ -38,8 +37,17 @@ public abstract class EnhancedLocale implements IClosable, IReloadable {
 	@Getter private String locale;
 	@Getter private IPlatformBridge bridge;
 
+	public EnhancedLocale(DependencyProvider provider, String locale) {
+		super(provider);
+
+		this.folder = new File(plugin.getDataFolder(), "locales");
+		this.locale = locale;
+		this.serializer = new LocaleSerializer();
+	}
+
 	public EnhancedLocale(JavaPlugin plugin, String locale) {
-		this.plugin = plugin;
+		super(plugin);
+
 		this.folder = new File(plugin.getDataFolder(), "locales");
 		this.locale = locale;
 		this.serializer = new LocaleSerializer();
@@ -48,7 +56,8 @@ public abstract class EnhancedLocale implements IClosable, IReloadable {
 	/**
 	 * Creates locale file and loads configuration
 	 */
-	public void init() {
+	@Override
+	public void start() {
 		this.init(true);
 	}
 
@@ -95,8 +104,7 @@ public abstract class EnhancedLocale implements IClosable, IReloadable {
 	@Override
 	public void reload() {
 		this.configuration = YamlConfiguration.loadConfiguration(this.file);
-		this.serializer.deserializeTo(
-			this.configuration, this.getClass(), this, this);
+		this.serializer.deserializeTo(this.configuration, this.getClass(), this, this);
 		this.save();
 	}
 
@@ -104,8 +112,7 @@ public abstract class EnhancedLocale implements IClosable, IReloadable {
 	 * Saves locales
 	 */
 	public void save() {
-		this.serializer.serializeTo(
-			this, this.getClass(), this, this.configuration);
+		this.serializer.serializeTo(this, this.getClass(), this, this.configuration);
 		TryCatchUtil.tryRun(() -> this.configuration.save(this.file));
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -22,9 +22,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.FIELD) @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(value = LocaleDefaults.class) public @interface LocaleDefault {
-	String language();
-	
+@Target(ElementType.FIELD) @Retention(RetentionPolicy.RUNTIME) @Repeatable(value = LocaleDefaults.class) public @interface LocaleDefault {
+	String language() default "";
+
 	String[] def();
 }
