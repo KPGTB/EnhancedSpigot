@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@
 
 package dev.projectenhanced.enhancedspigot.item;
 
+import dev.projectenhanced.enhancedspigot.common.IDependencyProvider;
 import dev.projectenhanced.enhancedspigot.util.DependencyProvider;
+import dev.projectenhanced.enhancedspigot.util.item.ItemUtil;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Material;
@@ -30,16 +32,12 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemBreakEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
-import org.bukkit.event.player.PlayerItemHeldEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.event.player.*;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,7 +50,9 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public abstract class EnhancedItem implements Listener {
-	protected final DependencyProvider provider;
+	protected final JavaPlugin plugin;
+	protected final IDependencyProvider provider;
+
 	@Getter private final String fullItemTag;
 
 	private final List<UUID> deathPlayersCache;
@@ -60,13 +60,30 @@ public abstract class EnhancedItem implements Listener {
 	@Getter
 	@Setter
 	private boolean blockDroppingItem;
+	@Getter
+	@Setter
+	private boolean blockSwappingHand;
 
-	public EnhancedItem(DependencyProvider provider, String fullItemTag) {
-		this.provider = provider;
+	public EnhancedItem(JavaPlugin plugin, String fullItemTag) {
+		this.plugin = plugin;
+		this.provider = null;
+
 		this.fullItemTag = fullItemTag;
 		this.deathPlayersCache = new ArrayList<>();
 		this.toReturnCache = new HashMap<>();
 		this.blockDroppingItem = false;
+		this.blockSwappingHand = false;
+	}
+
+	public EnhancedItem(IDependencyProvider provider, String fullItemTag) {
+		this.plugin = provider.provide(JavaPlugin.class);
+		this.provider = provider;
+
+		this.fullItemTag = fullItemTag;
+		this.deathPlayersCache = new ArrayList<>();
+		this.toReturnCache = new HashMap<>();
+		this.blockDroppingItem = false;
+		this.blockSwappingHand = false;
 	}
 
 	/**
@@ -83,8 +100,7 @@ public abstract class EnhancedItem implements Listener {
 	 * @return true if items are similar
 	 */
 	public boolean isSimilar(ItemStack is) {
-		if (is == null || is.getType()
-			.equals(Material.AIR)) {
+		if (!ItemUtil.validateItem(is)) {
 			return false;
 		}
 		return this.getItem()
@@ -130,6 +146,22 @@ public abstract class EnhancedItem implements Listener {
 	}
 
 	@EventHandler
+	public void onItemFrame(PlayerInteractEntityEvent event) {
+		if (!this.blockDroppingItem || !event.getRightClicked()
+			.getType()
+			.name()
+			.contains("ITEM_FRAME")) return;
+
+		Player player = event.getPlayer();
+		EquipmentSlot hand = event.getHand();
+		ItemStack is = player.getInventory()
+			.getItem(hand);
+
+		if (is == null || is.getType() == Material.AIR || !this.isSimilar(is)) return;
+		event.setCancelled(true);
+	}
+
+	@EventHandler
 	public final void onClickListener(InventoryClickEvent event) {
 		ItemStack clicked = event.getCurrentItem();
 
@@ -154,6 +186,8 @@ public abstract class EnhancedItem implements Listener {
 				if (blockDroppingItem && (clickedInv == null || clickedInv.getType() != InventoryType.PLAYER)) {
 					event.setCancelled(true);
 				}
+
+				if (event.getSlot() == 40 && this.blockSwappingHand) event.setCancelled(true);
 			}
 		}
 
@@ -170,6 +204,8 @@ public abstract class EnhancedItem implements Listener {
 					if (blockDroppingItem && (clickedInv == null || clickedInv.getType() != InventoryType.PLAYER)) {
 						event.setCancelled(true);
 					}
+
+					if (event.getSlot() == 40 && this.blockSwappingHand) event.setCancelled(true);
 				}
 			}
 		}
@@ -187,6 +223,10 @@ public abstract class EnhancedItem implements Listener {
 					if (blockDroppingItem && (clickedInv == null || clickedInv.getType() != InventoryType.PLAYER)) {
 						event.setCancelled(true);
 					}
+
+					if (this.blockSwappingHand) {
+						event.setCancelled(true);
+					}
 				}
 			}
 		}
@@ -196,7 +236,6 @@ public abstract class EnhancedItem implements Listener {
 	public final void onDropListener(PlayerDropItemEvent event) {
 		ItemStack is = event.getItemDrop()
 			.getItemStack();
-		;
 
 		if (is == null || is.getType()
 			.equals(Material.AIR)) {
@@ -338,6 +377,9 @@ public abstract class EnhancedItem implements Listener {
 				if (this.blockDroppingItem) {
 					event.setCancelled(true);
 				}
+
+				if (this.blockSwappingHand && event.getInventorySlots()
+					.contains(40)) event.setCancelled(true);
 				break;
 			}
 		}
@@ -393,6 +435,8 @@ public abstract class EnhancedItem implements Listener {
 			.equals(Material.AIR)) {
 			if (this.isSimilar(mainItem)) {
 				this.onSwap(event, false);
+
+				if (this.blockSwappingHand) event.setCancelled(true);
 			}
 		}
 
@@ -402,6 +446,8 @@ public abstract class EnhancedItem implements Listener {
 			.equals(Material.AIR)) {
 			if (this.isSimilar(offItem)) {
 				this.onSwap(event, true);
+
+				if (this.blockSwappingHand) event.setCancelled(true);
 			}
 		}
 	}
@@ -441,6 +487,7 @@ public abstract class EnhancedItem implements Listener {
 		private BiConsumer<PlayerSwapHandItemsEvent, Boolean> onSwapAction;
 		private Predicate<ItemStack> isSimilarAction;
 		private boolean blockDroppingItem;
+		private boolean blockSwappingHand;
 
 		/**
 		 * Register custom item
@@ -448,7 +495,16 @@ public abstract class EnhancedItem implements Listener {
 		 * @return EnhancedItem instance
 		 */
 		public EnhancedItem register(DependencyProvider provider, ItemStack itemStack, String itemName) {
-			EnhancedItem item = new EnhancedItem(provider, itemName) {
+			return this.register(provider.provide(JavaPlugin.class), provider.provide(ItemController.class), itemStack, itemName);
+		}
+
+		/**
+		 * Register custom item
+		 *
+		 * @return EnhancedItem instance
+		 */
+		public EnhancedItem register(JavaPlugin plugin, ItemController itemController, ItemStack itemStack, String itemName) {
+			EnhancedItem item = new EnhancedItem(plugin, itemName) {
 				@Override
 				public ItemStack getItem() {
 					return itemStack;
@@ -547,8 +603,8 @@ public abstract class EnhancedItem implements Listener {
 				}
 			};
 			item.setBlockDroppingItem(this.blockDroppingItem);
-			provider.provide(ItemController.class)
-				.registerItem(item);
+			item.setBlockSwappingHand(this.blockSwappingHand);
+			itemController.registerItem(item);
 			return item;
 		}
 	}

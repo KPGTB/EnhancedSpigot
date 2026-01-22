@@ -16,6 +16,8 @@
 
 package dev.projectenhanced.enhancedspigot.item;
 
+import dev.projectenhanced.enhancedspigot.common.IDependencyProvider;
+import dev.projectenhanced.enhancedspigot.common.stereotype.Controller;
 import dev.projectenhanced.enhancedspigot.util.DependencyProvider;
 import dev.projectenhanced.enhancedspigot.util.ReflectionUtil;
 import dev.projectenhanced.enhancedspigot.util.TextCase;
@@ -33,18 +35,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ItemController {
-	private final DependencyProvider provider;
-	private final JavaPlugin plugin;
+public class ItemController extends Controller {
 	private final File jarFile;
 
 	@Getter private final Map<String, EnhancedItem> customItems;
 
-	public ItemController(DependencyProvider provider) {
-		this.provider = provider;
-		this.plugin = provider.provide(JavaPlugin.class);
+	public ItemController(JavaPlugin plugin) {
+		super(plugin);
 		this.jarFile = ReflectionUtil.getJarFile(plugin);
+		this.customItems = new HashMap<>();
+	}
 
+	public ItemController(DependencyProvider provider) {
+		super(provider);
+		this.jarFile = ReflectionUtil.getJarFile(this.plugin);
 		this.customItems = new HashMap<>();
 	}
 
@@ -63,8 +67,14 @@ public class ItemController {
 				String itemName = TextCase.camelToSnakeCase(clazz.getSimpleName()
 					.replace("Item", ""));
 
-				EnhancedItem item = (EnhancedItem) clazz.getDeclaredConstructor(DependencyProvider.class, String.class)
-					.newInstance(this.provider, itemName);
+				EnhancedItem item;
+				if (this.dependencyProvider != null) {
+					item = (EnhancedItem) clazz.getDeclaredConstructor(IDependencyProvider.class, String.class)
+						.newInstance(this.dependencyProvider, itemName);
+				} else {
+					item = (EnhancedItem) clazz.getDeclaredConstructor(JavaPlugin.class, String.class)
+						.newInstance(this.plugin, itemName);
+				}
 
 				pluginManager.registerEvents(item, this.plugin);
 				this.customItems.put(itemName, item);
@@ -156,5 +166,20 @@ public class ItemController {
 		String itemName = TextCase.camelToSnakeCase(itemClass.getSimpleName()
 			.replace("Item", ""));
 		return customItems.get(itemName);
+	}
+
+	@Override
+	public void close() {
+
+	}
+
+	@Override
+	public void reload() {
+
+	}
+
+	@Override
+	public void start() {
+
 	}
 }

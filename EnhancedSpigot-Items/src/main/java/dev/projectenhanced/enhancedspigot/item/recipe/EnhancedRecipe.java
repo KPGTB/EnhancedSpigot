@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package dev.projectenhanced.enhancedspigot.item.recipe;
 
-import dev.projectenhanced.enhancedspigot.util.DependencyProvider;
+import dev.projectenhanced.enhancedspigot.common.IDependencyProvider;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -29,20 +29,33 @@ import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.StonecuttingRecipe;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 
 public abstract class EnhancedRecipe implements Listener {
+	protected final IDependencyProvider provider;
+	protected final JavaPlugin plugin;
+
 	protected final NamespacedKey recipeKey;
-	protected final DependencyProvider provider;
 	private Recipe recipe;
 	private boolean isRegistered;
-	
-	public EnhancedRecipe(NamespacedKey recipeKey, DependencyProvider provider) {
-		this.recipeKey = recipeKey;
-		this.provider = provider;
 
+	public EnhancedRecipe(NamespacedKey recipeKey, JavaPlugin plugin) {
+		this.provider = null;
+		this.plugin = plugin;
+
+		this.recipeKey = recipeKey;
+		this.recipe = null;
+		this.isRegistered = false;
+	}
+
+	public EnhancedRecipe(NamespacedKey recipeKey, IDependencyProvider provider) {
+		this.provider = provider;
+		this.plugin = provider.provide(JavaPlugin.class);
+
+		this.recipeKey = recipeKey;
 		this.recipe = null;
 		this.isRegistered = false;
 	}
@@ -88,8 +101,7 @@ public abstract class EnhancedRecipe implements Listener {
 					if (rKey.equals(this.recipeKey)) {
 						it.remove();
 					}
-				} catch (IllegalAccessException | NoSuchMethodException |
-						 InvocationTargetException e) {
+				} catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
 					continue;
 				}
 			}
@@ -124,8 +136,7 @@ public abstract class EnhancedRecipe implements Listener {
 				if (rKey.equals(this.recipeKey)) {
 					onCraft(event);
 				}
-			} catch (IllegalAccessException | NoSuchMethodException |
-					 InvocationTargetException e) {
+			} catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
 				return;
 			}
 		}

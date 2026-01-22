@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-version = "1.0.0-SNAPSHOT"
+version = "2.0.0-SNAPSHOT"
 description = "EnhancedSpigot Items module adds items & recipes management"
 
 repositories {
@@ -25,9 +25,11 @@ repositories {
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.19-R0.1-SNAPSHOT'
 
+    implementation project(':EnhancedSpigot-Commons')
     implementation project(':EnhancedSpigot-Utils')
 }
 
 shadowJar {
+    dependsOn ':EnhancedSpigot-Commons:shadowJar'
     dependsOn ':EnhancedSpigot-Utils:shadowJar'
 }
