@@ -14,10 +14,9 @@
  *    limitations under the License.
  */
 
-package dev.projectenhanced.enhancedspigot.common.converter.custom;
+package dev.projectenhanced.enhancedspigot.util.time;
 
 import dev.projectenhanced.enhancedspigot.common.converter.IStringConverter;
-import dev.projectenhanced.enhancedspigot.util.time.EnhancedTime;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -26,18 +25,13 @@ import java.util.List;
 
 public class TimeStringConverter implements IStringConverter<EnhancedTime> {
 	@Override
-	public EnhancedTime convert(String param, JavaPlugin plugin) {
-		return new EnhancedTime(param);
-	}
-
-	@Override
 	public String asString(EnhancedTime object, JavaPlugin plugin) {
-		return "";
+		return object.toString();
 	}
 
 	@Override
 	public EnhancedTime fromString(String string, JavaPlugin plugin) {
-		return null;
+		return new EnhancedTime(string);
 	}
 
 	@Override

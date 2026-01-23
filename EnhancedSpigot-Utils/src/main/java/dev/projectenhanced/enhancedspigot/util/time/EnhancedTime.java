@@ -62,6 +62,10 @@ import java.util.regex.Pattern;
 		return new EnhancedTime(time).getMillis();
 	}
 
+	public static String from(long millis, String format, String emptyReplace) {
+		return new EnhancedTime(millis).as(format, emptyReplace);
+	}
+
 	/**
 	 * Get time in ticks
 	 *

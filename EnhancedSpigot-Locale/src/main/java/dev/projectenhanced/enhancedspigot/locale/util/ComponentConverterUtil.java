@@ -18,15 +18,14 @@ package dev.projectenhanced.enhancedspigot.locale.util;
 
 import com.google.gson.JsonElement;
 import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 
 public class ComponentConverterUtil {
-	private static final Object ENHANCED_GSON_SERIALIZER = TryCatchUtil.tryAndReturn(() -> Class.forName(
-			"dev.projectenhanced.enhancedspigot.locale.lib.adventure.text.serializer.gson.GsonComponentSerializer")
-		.getMethod("gson")
-		.invoke(null));
 	private static final Object KYORI_GSON_SERIALIZER = TryCatchUtil.tryAndReturn(() -> Class.forName("net.kyori.adventure.text.serializer.gson.GsonComponentSerializer")
 		.getMethod("gson")
 		.invoke(null));
+	private static final Object ENHANCED_GSON_SERIALIZER = GsonComponentSerializer.gson();
 
 	/**
 	 * Converts an Enhanced Component to a Kyori Component
@@ -34,7 +33,7 @@ public class ComponentConverterUtil {
 	 * @param enhancedComponent - dev.projectenhanced.enhancedspigot.locale.lib.adventure.text.Component;
 	 * @return net.kyori.adventure.text.Component
 	 */
-	public static Object enhancedToKyori(Object enhancedComponent) {
+	public static Object enhancedToKyori(Component enhancedComponent) {
 		return convert(enhancedComponent, KYORI_GSON_SERIALIZER, ENHANCED_GSON_SERIALIZER);
 	}
 
@@ -44,8 +43,8 @@ public class ComponentConverterUtil {
 	 * @param kyoriComponent - net.kyori.adventure.text.Component
 	 * @return dev.projectenhanced.enhancedspigot.locale.lib.adventure.text.Component;
 	 */
-	public static Object kyoriToEnhanced(Object kyoriComponent) {
-		return convert(kyoriComponent, ENHANCED_GSON_SERIALIZER, KYORI_GSON_SERIALIZER);
+	public static Component kyoriToEnhanced(Object kyoriComponent) {
+		return (Component) convert(kyoriComponent, ENHANCED_GSON_SERIALIZER, KYORI_GSON_SERIALIZER);
 	}
 
 	private static Object convert(Object component, Object deserializer, Object serializer) {

@@ -17,7 +17,6 @@
 package dev.projectenhanced.enhancedspigot.common.converter;
 
 import dev.projectenhanced.enhancedspigot.common.converter.custom.EnumStringConverter;
-import dev.projectenhanced.enhancedspigot.common.converter.custom.TimeStringConverter;
 import dev.projectenhanced.enhancedspigot.common.converter.java.*;
 import dev.projectenhanced.enhancedspigot.common.converter.spigot.OfflinePlayerStringConverter;
 import dev.projectenhanced.enhancedspigot.common.converter.spigot.PlayerStringConverter;
@@ -44,7 +43,7 @@ public class StringConverterRegistry {
 			new BooleanStringConverter(), new ByteStringConverter(), new DoubleStringConverter(), new FloatStringConverter(), new IntegerStringConverter(), new LongStringConverter(),
 			new ShortStringConverter(), new StringConverter()
 		);
-		this.registerConverters(new OfflinePlayerStringConverter(), new PlayerStringConverter(), new WorldStringConverter(), new TimeStringConverter());
+		this.registerConverters(new OfflinePlayerStringConverter(), new PlayerStringConverter(), new WorldStringConverter());
 	}
 
 	public static StringConverterRegistry getInstance() {

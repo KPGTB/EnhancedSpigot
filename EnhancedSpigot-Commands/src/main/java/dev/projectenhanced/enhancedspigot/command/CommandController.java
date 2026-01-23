@@ -17,10 +17,13 @@
 package dev.projectenhanced.enhancedspigot.command;
 
 import dev.projectenhanced.enhancedspigot.common.IDependencyProvider;
+import dev.projectenhanced.enhancedspigot.common.converter.StringConverterRegistry;
 import dev.projectenhanced.enhancedspigot.common.stereotype.Controller;
 import dev.projectenhanced.enhancedspigot.util.DependencyProvider;
 import dev.projectenhanced.enhancedspigot.util.ReflectionUtil;
 import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
+import dev.projectenhanced.enhancedspigot.util.time.EnhancedTime;
+import dev.projectenhanced.enhancedspigot.util.time.TimeStringConverter;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.SimpleCommandMap;
@@ -48,6 +51,9 @@ public class CommandController extends Controller {
 		this.jarFile = ReflectionUtil.getJarFile(plugin);
 		this.pluginTag = this.generateTag();
 		this.registeredCommands = new ArrayList<>();
+
+		StringConverterRegistry.getInstance()
+			.registerConverter(EnhancedTime.class, new TimeStringConverter());
 	}
 
 	public CommandController(DependencyProvider provider, CommandLocale locale) {
@@ -56,6 +62,9 @@ public class CommandController extends Controller {
 		this.jarFile = ReflectionUtil.getJarFile(this.plugin);
 		this.pluginTag = this.generateTag();
 		this.registeredCommands = new ArrayList<>();
+
+		StringConverterRegistry.getInstance()
+			.registerConverter(EnhancedTime.class, new TimeStringConverter());
 	}
 
 	protected String generateTag() {
