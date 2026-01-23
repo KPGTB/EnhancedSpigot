@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -36,15 +36,20 @@ import java.util.function.Function;
 
 public abstract class EnhancedConfigMenu<T extends ConfigMenuSettings> extends EnhancedMenu {
 	protected final T menuSettings;
-	protected final DependencyProvider provider;
-	protected final JavaPlugin plugin;
 	protected final Player viewer;
 	protected TagResolver[] placeholders;
 
+	public EnhancedConfigMenu(JavaPlugin plugin, Player viewer, T settings, TagResolver... placeholders) {
+		super(settings.getTitle(viewer, placeholders), settings.getRows(), plugin);
+		this.viewer = viewer;
+		this.menuSettings = settings;
+		this.placeholders = placeholders;
+
+		if (settings.blockClick()) this.blockClick();
+	}
+
 	public EnhancedConfigMenu(DependencyProvider provider, Player viewer, T settings, TagResolver... placeholders) {
 		super(settings.getTitle(viewer, placeholders), settings.getRows(), provider);
-		this.provider = provider;
-		this.plugin = provider.provide(JavaPlugin.class);
 		this.viewer = viewer;
 		this.menuSettings = settings;
 		this.placeholders = placeholders;
@@ -125,5 +130,9 @@ public abstract class EnhancedConfigMenu<T extends ConfigMenuSettings> extends E
 		this.afterPrepare(container);
 
 		addContainer(container);
+	}
+
+	public void open() {
+		super.open(this.viewer);
 	}
 }

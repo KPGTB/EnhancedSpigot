@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,9 +16,14 @@
 
 package dev.projectenhanced.enhancedspigot.menu.impl.menu;
 
+import dev.projectenhanced.enhancedspigot.config.annotation.Serializer;
+import dev.projectenhanced.enhancedspigot.config.serializer.impl.BaseSerializer;
+import dev.projectenhanced.enhancedspigot.locale.ColorUtil;
 import dev.projectenhanced.enhancedspigot.menu.EnhancedMenu;
-import dev.projectenhanced.enhancedspigot.menu.impl.menu.config.WriteMenuSettings;
 import dev.projectenhanced.enhancedspigot.util.SchedulerUtil;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import net.wesjd.anvilgui.AnvilGUI;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -31,13 +36,13 @@ import java.util.function.Consumer;
 
 public class EnhancedWriteMenu implements Listener {
 	private final JavaPlugin plugin;
-	private final WriteMenuSettings settings;
+	private final Configuration settings;
 	private final EnhancedMenu lastMenu;
 	private final Player viewer;
 	private final Consumer<String> response;
 	private boolean responded;
 
-	public EnhancedWriteMenu(JavaPlugin plugin, WriteMenuSettings settings, EnhancedMenu lastMenu, Player player, Consumer<String> response) {
+	public EnhancedWriteMenu(JavaPlugin plugin, Configuration settings, EnhancedMenu lastMenu, Player player, Consumer<String> response) {
 		this.plugin = plugin;
 		this.settings = settings;
 		this.lastMenu = lastMenu;
@@ -77,5 +82,18 @@ public class EnhancedWriteMenu implements Listener {
 			.title(this.settings.getTitle(this.viewer))
 			.plugin(this.plugin)
 			.open(viewer);
+	}
+
+	@NoArgsConstructor @AllArgsConstructor @Setter @Serializer(BaseSerializer.class) public static class Configuration {
+		private String title = "Response";
+		private String placeholder = "Type here...";
+
+		public String getTitle(Player viewer) {
+			return ColorUtil.addPAPI(ColorUtil.convertMmToString(this.title), viewer);
+		}
+
+		public String getPlaceholder(Player viewer) {
+			return ColorUtil.addPAPI(ColorUtil.convertMmToString(this.title), viewer);
+		}
 	}
 }

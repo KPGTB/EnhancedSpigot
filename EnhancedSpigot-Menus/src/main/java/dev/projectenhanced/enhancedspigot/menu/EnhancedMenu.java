@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -49,31 +49,51 @@ import java.util.function.Consumer;
  */
 @Getter @Setter public abstract class EnhancedMenu implements Listener {
 	protected final DependencyProvider provider;
-	private final Long id;
-	private final int rows;
-	private final List<MenuContainer> containers;
-	private final Inventory bukkitInventory;
-	private final JavaPlugin plugin;
+	protected final JavaPlugin plugin;
+
+	protected final Long id;
+	protected final int rows;
+	protected final List<MenuContainer> containers;
+
+	protected final Inventory bukkitInventory;
 	private BiConsumer<InventoryClickEvent, MenuItem.ClickLocation> globalClickAction;
 	private Consumer<InventoryDragEvent> globalDragAction;
 	private Consumer<InventoryCloseEvent> closeAction;
 	private boolean updateItems;
 
-	public EnhancedMenu(String title, int rows, DependencyProvider provider) {
+	public EnhancedMenu(String title, int rows, JavaPlugin plugin) {
+		this.provider = null;
+		this.plugin = plugin;
+
 		this.id = System.currentTimeMillis();
 		this.rows = rows;
 		this.containers = new ArrayList<>();
 		this.updateItems = false;
+
+		this.bukkitInventory = this.register(title);
+	}
+
+	public EnhancedMenu(String title, int rows, DependencyProvider provider) {
 		this.provider = provider;
 		this.plugin = provider.provide(JavaPlugin.class);
 
-		if (rows > 6 || rows < 1) {
+		this.id = System.currentTimeMillis();
+		this.rows = rows;
+		this.containers = new ArrayList<>();
+		this.updateItems = false;
+
+		this.bukkitInventory = this.register(title);
+	}
+
+	protected Inventory register(String title) {
+		if (this.rows > 6 || this.rows < 1) {
 			throw new IllegalArgumentException("rows must be between 1 and 6");
 		}
 
-		this.bukkitInventory = new EnhancedMenuHolder(this, (rows * 9), title).getInventory();
 		Bukkit.getPluginManager()
 			.registerEvents(this, this.plugin);
+
+		return new EnhancedMenuHolder(this, (this.rows * 9), title).getInventory();
 	}
 
 	/**
@@ -300,9 +320,5 @@ import java.util.function.Consumer;
 	public boolean isMenu(Inventory inv) {
 		if (inv == null) return false;
 		return inv == this.bukkitInventory;
-		/*if (inv == null || inv.getHolder() == null) return false;
-		if (!(inv.getHolder() instanceof EnhancedMenuHolder)) return false;
-		return ((EnhancedMenuHolder) inv.getHolder()).getMenu()
-			.equals(this);*/
 	}
 }

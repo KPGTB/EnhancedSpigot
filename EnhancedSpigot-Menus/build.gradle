@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-version = "1.0.0-SNAPSHOT"
+version = "2.0.0-SNAPSHOT"
 description = "EnhancedSpigot Menus module adds advanced pageable config menus"
 
 repositories {
@@ -36,12 +36,14 @@ dependencies {
     compileOnly "net.kyori:adventure-text-minimessage:4.21.0"
     optionalImplementation 'net.wesjd:anvilgui:1.10.6-SNAPSHOT'
 
+    implementation project(':EnhancedSpigot-Commons')
     implementation project(':EnhancedSpigot-Utils')
     implementation project(':EnhancedSpigot-Configs')
     implementation project(':EnhancedSpigot-Locale')
 }
 
 shadowJar {
+    dependsOn ':EnhancedSpigot-Commons:shadowJar'
     dependsOn ':EnhancedSpigot-Utils:shadowJar'
     dependsOn ':EnhancedSpigot-Configs:shadowJar'
     dependsOn ':EnhancedSpigot-Locale:shadowJar'
