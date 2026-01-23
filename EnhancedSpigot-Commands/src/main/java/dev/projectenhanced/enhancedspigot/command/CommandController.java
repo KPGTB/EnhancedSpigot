@@ -91,7 +91,7 @@ public class CommandController extends Controller {
 							.append(".");
 					}
 
-					if (!finalPath.isEmpty()) finalPath.deleteCharAt(finalPath.length() - 1);
+					if (finalPath.length() != 0) finalPath.deleteCharAt(finalPath.length() - 1);
 
 					EnhancedCommand command;
 					if (this.dependencyProvider != null) {

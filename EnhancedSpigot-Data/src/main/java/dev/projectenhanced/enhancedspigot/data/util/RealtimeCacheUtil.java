@@ -31,7 +31,7 @@ public class RealtimeCacheUtil {
 	}
 
 	public static <V extends ICached<?>> void saveSyncFull(ISavable<?, V> cache, V value) {
-		if (cache instanceof RealtimeCache<?, V>) ((RealtimeCache<?, V>) cache).saveFull(value);
+		if (cache instanceof RealtimeCache<?, ?>) ((RealtimeCache<?, V>) cache).saveFull(value);
 		else cache.saveValue(value);
 	}
 

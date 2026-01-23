@@ -54,7 +54,7 @@ class EnhancedSpigotPlugin implements Plugin<Project> {
                 mavenCentral()
                 mavenLocal()
                 maven { url "https://nexus.projectenhanced.dev/repository/maven-snapshots" }
-                if (!ext.menusModule.get().isEmpty()) maven { url 'https://repo.codemc.io/repository/maven-snapshots' }
+                if (!ext.menusModule.get().isEmpty()) maven { url 'https://mvn.wesjd.net/' }
                 if (ext.importVault.get()) maven { url 'https://jitpack.io' }
                 if (ext.importPapi.get()) maven { url = 'https://repo.extendedclip.com/releases/' }
             }

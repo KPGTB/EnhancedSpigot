@@ -20,7 +20,7 @@ description = "EnhancedSpigot Menus module adds advanced pageable config menus"
 repositories {
     mavenCentral()
     maven { url "https://hub.spigotmc.org/nexus/content/repositories/snapshots/" }
-    maven { url "https://repo.codemc.io/repository/maven-snapshots/" }
+    maven { url "https://mvn.wesjd.net/" }
 }
 
 java {
@@ -34,7 +34,7 @@ dependencies {
 
     compileOnly 'net.kyori:adventure-platform-bukkit:4.4.0'
     compileOnly "net.kyori:adventure-text-minimessage:4.21.0"
-    optionalImplementation 'net.wesjd:anvilgui:1.10.6-SNAPSHOT'
+    optionalImplementation 'net.wesjd:anvilgui:1.10.11-SNAPSHOT'
 
     implementation project(':EnhancedSpigot-Commons')
     implementation project(':EnhancedSpigot-Utils')

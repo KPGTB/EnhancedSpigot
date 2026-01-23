@@ -23,12 +23,17 @@ repositories {
     maven { url = "https://libraries.minecraft.net/" }
 }
 
+java {
+    registerFeature('optional') {
+        usingSourceSet sourceSets.main
+    }
+}
+
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT'
     compileOnly 'com.mojang:authlib:1.5.25'
 
-    implementation 'com.ezylang:EvalEx:3.5.0'
-
+    optionalImplementation 'com.ezylang:EvalEx:3.5.0'
     implementation project(':EnhancedSpigot-Commons')
 }
 

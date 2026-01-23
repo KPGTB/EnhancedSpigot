@@ -55,6 +55,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Abstract class that handles process of creating commands
@@ -383,7 +384,7 @@ public abstract class EnhancedCommand extends Command {
 				}
 				return true;
 			})
-			.toList();
+			.collect(Collectors.toList());
 	}
 
 	private boolean validateAllArgsTypes(CommandInfo command, List<String> actualArgs) {

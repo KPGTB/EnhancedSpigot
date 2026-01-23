@@ -131,7 +131,7 @@ public class EnhancedConfirmMenu extends EnhancedConfigMenu<EnhancedConfirmMenu.
 				"2", new StaticItem(
 					EnhancedItemBuilder.of(Material.REDSTONE)
 						.displayName("<red>Cacnel")
-						.build(), List.of("[cancel]")
+						.build(), Arrays.asList("[cancel]")
 				)
 			);
 
@@ -139,7 +139,7 @@ public class EnhancedConfirmMenu extends EnhancedConfigMenu<EnhancedConfirmMenu.
 				"6", new StaticItem(
 					EnhancedItemBuilder.of(Material.EMERALD)
 						.displayName("<green>Confirm")
-						.build(), List.of("[confirm]")
+						.build(), Arrays.asList("[confirm]")
 				)
 			);
 
@@ -164,7 +164,7 @@ public class EnhancedConfirmMenu extends EnhancedConfigMenu<EnhancedConfirmMenu.
 		@Override
 		public Map<String, List<String>> dynamicSlots() {
 			Map<String, List<String>> map = new HashMap<>();
-			map.put("info", List.of(String.valueOf(this.infoItemSlot)));
+			map.put("info", Arrays.asList(String.valueOf(this.infoItemSlot)));
 			return map;
 		}
 
