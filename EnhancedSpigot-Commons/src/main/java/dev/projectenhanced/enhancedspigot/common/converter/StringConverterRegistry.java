@@ -36,7 +36,7 @@ public class StringConverterRegistry {
 
 	private final Map<Class<?>, IStringConverter<?>> converters;
 
-	public StringConverterRegistry() {
+	protected StringConverterRegistry() {
 		this.converters = new HashMap<>();
 
 		this.registerConverters(
@@ -140,7 +140,7 @@ public class StringConverterRegistry {
 			new EnumStringConverter<>((Class<Z>) expected) :
 			this.getConverter(expected);
 
-		if (converter == null || !converter.canConvert(s, plugin)) {
+		if (converter == null) {
 			throw new IllegalArgumentException("You try convert string to class that you can't convert");
 		}
 

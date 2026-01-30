@@ -33,7 +33,6 @@ import dev.projectenhanced.enhancedspigot.common.annotation.WithoutPermission;
 import dev.projectenhanced.enhancedspigot.common.converter.IStringConverter;
 import dev.projectenhanced.enhancedspigot.common.converter.StringConverterRegistry;
 import dev.projectenhanced.enhancedspigot.common.filter.FilterContainer;
-import dev.projectenhanced.enhancedspigot.util.DependencyProvider;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.command.Command;
@@ -96,7 +95,7 @@ public abstract class EnhancedCommand extends Command {
 		this(plugin, null, locale, groupPath);
 	}
 
-	public EnhancedCommand(DependencyProvider provider, CommandLocale locale, String groupPath) {
+	public EnhancedCommand(IDependencyProvider provider, CommandLocale locale, String groupPath) {
 		this(provider.provide(JavaPlugin.class), provider, locale, groupPath);
 	}
 
@@ -322,8 +321,10 @@ public abstract class EnhancedCommand extends Command {
 
 				Object[] finalArgs = this.getFinalArgs(command, actualArgs, sender);
 
-				List<String> passSourceFilters = command.getSourceFilters()
-					.passFilters(sender, this.plugin, sender);
+				List<String> passSourceFilters = command.getSourceFilters() != null ?
+					command.getSourceFilters()
+						.passFilters(sender, this.plugin, sender) :
+					new ArrayList<>();
 				if (!passSourceFilters.isEmpty()) {
 					found = true;
 					failedFilters = passSourceFilters;
@@ -448,8 +449,10 @@ public abstract class EnhancedCommand extends Command {
 	private <T> List<String> validateArgument(CommandInfo command, int argIdx, T object, JavaPlugin plugin, CommandSender sender) {
 		CommandArgument<T> argument = (CommandArgument<T>) command.getArgs()
 			.get(argIdx);
-		return argument.getFilters()
-			.passFilters(object, plugin, sender);
+		return argument.getFilters() != null ?
+			argument.getFilters()
+				.passFilters(object, plugin, sender) :
+			new ArrayList<>();
 	}
 
 	//
@@ -598,7 +601,7 @@ public abstract class EnhancedCommand extends Command {
 					.fromString(s, plugin) :
 				this.converterRegistry.convert(s, arg.getClazz(), plugin);
 
-			if (arg.getFilters()
+			if (arg.getFilters() == null || arg.getFilters()
 				.passFilters(obj, this.plugin, sender)
 				.isEmpty()) result.add(s);
 		});

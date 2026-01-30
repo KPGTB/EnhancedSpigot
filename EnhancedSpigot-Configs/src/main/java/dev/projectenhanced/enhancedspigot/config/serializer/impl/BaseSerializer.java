@@ -180,9 +180,11 @@ public class BaseSerializer implements ISerializer<Object> {
 			isCollection = Collection.class.isAssignableFrom(actualClass);
 			isMap = Map.class.isAssignableFrom(actualClass);
 
-			type = typeData.getSecond()[isCollection ?
-				0 :
-				1];
+			type = typeData.getSecond() != null ?
+				typeData.getSecond()[isCollection ?
+					0 :
+					1] :
+				null;
 		} while (isCollection || isMap);
 
 		return actualClass.getDeclaredAnnotation(Serializer.class);
