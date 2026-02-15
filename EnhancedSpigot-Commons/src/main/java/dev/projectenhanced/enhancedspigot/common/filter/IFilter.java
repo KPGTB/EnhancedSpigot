@@ -19,7 +19,6 @@ package dev.projectenhanced.enhancedspigot.common.filter;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public interface IFilter<T> {
@@ -41,9 +40,7 @@ public interface IFilter<T> {
 	 * @param source Command sender / Player
 	 * @return List of messages that can be sent
 	 */
-	default List<String> notPassMessage(T obj, JavaPlugin plugin, CommandSender source) {
-		return new ArrayList<>();
-	}
+	List<String> notPassMessage(T obj, JavaPlugin plugin, CommandSender source);
 
 	/**
 	 * Weight of the filter
