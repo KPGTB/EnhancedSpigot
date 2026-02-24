@@ -50,6 +50,7 @@ import org.postgresql.util.PSQLException;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.sql.SQLSyntaxErrorException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -116,6 +117,10 @@ import java.util.logging.Level;
 				Throwable cause = ex.getCause();
 				if (cause instanceof PSQLException && cause.getMessage()
 					.contains("already exists")) {
+					return;
+				}
+				if (cause instanceof SQLSyntaxErrorException && cause.getMessage()
+					.contains("Duplicate key name")) {
 					return;
 				}
 
