@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -232,6 +232,12 @@ public class DataCache<K, V extends ICached<K>> implements ISavableCache<K, V>, 
 	}
 
 	@Override
+	public void saveAndInvalidate(K key) {
+		this.save(key);
+		this.invalidate(key);
+	}
+
+	@Override
 	public void saveValue(V value) {
 		saveToDb(value);
 	}
@@ -265,6 +271,12 @@ public class DataCache<K, V extends ICached<K>> implements ISavableCache<K, V>, 
 	public V create(V value) {
 		this.createInDb(value);
 		return this.load(value.getKey());
+	}
+
+	@Override
+	public V loadOrCreate(K key, V defaultValue) {
+		if (this.exists(key)) return this.load(key);
+		return this.create(key, defaultValue);
 	}
 
 	@Override

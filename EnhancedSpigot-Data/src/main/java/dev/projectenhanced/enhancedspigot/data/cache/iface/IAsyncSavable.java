@@ -42,6 +42,8 @@ public interface IAsyncSavable<K, V extends ICached<K>> extends ISavable<K, V> {
 
 	CompletableFuture<Void> saveAsync(K key);
 
+	CompletableFuture<Void> saveAndInvalidateAsync(K key);
+
 	CompletableFuture<Void> saveAsyncValue(V value);
 
 	CompletableFuture<Void> saveAsyncAll();
@@ -49,6 +51,8 @@ public interface IAsyncSavable<K, V extends ICached<K>> extends ISavable<K, V> {
 	CompletableFuture<V> createAsync(K key, V value);
 
 	CompletableFuture<V> createAsync(V value);
+
+	CompletableFuture<V> loadOrCreateAsync(K key, V defaultValue);
 
 	CompletableFuture<Void> removeAsync(K key);
 

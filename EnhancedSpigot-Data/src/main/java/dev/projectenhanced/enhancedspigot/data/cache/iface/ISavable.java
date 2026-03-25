@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -40,6 +40,8 @@ public interface ISavable<K, V extends ICached<K>> {
 
 	void save(K key);
 
+	void saveAndInvalidate(K key);
+
 	void saveValue(V value);
 
 	void saveAll();
@@ -47,6 +49,8 @@ public interface ISavable<K, V extends ICached<K>> {
 	V create(K key, V value);
 
 	V create(V value);
+
+	V loadOrCreate(K key, V defaultValue);
 
 	void remove(K key);
 

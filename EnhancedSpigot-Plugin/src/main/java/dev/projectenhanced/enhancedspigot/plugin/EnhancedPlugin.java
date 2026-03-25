@@ -29,6 +29,8 @@ import dev.projectenhanced.enhancedspigot.util.DependencyProvider;
 import dev.projectenhanced.enhancedspigot.util.SchedulerUtil;
 import dev.projectenhanced.enhancedspigot.util.SemanticVersion;
 import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
+import dev.projectenhanced.enhancedspigot.util.leaderboard.LeaderboardController;
+import dev.projectenhanced.enhancedspigot.util.leaderboard.LeaderboardData;
 import dev.projectenhanced.enhancedspigot.util.listener.ListenerRegistry;
 import dev.projectenhanced.enhancedspigot.util.updater.IUpdater;
 import lombok.Getter;
@@ -87,6 +89,13 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 	public void reload() {
 		this.dependencyProvider.reload();
 		this.reloadImpl();
+
+		LeaderboardController leaderboardController = this.dependencyProvider.provide(LeaderboardController.class);
+		if (leaderboardController != null) {
+			leaderboardController.unregisterAll();
+			this.leaderboards()
+				.forEach(leaderboardController::register);
+		}
 	}
 
 	protected abstract void reloadImpl();
@@ -94,6 +103,10 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 	public abstract void unload();
 
 	protected abstract List<String> requiredPlugins();
+
+	public Map<String, LeaderboardData<?, ?>> leaderboards() {
+		return Map.of();
+	}
 
 	protected CommandController enableCommands(CommandLocale locale) {
 		CommandController controller = new CommandController(this.dependencyProvider, locale);
@@ -128,6 +141,17 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 	protected ItemController enableCustomItems() {
 		ItemController controller = new ItemController(this.dependencyProvider);
 		this.dependencyProvider.register(controller);
+		return controller;
+	}
+
+	protected LeaderboardController enableLeaderboards() {
+		LeaderboardController controller = new LeaderboardController(this.dependencyProvider);
+		controller.start();
+		this.dependencyProvider.register(controller);
+
+		this.leaderboards()
+			.forEach(controller::register);
+
 		return controller;
 	}
 

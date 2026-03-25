@@ -32,4 +32,17 @@ public class TextCase {
 			.toLowerCase();
 		return str;
 	}
+
+	public static String snakeToHumanCase(String str) {
+		String[] words = str.split("_");
+		StringBuilder humanCase = new StringBuilder();
+		for (String word : words) {
+			humanCase.append(Character.toUpperCase(word.charAt(0)))
+				.append(word.substring(1)
+					.toLowerCase())
+				.append(" ");
+		}
+		return humanCase.toString()
+			.trim();
+	}
 }

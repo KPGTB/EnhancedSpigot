@@ -184,6 +184,12 @@ public class AsyncDataCache<K, V extends ICached<K>> extends DataCache<K, V> imp
 	}
 
 	@Override
+	public CompletableFuture<Void> saveAndInvalidateAsync(K key) {
+		return this.saveAsync(key)
+			.thenRun(() -> this.invalidate(key));
+	}
+
+	@Override
 	public CompletableFuture<Void> saveAsyncValue(V value) {
 		long operationId = System.currentTimeMillis();
 		return this.saveToDbAsync(value, this.asyncPriorityMap.getSavePriority(), operationId);
@@ -225,6 +231,15 @@ public class AsyncDataCache<K, V extends ICached<K>> extends DataCache<K, V> imp
 	@Override
 	public CompletableFuture<V> createAsync(V value) {
 		return this.supplyAsync(() -> this.create(value), this.asyncPriorityMap.getCreatePriority(), System.currentTimeMillis());
+	}
+
+	@Override
+	public CompletableFuture<V> loadOrCreateAsync(K key, V defaultValue) {
+		return this.existsAsync(key)
+			.thenCompose(exists -> {
+				if (exists) return this.loadAsync(key);
+				return this.createAsync(key, defaultValue);
+			});
 	}
 
 	@Override

@@ -16,6 +16,7 @@
 
 package dev.projectenhanced.enhancedspigot.util.item;
 
+import dev.projectenhanced.enhancedspigot.util.TextCase;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -125,7 +126,7 @@ public class ItemUtil {
 			.isAir();
 	}
 
-	public boolean canGetItems(Inventory inventory, ItemStack is) {
+	public static boolean canGetItems(Inventory inventory, ItemStack is) {
 		int freeSpace = 0;
 		for (int i = 0; i < 36; i++) {
 			ItemStack item = inventory.getItem(i);
@@ -140,11 +141,20 @@ public class ItemUtil {
 		return freeSpace >= is.getAmount();
 	}
 
-	public boolean hasEmptySlot(Inventory inventory) {
+	public static boolean hasEmptySlot(Inventory inventory) {
 		for (int i = 0; i < 36; i++) {
 			ItemStack item = inventory.getItem(i);
 			if (!validateItem(item)) return true;
 		}
 		return false;
+	}
+
+	public static String getItemName(ItemStack is) {
+		if (!validateItem(is)) return "-";
+		ItemMeta meta = is.getItemMeta();
+
+		if (meta.hasDisplayName()) return meta.getDisplayName();
+		return TextCase.snakeToHumanCase(is.getType()
+			.name());
 	}
 }
