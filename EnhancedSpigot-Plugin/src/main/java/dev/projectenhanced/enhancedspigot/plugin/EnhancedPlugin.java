@@ -38,6 +38,7 @@ import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -105,7 +106,7 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 	protected abstract List<String> requiredPlugins();
 
 	public Map<String, LeaderboardData<?, ?>> leaderboards() {
-		return Map.of();
+		return new HashMap<>();
 	}
 
 	protected CommandController enableCommands(CommandLocale locale) {

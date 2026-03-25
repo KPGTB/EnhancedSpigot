@@ -24,14 +24,15 @@ import org.bukkit.OfflinePlayer;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SequencedMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Getter @Setter public class LeaderboardData<K, V> {
 	private final String key;
@@ -57,8 +58,8 @@ import java.util.function.Supplier;
 	private final Function<OfflinePlayer, Pair<K, V>> placeholderParser;
 	private final Function<V, String> valueFormatter;
 
-	@Getter private final SequencedMap<K, V> cachedLeaderboard;
-	@Getter private final SequencedMap<String, V> cachedRanges; // key - position range (e.g. "1-10"), value - value of the last entry in the range
+	@Getter private final LinkedHashMap<K, V> cachedLeaderboard;
+	@Getter private final LinkedHashMap<String, V> cachedRanges; // key - position range (e.g. "1-10"), value - value of the last entry in the range
 	@Getter private long nextRefresh;
 
 	@Setter
@@ -69,7 +70,7 @@ import java.util.function.Supplier;
 	private int leaderboardSize = 20;
 	@Setter
 	@Getter
-	private List<Pair<Integer, Integer>> ranges = List.of(
+	private List<Pair<Integer, Integer>> ranges = Arrays.asList(
 		new Pair<>(1, 50), new Pair<>(51, 100), new Pair<>(101, 500), new Pair<>(501, 1000), new Pair<>(1001, 5000), new Pair<>(5001, 10000), new Pair<>(10001, 50000), new Pair<>(50001, 100000),
 		new Pair<>(100001, 500000), new Pair<>(500001, 1000000)
 	); // The first one and the last one is dynamic
@@ -96,12 +97,13 @@ import java.util.function.Supplier;
 
 		if (this.cachedRanges.isEmpty()) return "-";
 
+		String lastKey = "";
 		for (Map.Entry<String, V> entry : this.cachedRanges.entrySet()) {
 			if (this.comparator.compare(value, entry.getValue()) < 0) return entry.getKey();
+			lastKey = entry.getKey();
 		}
 
-		return this.cachedRanges.lastEntry()
-			.getKey();
+		return lastKey;
 	}
 
 	public Pair<K, V> getEntryAtPosition(int position) {
@@ -119,7 +121,7 @@ import java.util.function.Supplier;
 				List<Map.Entry<K, V>> sorted = entries.entrySet()
 					.stream()
 					.sorted((e1, e2) -> this.comparator.compare(e1.getValue(), e2.getValue()))
-					.toList();
+					.collect(Collectors.toList());
 
 				if (sorted.isEmpty()) return;
 
@@ -194,12 +196,16 @@ import java.util.function.Supplier;
 			Pair<K, V> pair = this.placeholderParser.apply(offlinePlayer);
 			if (pair == null) return null;
 
-			return switch (parts[0].toLowerCase()) {
-				case "key" -> String.valueOf(pair.getFirst());
-				case "value" -> this.valueFormatter.apply(pair.getSecond());
-				case "position" -> this.getPosition(pair.getFirst(), pair.getSecond());
-				default -> null;
-			};
+			switch (parts[0].toLowerCase()) {
+				case "key":
+					return String.valueOf(pair.getFirst());
+				case "value":
+					return this.valueFormatter.apply(pair.getSecond());
+				case "position":
+					return this.getPosition(pair.getFirst(), pair.getSecond());
+				default:
+					return null;
+			}
 		}
 
 		try {
@@ -207,11 +213,14 @@ import java.util.function.Supplier;
 			Pair<K, V> pair = this.getEntryAtPosition(position);
 			if (pair == null) return null;
 
-			return switch (parts[0].toLowerCase()) {
-				case "key" -> String.valueOf(pair.getFirst());
-				case "value" -> this.valueFormatter.apply(pair.getSecond());
-				default -> null;
-			};
+			switch (parts[0].toLowerCase()) {
+				case "key":
+					return String.valueOf(pair.getFirst());
+				case "value":
+					return this.valueFormatter.apply(pair.getSecond());
+				default:
+					return null;
+			}
 		} catch (NumberFormatException e) {
 			return null;
 		}
