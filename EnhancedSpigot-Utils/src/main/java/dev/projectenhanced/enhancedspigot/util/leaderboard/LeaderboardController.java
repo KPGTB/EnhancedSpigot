@@ -18,6 +18,7 @@ package dev.projectenhanced.enhancedspigot.util.leaderboard;
 
 import dev.projectenhanced.enhancedspigot.common.IDependencyProvider;
 import dev.projectenhanced.enhancedspigot.common.stereotype.Controller;
+import dev.projectenhanced.enhancedspigot.util.Pair;
 import dev.projectenhanced.enhancedspigot.util.SchedulerUtil;
 import dev.projectenhanced.enhancedspigot.util.time.EnhancedTime;
 import lombok.Getter;
@@ -25,6 +26,8 @@ import lombok.Setter;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -79,6 +82,12 @@ public class LeaderboardController extends Controller {
 		LeaderboardData<?, ?> data = this.registeredLeaderboards.get(key);
 		if (data == null) return null;
 		return data.handlePlaceholder(offlinePlayer, actualPlaceholder);
+	}
+
+	public <K, V> List<String> getLeaderboardText(String key, @Nullable Pair<K, V> yourValue) {
+		LeaderboardData<K, V> data = (LeaderboardData<K, V>) this.registeredLeaderboards.get(key);
+		if (data == null) return null;
+		return data.getLeaderboardText(yourValue);
 	}
 
 	@Override
