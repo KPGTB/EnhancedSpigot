@@ -152,7 +152,7 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 		this.leaderboards()
 			.forEach(controller::register);
 
-		controller.start();
+		SchedulerUtil.runTaskLater(this, controller::start, 200);
 		this.dependencyProvider.register(controller);
 
 		return controller;
