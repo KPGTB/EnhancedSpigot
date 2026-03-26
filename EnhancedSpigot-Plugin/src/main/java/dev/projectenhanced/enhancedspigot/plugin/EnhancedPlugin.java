@@ -32,6 +32,7 @@ import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
 import dev.projectenhanced.enhancedspigot.util.leaderboard.LeaderboardController;
 import dev.projectenhanced.enhancedspigot.util.leaderboard.LeaderboardData;
 import dev.projectenhanced.enhancedspigot.util.listener.ListenerRegistry;
+import dev.projectenhanced.enhancedspigot.util.time.EnhancedTime;
 import dev.projectenhanced.enhancedspigot.util.updater.IUpdater;
 import lombok.Getter;
 import org.bstats.bukkit.Metrics;
@@ -105,7 +106,7 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 
 	protected abstract List<String> requiredPlugins();
 
-	public Map<String, LeaderboardData<?, ?>> leaderboards() {
+	public Map<String, LeaderboardData<?>> leaderboards() {
 		return new HashMap<>();
 	}
 
@@ -145,8 +146,9 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 		return controller;
 	}
 
-	protected LeaderboardController enableLeaderboards() {
+	protected LeaderboardController enableLeaderboards(EnhancedTime refreshRate) {
 		LeaderboardController controller = new LeaderboardController(this.dependencyProvider);
+		controller.setRefreshRate(refreshRate);
 		controller.start();
 		this.dependencyProvider.register(controller);
 

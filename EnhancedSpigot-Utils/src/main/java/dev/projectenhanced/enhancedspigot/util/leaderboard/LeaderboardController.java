@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentMap;
 
 public class LeaderboardController extends Controller {
 
-	private final ConcurrentMap<String, LeaderboardData<?, ?>> registeredLeaderboards;
+	private final ConcurrentMap<String, LeaderboardData<?>> registeredLeaderboards;
 
 	@Getter
 	@Setter
@@ -53,7 +53,7 @@ public class LeaderboardController extends Controller {
 		this.refreshRate = new EnhancedTime("5m");
 	}
 
-	public void register(String key, LeaderboardData<?, ?> data) {
+	public void register(String key, LeaderboardData<?> data) {
 		this.registeredLeaderboards.put(key, data);
 	}
 
@@ -79,15 +79,19 @@ public class LeaderboardController extends Controller {
 		String key = parts[1];
 		String actualPlaceholder = parts[2];
 
-		LeaderboardData<?, ?> data = this.registeredLeaderboards.get(key);
+		LeaderboardData<?> data = this.registeredLeaderboards.get(key);
 		if (data == null) return null;
-		return data.handlePlaceholder(offlinePlayer, actualPlaceholder);
+		return data.parsePlaceholder(offlinePlayer, actualPlaceholder);
 	}
 
-	public <K, V> List<String> getLeaderboardText(String key, @Nullable Pair<K, V> yourValue) {
-		LeaderboardData<K, V> data = (LeaderboardData<K, V>) this.registeredLeaderboards.get(key);
+	public <V> List<String> asText(String key, @Nullable Pair<String, V> yourValue) {
+		LeaderboardData<V> data = (LeaderboardData<V>) this.registeredLeaderboards.get(key);
 		if (data == null) return null;
-		return data.getLeaderboardText(yourValue);
+		return data.asText(yourValue);
+	}
+
+	public <V> LeaderboardData<V> getData(String key) {
+		return (LeaderboardData<V>) this.registeredLeaderboards.get(key);
 	}
 
 	@Override
@@ -102,10 +106,11 @@ public class LeaderboardController extends Controller {
 
 	@Override
 	public void start() {
-		this.refreshTask = SchedulerUtil.runTaskTimer(
+		this.refreshTask = SchedulerUtil.runTaskLater(
 			this.plugin, () -> {
 				this.registeredLeaderboards.forEach((k, v) -> v.refresh(System.currentTimeMillis() + this.refreshRate.getMillis()));
-			}, 200L, this.refreshRate.getTicks()
+				this.start();
+			}, this.refreshRate.getTicks()
 		);
 	}
 }

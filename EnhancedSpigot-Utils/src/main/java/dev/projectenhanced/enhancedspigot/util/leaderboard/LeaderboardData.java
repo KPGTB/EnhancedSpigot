@@ -30,11 +30,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-@Getter @Setter public class LeaderboardData<K, V> {
+@Getter @Setter public class LeaderboardData<V> {
 	private final String key;
 
 	private final List<String> header;
@@ -53,12 +54,12 @@ import java.util.stream.Collectors;
 	 */
 	private final List<String> footer;
 
-	private final Supplier<CompletableFuture<Map<K, V>>> entiresSupplier;
+	private final Supplier<CompletableFuture<Map<String, V>>> entiresSupplier;
 	private final Comparator<V> comparator;
-	private final Function<OfflinePlayer, Pair<K, V>> placeholderParser;
+	private final Function<OfflinePlayer, Pair<String, V>> placeholderParser;
 	private final Function<V, String> valueFormatter;
 
-	@Getter private final LinkedHashMap<K, V> cachedLeaderboard;
+	@Getter private final LinkedHashMap<String, V> cachedLeaderboard;
 	@Getter private final LinkedHashMap<String, V> cachedRanges; // key - position range (e.g. "1-10"), value - value of the last entry in the range
 	@Getter private long nextRefresh;
 
@@ -75,7 +76,9 @@ import java.util.stream.Collectors;
 		new Pair<>(100001, 500000), new Pair<>(500001, 1000000)
 	); // The first one and the last one is dynamic
 
-	public LeaderboardData(String key, List<String> header, String entryFormat, List<String> footer, Supplier<CompletableFuture<Map<K, V>>> entiresSupplier, Comparator<V> comparator, Function<OfflinePlayer, Pair<K, V>> placeholderParser, Function<V, String> valueFormatter) {
+	@Setter private Consumer<LeaderboardData<V>> onRefresh;
+
+	public LeaderboardData(String key, List<String> header, String entryFormat, List<String> footer, Supplier<CompletableFuture<Map<String, V>>> entiresSupplier, Comparator<V> comparator, Function<OfflinePlayer, Pair<String, V>> placeholderParser, Function<V, String> valueFormatter) {
 		this.key = key;
 		this.header = header;
 		this.entryFormat = entryFormat;
@@ -88,11 +91,12 @@ import java.util.stream.Collectors;
 		this.cachedLeaderboard = new LinkedHashMap<>();
 		this.cachedRanges = new LinkedHashMap<>();
 		this.nextRefresh = System.currentTimeMillis();
+		this.onRefresh = (data) -> {};
 	}
 
-	public String getPosition(K key, V value) {
+	public String getPosition(String key, V value) {
 		if (this.cachedLeaderboard.containsKey(key)) {
-			return String.valueOf(new ArrayList<>(this.cachedLeaderboard.keySet()).indexOf(key));
+			return String.valueOf(new ArrayList<>(this.cachedLeaderboard.keySet()).indexOf(key) + 1);
 		}
 
 		if (this.cachedRanges.isEmpty()) return "-";
@@ -106,9 +110,9 @@ import java.util.stream.Collectors;
 		return lastKey;
 	}
 
-	public Pair<K, V> getEntryAtPosition(int position) {
+	public Pair<String, V> getEntryAtPosition(int position) {
 		if (position < 1 || position > this.cachedLeaderboard.size()) return null;
-		Map.Entry<K, V> entry = new ArrayList<>(this.cachedLeaderboard.entrySet()).get(position - 1);
+		Map.Entry<String, V> entry = new ArrayList<>(this.cachedLeaderboard.entrySet()).get(position - 1);
 		return new Pair<>(entry.getKey(), entry.getValue());
 	}
 
@@ -118,7 +122,7 @@ import java.util.stream.Collectors;
 
 		this.entiresSupplier.get()
 			.thenAcceptAsync((entries) -> {
-				List<Map.Entry<K, V>> sorted = entries.entrySet()
+				List<Map.Entry<String, V>> sorted = entries.entrySet()
 					.stream()
 					.sorted((e1, e2) -> this.comparator.compare(e1.getValue(), e2.getValue()))
 					.collect(Collectors.toList());
@@ -126,7 +130,7 @@ import java.util.stream.Collectors;
 				if (sorted.isEmpty()) return;
 
 				for (int i = 0; i < Math.min(this.leaderboardSize, sorted.size()); i++) {
-					Map.Entry<K, V> entry = sorted.get(i);
+					Map.Entry<String, V> entry = sorted.get(i);
 					this.cachedLeaderboard.put(entry.getKey(), entry.getValue());
 				}
 
@@ -146,19 +150,21 @@ import java.util.stream.Collectors;
 					isFirstRange = false;
 
 					this.cachedRanges.put(rangeDisplay, rangeValue);
+					if (isLastRange) break;
 				}
 			})
 			.thenRun(() -> {
 				this.nextRefresh = nextRefresh;
-			});
+			})
+			.thenRun(() -> this.onRefresh.accept(this));
 	}
 
-	public List<String> getLeaderboardText(@Nullable Pair<K, V> yourValue) {
+	public List<String> asText(@Nullable Pair<String, V> yourValue) {
 		List<String> result = new ArrayList<>(this.header);
 
-		List<Map.Entry<K, V>> list = new ArrayList<>(this.cachedLeaderboard.entrySet());
+		List<Map.Entry<String, V>> list = new ArrayList<>(this.cachedLeaderboard.entrySet());
 		for (int i = 0; i < Math.min(this.cachedLeaderboard.size(), this.leaderboardDisplaySize); i++) {
-			Map.Entry<K, V> entry = list.get(i);
+			Map.Entry<String, V> entry = list.get(i);
 
 			result.add(this.entryFormat.replace("<position>", String.valueOf(i + 1))
 				.replace("<key>", String.valueOf(entry.getKey()))
@@ -188,12 +194,12 @@ import java.util.stream.Collectors;
 	value_me
 	position_me
 	 */
-	public String handlePlaceholder(OfflinePlayer offlinePlayer, String placeholder) {
+	public String parsePlaceholder(OfflinePlayer offlinePlayer, String placeholder) {
 		String[] parts = placeholder.split("_", 2);
 		if (parts.length != 2) return null;
 
 		if (parts[1].equalsIgnoreCase("me")) {
-			Pair<K, V> pair = this.placeholderParser.apply(offlinePlayer);
+			Pair<String, V> pair = this.placeholderParser.apply(offlinePlayer);
 			if (pair == null) return null;
 
 			switch (parts[0].toLowerCase()) {
@@ -210,7 +216,7 @@ import java.util.stream.Collectors;
 
 		try {
 			int position = Integer.parseInt(parts[1]);
-			Pair<K, V> pair = this.getEntryAtPosition(position);
+			Pair<String, V> pair = this.getEntryAtPosition(position);
 			if (pair == null) return null;
 
 			switch (parts[0].toLowerCase()) {
