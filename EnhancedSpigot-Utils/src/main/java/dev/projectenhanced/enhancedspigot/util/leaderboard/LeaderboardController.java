@@ -106,11 +106,20 @@ public class LeaderboardController extends Controller {
 
 	@Override
 	public void start() {
+		this.refreshAll();
+		this.autoRefresh();
+	}
+
+	public void autoRefresh() {
 		this.refreshTask = SchedulerUtil.runTaskLater(
 			this.plugin, () -> {
-				this.registeredLeaderboards.forEach((k, v) -> v.refresh(System.currentTimeMillis() + this.refreshRate.getMillis()));
-				this.start();
+				this.refreshAll();
+				this.autoRefresh();
 			}, this.refreshRate.getTicks()
 		);
+	}
+
+	public void refreshAll() {
+		this.registeredLeaderboards.forEach((k, v) -> v.refresh(System.currentTimeMillis() + this.refreshRate.getMillis()));
 	}
 }
