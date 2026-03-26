@@ -149,11 +149,11 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 	protected LeaderboardController enableLeaderboards(EnhancedTime refreshRate) {
 		LeaderboardController controller = new LeaderboardController(this.dependencyProvider);
 		controller.setRefreshRate(refreshRate);
-		controller.start();
-		this.dependencyProvider.register(controller);
-
 		this.leaderboards()
 			.forEach(controller::register);
+
+		controller.start();
+		this.dependencyProvider.register(controller);
 
 		return controller;
 	}
