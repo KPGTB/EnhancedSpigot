@@ -37,46 +37,39 @@ import java.util.stream.Collectors;
 
 @Getter @Setter public class LeaderboardData<V> {
 	private final String key;
+	private final Supplier<CompletableFuture<Map<String, V>>> entiresSupplier;
+	private final Comparator<V> comparator;
+	private final Function<OfflinePlayer, Pair<String, V>> placeholderParser;
+	private final Function<V, String> valueFormatter;
 
-	private final List<String> header;
+	private final LinkedHashMap<String, V> cachedLeaderboard;
+	private final LinkedHashMap<String, V> cachedRanges; // key - position range (e.g. "1-10"), value - value of the last entry in the range
+
+	private List<String> header;
 	/*
 	Placeholders:
 	- <position> - entry position in the leaderboard
 	- <key> - entry key
 	- <value> - entry value
 	 */
-	private final String entryFormat;
+	private String entryFormat;
 	/*
 	Placeholders:
 	- <value> - entry value
 	- <position> - entry position in the leaderboard
 	- <refresh> - time until the next refresh in a human-readable format
 	 */
-	private final List<String> footer;
+	private List<String> footer;
+	private long nextRefresh;
 
-	private final Supplier<CompletableFuture<Map<String, V>>> entiresSupplier;
-	private final Comparator<V> comparator;
-	private final Function<OfflinePlayer, Pair<String, V>> placeholderParser;
-	private final Function<V, String> valueFormatter;
-
-	@Getter private final LinkedHashMap<String, V> cachedLeaderboard;
-	@Getter private final LinkedHashMap<String, V> cachedRanges; // key - position range (e.g. "1-10"), value - value of the last entry in the range
-	@Getter private long nextRefresh;
-
-	@Setter
-	@Getter
 	private int leaderboardDisplaySize = 10;
-	@Setter
-	@Getter
 	private int leaderboardSize = 20;
-	@Setter
-	@Getter
 	private List<Pair<Integer, Integer>> ranges = Arrays.asList(
 		new Pair<>(1, 50), new Pair<>(51, 100), new Pair<>(101, 500), new Pair<>(501, 1000), new Pair<>(1001, 5000), new Pair<>(5001, 10000), new Pair<>(10001, 50000), new Pair<>(50001, 100000),
 		new Pair<>(100001, 500000), new Pair<>(500001, 1000000)
 	); // The first one and the last one is dynamic
 
-	@Setter private Consumer<LeaderboardData<V>> onRefresh;
+	private Consumer<LeaderboardData<V>> onRefresh;
 
 	public LeaderboardData(String key, List<String> header, String entryFormat, List<String> footer, Supplier<CompletableFuture<Map<String, V>>> entiresSupplier, Comparator<V> comparator, Function<OfflinePlayer, Pair<String, V>> placeholderParser, Function<V, String> valueFormatter) {
 		this.key = key;
