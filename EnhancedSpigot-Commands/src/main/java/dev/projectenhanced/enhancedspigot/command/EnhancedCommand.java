@@ -28,6 +28,7 @@ import dev.projectenhanced.enhancedspigot.common.annotation.Converter;
 import dev.projectenhanced.enhancedspigot.common.annotation.Description;
 import dev.projectenhanced.enhancedspigot.common.annotation.Filter;
 import dev.projectenhanced.enhancedspigot.common.annotation.Ignore;
+import dev.projectenhanced.enhancedspigot.common.annotation.Name;
 import dev.projectenhanced.enhancedspigot.common.annotation.Permission;
 import dev.projectenhanced.enhancedspigot.common.annotation.WithoutPermission;
 import dev.projectenhanced.enhancedspigot.common.converter.IStringConverter;
@@ -47,13 +48,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -108,9 +103,12 @@ public abstract class EnhancedCommand extends Command {
 	 */
 	@SuppressWarnings("unchecked")
 	public final void prepareCommand() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-		this.cmdName = getClass().getSimpleName()
-			.toLowerCase()
-			.replace("command", "");
+		Name cmdNameAnn = getClass().getDeclaredAnnotation(Name.class);
+		this.cmdName = cmdNameAnn != null ?
+			cmdNameAnn.value() :
+			getClass().getSimpleName()
+				.toLowerCase()
+				.replace("command", "");
 		super.setName(this.cmdName);
 
 		Description descriptionAnn = getClass().getDeclaredAnnotation(Description.class);
@@ -141,23 +139,38 @@ public abstract class EnhancedCommand extends Command {
 	}
 
 	private void scanClass(CommandPath path, Class<?> clazz, Object invoker, String customGlobalPermission, boolean globalWithoutPermission) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+		Set<String> overwrittenMethods = new HashSet<>();
+		if (!clazz.equals(invoker.getClass())) {
+			overwrittenMethods.addAll(Arrays.stream(invoker.getClass()
+					.getDeclaredMethods())
+				.filter(m -> !m.isSynthetic())
+				.map(this::methodToShortSignature)
+				.collect(Collectors.toSet()));
+		}
+
 		for (Method method : clazz.getDeclaredMethods()) {
 			if (method.isSynthetic() || method.getDeclaredAnnotation(Ignore.class) != null || method.getParameterCount() == 0) continue;
+			if (overwrittenMethods.contains(this.methodToShortSignature(method))) continue;
+
 			this.handleMethod(method, invoker, path.clone(), customGlobalPermission, globalWithoutPermission);
 		}
 
 		// === Scan another classes
 		for (Class<?> c : clazz.getDeclaredClasses()) {
 			if (c.getDeclaredAnnotation(Ignore.class) != null) continue;
+			Name subNameAnn = c.getDeclaredAnnotation(Name.class);
 
 			CommandPath newPath = path.clone();
-			newPath.add(c.getSimpleName()
-				.toLowerCase());
+			newPath.add(subNameAnn != null ?
+				subNameAnn.value() :
+				c.getSimpleName()
+					.toLowerCase());
 
-			this.scanClass(
-				newPath, c, c.getDeclaredConstructor(clazz)
-					.newInstance(invoker), customGlobalPermission, globalWithoutPermission
-			);
+			Object innerInvoker = c.getDeclaredConstructor(clazz)
+				.newInstance(invoker);
+			this.scanClass(newPath, c, innerInvoker, customGlobalPermission, globalWithoutPermission);
+
+			if (c.getSuperclass() != null) this.scanClass(newPath, c.getSuperclass(), innerInvoker, customGlobalPermission, globalWithoutPermission);
 		}
 
 		this.saveCommandsFile();
@@ -165,8 +178,11 @@ public abstract class EnhancedCommand extends Command {
 
 	private void handleMethod(Method method, Object invoker, CommandPath path, String customGlobalPermission, boolean globalWithoutPermission) {
 		// === Name & Path
-		String name = method.getName()
-			.toLowerCase();
+		Name nameAnn = method.getDeclaredAnnotation(Name.class);
+		String name = nameAnn != null ?
+			nameAnn.value() :
+			method.getName()
+				.toLowerCase();
 
 		boolean mainCommand = method.getDeclaredAnnotation(MainCommand.class) != null;
 		String methodPath = mainCommand ?
@@ -210,7 +226,11 @@ public abstract class EnhancedCommand extends Command {
 			if (lastParam.getType()
 				.equals(String.class) && lastParam.getDeclaredAnnotation(LongString.class) != null) {
 				endless = true;
-				String paramName = lastParam.getName();
+
+				Name paramNameAnn = lastParam.getDeclaredAnnotation(Name.class);
+				String paramName = paramNameAnn != null ?
+					paramNameAnn.value() :
+					lastParam.getName();
 				String newParamName = "[" + paramName + "]";
 				args.get(args.size() - 1)
 					.setName(newParamName);
@@ -235,7 +255,10 @@ public abstract class EnhancedCommand extends Command {
 
 	@SuppressWarnings("unchecked")
 	private <T> CommandArgument<T> handleParameter(Parameter parameter) {
-		String paramName = parameter.getName();
+		Name paramNameAnn = parameter.getDeclaredAnnotation(Name.class);
+		String paramName = paramNameAnn != null ?
+			paramNameAnn.value() :
+			parameter.getName();
 		Class<T> paramClass = (Class<T>) parameter.getType();
 
 		Filter paramFiltersAnn = parameter.getDeclaredAnnotation(Filter.class);
@@ -640,6 +663,14 @@ public abstract class EnhancedCommand extends Command {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private String methodToShortSignature(Method method) {
+		StringJoiner sj = new StringJoiner(",", method.getName() + "(", ")");
+		for (Class<?> parameterType : method.getParameterTypes()) {
+			sj.add(parameterType.getTypeName());
+		}
+		return sj.toString();
 	}
 
 	@Override
