@@ -14,7 +14,9 @@
  *    limitations under the License.
  */
 
-package dev.projectenhanced.enhancedspigot.data.cache.iface;
+package dev.projectenhanced.enhancedspigot.data.repository.iface;
+
+import dev.projectenhanced.enhancedspigot.data.repository.entity.AbstractDataEntity;
 
 import java.util.Collection;
 import java.util.Set;
@@ -23,7 +25,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
-public interface IAsyncSavable<K, V extends ICached<K>> extends ISavable<K, V> {
+public interface IAsyncDataRepository<K, V extends AbstractDataEntity<K>> extends IDataRepository<K, V> {
+
+	CompletableFuture<V> getAsync(K key);
+
 	CompletableFuture<V> loadAsync(K key);
 
 	CompletableFuture<Collection<V>> loadAsyncAll();

@@ -14,13 +14,14 @@
  *    limitations under the License.
  */
 
-package dev.projectenhanced.enhancedspigot.data.cache;
+package dev.projectenhanced.enhancedspigot.data.repository.impl;
 
 import dev.projectenhanced.enhancedspigot.data.DatabaseController;
-import dev.projectenhanced.enhancedspigot.data.cache.iface.IAsyncSavableCache;
-import dev.projectenhanced.enhancedspigot.data.cache.iface.ICached;
-import dev.projectenhanced.enhancedspigot.data.cache.iface.IForeignMapping;
-import dev.projectenhanced.enhancedspigot.data.cache.iface.ISavableLifecycle;
+import dev.projectenhanced.enhancedspigot.data.repository.entity.AbstractDataEntity;
+import dev.projectenhanced.enhancedspigot.data.repository.entity.IDataEntityLifecycle;
+import dev.projectenhanced.enhancedspigot.data.repository.entity.IForeignMapping;
+import dev.projectenhanced.enhancedspigot.data.repository.iface.IAsyncDataRepository;
+import dev.projectenhanced.enhancedspigot.data.storage.IDataStorage;
 import dev.projectenhanced.enhancedspigot.data.util.AsyncPriorityMap;
 import dev.projectenhanced.enhancedspigot.data.util.PriorityCompletableUtil;
 import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
@@ -39,7 +40,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public class AsyncDataCache<K, V extends ICached<K>> extends DataCache<K, V> implements IAsyncSavableCache<K, V> {
+public class AsyncDataRepository<K, V extends AbstractDataEntity<K>> extends DataRepository<K, V> implements IAsyncDataRepository<K, V> {
 	@Getter private final AsyncPriorityMap asyncPriorityMap;
 
 	@Getter
@@ -56,23 +57,23 @@ public class AsyncDataCache<K, V extends ICached<K>> extends DataCache<K, V> imp
 	 * @param controller DatabaseController instance
 	 * @param plugin     Plugin instance
 	 */
-	public AsyncDataCache(DatabaseController controller, JavaPlugin plugin) {
-		this(controller, plugin, new AsyncPriorityMap(0));
+	public AsyncDataRepository(DatabaseController controller, IDataStorage<K, V> cache, JavaPlugin plugin) {
+		this(controller, cache, plugin, new AsyncPriorityMap(0));
 	}
 
-	public AsyncDataCache(DatabaseController controller, JavaPlugin plugin, AsyncPriorityMap asyncPriorityMap) {
-		super(controller, plugin);
+	public AsyncDataRepository(DatabaseController controller, IDataStorage<K, V> cache, JavaPlugin plugin, AsyncPriorityMap asyncPriorityMap) {
+		super(controller, cache, plugin);
 		this.readExecutor = controller.getReadExecutor();
 		this.writeExecutor = controller.getWriteExecutor();
 		this.asyncPriorityMap = asyncPriorityMap;
 	}
 
-	public AsyncDataCache(DatabaseController controller, Class<K> keyClass, Class<V> valueClass, JavaPlugin plugin) {
-		this(controller, keyClass, valueClass, plugin, new AsyncPriorityMap(0));
+	public AsyncDataRepository(DatabaseController controller, IDataStorage<K, V> cache, Class<K> keyClass, Class<V> valueClass, JavaPlugin plugin) {
+		this(controller, cache, keyClass, valueClass, plugin, new AsyncPriorityMap(0));
 	}
 
-	public AsyncDataCache(DatabaseController controller, Class<K> keyClass, Class<V> valueClass, JavaPlugin plugin, AsyncPriorityMap asyncPriorityMap) {
-		super(controller, plugin, keyClass, valueClass);
+	public AsyncDataRepository(DatabaseController controller, IDataStorage<K, V> cache, Class<K> keyClass, Class<V> valueClass, JavaPlugin plugin, AsyncPriorityMap asyncPriorityMap) {
+		super(controller, cache, plugin, keyClass, valueClass);
 		this.readExecutor = controller.getReadExecutor();
 		this.writeExecutor = controller.getWriteExecutor();
 		this.asyncPriorityMap = asyncPriorityMap;
@@ -81,11 +82,6 @@ public class AsyncDataCache<K, V extends ICached<K>> extends DataCache<K, V> imp
 	@Override
 	public CompletableFuture<V> getAsync(K key) {
 		return this.supplyAsync(() -> this.get(key), this.asyncPriorityMap.getGetPriority(), System.currentTimeMillis(), this.readExecutor);
-	}
-
-	@Override
-	public CompletableFuture<V> getAsyncOrNull(K key) {
-		return this.supplyAsync(() -> this.getOrNull(key), this.asyncPriorityMap.getGetPriority(), System.currentTimeMillis(), this.readExecutor);
 	}
 
 	@Override
@@ -104,11 +100,11 @@ public class AsyncDataCache<K, V extends ICached<K>> extends DataCache<K, V> imp
 		return this.supplyAsync(() -> TryCatchUtil.tryOrDefault(this.dao::queryForAll, new ArrayList<V>()), this.asyncPriorityMap.getLoadAllPriority(), operationId, this.readExecutor)
 			.thenCompose(entities -> CompletableFuture.allOf(entities.stream()
 				.map(entity -> {
-					if (ignoreCached && this.contains(entity.getKey())) return CompletableFuture.completedFuture(null);
+					if (ignoreCached && this.cache.contains(entity.getKey())) return CompletableFuture.completedFuture(null);
 					return this.runAsync(() -> this.loadValueIntoCache(entity.getKey(), entity), this.asyncPriorityMap.getLoadAllPriority(), operationId, this.readExecutor);
 				})
 				.toArray(CompletableFuture[]::new)))
-			.thenApply(v -> this.values());
+			.thenApply(v -> this.cache.values());
 	}
 
 	@Override
@@ -122,7 +118,7 @@ public class AsyncDataCache<K, V extends ICached<K>> extends DataCache<K, V> imp
 			value -> {
 				if (!keys.contains(value.getKey())) return;
 				action.accept(value);
-				if (!this.contains(value.getKey())) this.saveValue(value);
+				if (!this.cache.contains(value.getKey())) this.saveValue(value);
 			}, true
 		);
 	}
@@ -132,7 +128,7 @@ public class AsyncDataCache<K, V extends ICached<K>> extends DataCache<K, V> imp
 		return this.loopAsyncAll(
 			value -> {
 				action.accept(value);
-				if (!this.contains(value.getKey())) this.saveValue(value);
+				if (!this.cache.contains(value.getKey())) this.saveValue(value);
 			}, true
 		);
 	}
@@ -157,15 +153,15 @@ public class AsyncDataCache<K, V extends ICached<K>> extends DataCache<K, V> imp
 	@Override
 	public CompletableFuture<Collection<V>> loopAsyncAll() {
 		long operationId = System.currentTimeMillis();
-		Set<V> values = new HashSet<>(this.values());
+		Set<V> values = new HashSet<>(this.cache.values());
 
 		return this.supplyAsync(() -> TryCatchUtil.tryOrDefault(this.dao::queryForAll, new ArrayList<V>()), this.asyncPriorityMap.getModifyAllPriority(), operationId, this.readExecutor)
 			.thenCompose(entities -> CompletableFuture.allOf(entities.stream()
 				.map(entity -> {
-					if (this.contains(entity.getKey())) return CompletableFuture.completedFuture(null);
+					if (this.cache.contains(entity.getKey())) return CompletableFuture.completedFuture(null);
 					return this.runAsync(
 						() -> {
-							this.loadValue(entity.getKey(), entity);
+							this.processValue(entity);
 							values.add(entity);
 						}, this.asyncPriorityMap.getLoadAllPriority(), operationId
 					);
@@ -176,17 +172,15 @@ public class AsyncDataCache<K, V extends ICached<K>> extends DataCache<K, V> imp
 
 	@Override
 	public CompletableFuture<Void> saveAsync(K key) {
-		return this.getAsyncOrNull(key)
-			.thenCompose(value -> {
-				if (value == null) return CompletableFuture.completedFuture(null);
-				return this.saveAsyncValue(value);
-			});
+		V value = this.getOrNull(key);
+		if (value == null) return CompletableFuture.completedFuture(null);
+		return this.saveAsyncValue(value);
 	}
 
 	@Override
 	public CompletableFuture<Void> saveAndInvalidateAsync(K key) {
 		return this.saveAsync(key)
-			.thenRun(() -> this.invalidate(key));
+			.thenRun(() -> this.cache.invalidate(key));
 	}
 
 	@Override
@@ -198,7 +192,7 @@ public class AsyncDataCache<K, V extends ICached<K>> extends DataCache<K, V> imp
 	@Override
 	public CompletableFuture<Void> saveAsyncAll() {
 		long operationId = System.currentTimeMillis();
-		return CompletableFuture.allOf(this.values()
+		return CompletableFuture.allOf(this.cache.values()
 			.stream()
 			.map(value -> this.saveToDbAsync(value, this.asyncPriorityMap.getSaveAllPriority(), operationId))
 			.toArray(CompletableFuture[]::new));
@@ -207,17 +201,17 @@ public class AsyncDataCache<K, V extends ICached<K>> extends DataCache<K, V> imp
 	protected CompletableFuture<Void> saveToDbAsync(V value, int priority, long operationId) {
 		return this.runAsync(
 				() -> {
-					if (!this.contains(value.getKey())) return;
-					if (value instanceof ISavableLifecycle) ((ISavableLifecycle) value).beforeSave(this.plugin);
+					if (!this.cache.contains(value.getKey())) return;
+					if (value instanceof IDataEntityLifecycle) ((IDataEntityLifecycle) value).beforeSave(this.plugin);
 				}, priority, operationId
 			)
 			.thenCompose(v -> {
-				if (this.contains(value.getKey()) && value instanceof IForeignMapping) return this.javaToDbAsync((IForeignMapping) value, priority, operationId);
+				if (this.cache.contains(value.getKey()) && value instanceof IForeignMapping) return this.javaToDbAsync((IForeignMapping) value, priority, operationId);
 				return CompletableFuture.completedFuture(null);
 			})
 			.thenCompose(v -> this.runAsync(
 				() -> {
-					if (!this.contains(value.getKey())) return;
+					if (!this.cache.contains(value.getKey())) return;
 					TryCatchUtil.tryRun(() -> this.dao.update(value));
 				}, priority, operationId
 			));
@@ -250,7 +244,7 @@ public class AsyncDataCache<K, V extends ICached<K>> extends DataCache<K, V> imp
 	@Override
 	public CompletableFuture<Void> removeAsyncIf(BiPredicate<K, V> predicate) {
 		long operationId = System.currentTimeMillis();
-		return CompletableFuture.allOf(this.entrySet()
+		return CompletableFuture.allOf(this.cache.entrySet()
 			.stream()
 			.map(entry -> {
 				if (predicate.test(entry.getKey(), entry.getValue())) return this.runAsync(() -> this.remove(entry.getKey()), this.asyncPriorityMap.getRemovePriority(), operationId);

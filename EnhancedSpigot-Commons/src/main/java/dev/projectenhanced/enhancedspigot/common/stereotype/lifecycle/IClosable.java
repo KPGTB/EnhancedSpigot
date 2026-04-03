@@ -18,4 +18,8 @@ package dev.projectenhanced.enhancedspigot.common.stereotype.lifecycle;
 
 public interface IClosable {
 	void close();
+
+	default int closeOrder() {
+		return 0;
+	}
 }

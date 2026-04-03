@@ -14,12 +14,17 @@
  *    limitations under the License.
  */
 
-package dev.projectenhanced.enhancedspigot.data.cache.iface;
+package dev.projectenhanced.enhancedspigot.data.repository.entity;
 
-import java.util.concurrent.CompletableFuture;
+import dev.projectenhanced.enhancedspigot.data.repository.iface.IDataRepository;
 
-public interface IAsyncCache<K, V extends ICached<K>> extends ICache<K, V> {
-	CompletableFuture<V> getAsync(K key);
+public abstract class AbstractDataEntity<K> {
+	protected IDataRepository<K, ? extends AbstractDataEntity<K>> repository = null;
 
-	CompletableFuture<V> getAsyncOrNull(K key);
+	public abstract K getKey();
+
+	public void setRepository(IDataRepository<K, ? extends AbstractDataEntity<K>> repository) throws IllegalStateException {
+		if (this.repository != null) throw new IllegalStateException("Repository cannot be set after initialization.");
+		this.repository = repository;
+	}
 }

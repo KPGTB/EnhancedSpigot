@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 
 package dev.projectenhanced.enhancedspigot.data.util;
-
-import dev.projectenhanced.enhancedspigot.data.cache.DisableLock;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;

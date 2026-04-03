@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -14,12 +14,28 @@
  *    limitations under the License.
  */
 
-package dev.projectenhanced.enhancedspigot.data.cache.iface;
+package dev.projectenhanced.enhancedspigot.data.storage;
 
-import org.bukkit.plugin.java.JavaPlugin;
+import dev.projectenhanced.enhancedspigot.data.repository.entity.AbstractDataEntity;
 
-public interface ISavableLifecycle {
-	void beforeSave(JavaPlugin plugin);
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
-	void afterLoad(JavaPlugin plugin);
+public interface IDataStorage<K, V extends AbstractDataEntity<K>> {
+	V get(K key);
+
+	Set<K> keySet();
+
+	Collection<V> values();
+
+	Set<Map.Entry<K, V>> entrySet();
+
+	void set(K key, V value);
+
+	void invalidate(K key);
+
+	void invalidateAll();
+
+	boolean contains(K key);
 }

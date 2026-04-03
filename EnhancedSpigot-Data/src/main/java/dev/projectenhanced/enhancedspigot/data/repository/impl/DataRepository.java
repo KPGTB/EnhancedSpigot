@@ -14,17 +14,19 @@
  *    limitations under the License.
  */
 
-package dev.projectenhanced.enhancedspigot.data.cache;
+package dev.projectenhanced.enhancedspigot.data.repository.impl;
 
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.ForeignCollection;
 import dev.projectenhanced.enhancedspigot.data.DatabaseController;
-import dev.projectenhanced.enhancedspigot.data.cache.iface.ForeignMapper;
-import dev.projectenhanced.enhancedspigot.data.cache.iface.ICached;
-import dev.projectenhanced.enhancedspigot.data.cache.iface.IForeignMapping;
-import dev.projectenhanced.enhancedspigot.data.cache.iface.IForeignMappingHandler;
-import dev.projectenhanced.enhancedspigot.data.cache.iface.ISavableCache;
-import dev.projectenhanced.enhancedspigot.data.cache.iface.ISavableLifecycle;
+import dev.projectenhanced.enhancedspigot.data.repository.entity.AbstractDataEntity;
+import dev.projectenhanced.enhancedspigot.data.repository.entity.AbstractRealtimeChild;
+import dev.projectenhanced.enhancedspigot.data.repository.entity.ForeignMapper;
+import dev.projectenhanced.enhancedspigot.data.repository.entity.IDataEntityLifecycle;
+import dev.projectenhanced.enhancedspigot.data.repository.entity.IForeignMapping;
+import dev.projectenhanced.enhancedspigot.data.repository.iface.IDataRepository;
+import dev.projectenhanced.enhancedspigot.data.repository.iface.IForeignMappingHandler;
+import dev.projectenhanced.enhancedspigot.data.storage.IDataStorage;
 import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
 import lombok.Getter;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -34,17 +36,14 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
-public class DataCache<K, V extends ICached<K>> implements ISavableCache<K, V>, IForeignMappingHandler {
+public class DataRepository<K, V extends AbstractDataEntity<K>> implements IForeignMappingHandler, IDataRepository<K, V> {
 
 	@Getter protected final Dao<V, K> dao;
-	protected final ConcurrentMap<K, V> cache;
+	protected final IDataStorage<K, V> cache;
 	protected final JavaPlugin plugin;
 
 	/**
@@ -54,8 +53,8 @@ public class DataCache<K, V extends ICached<K>> implements ISavableCache<K, V>, 
 	 * @param controller DatabaseController instance
 	 */
 	@SuppressWarnings("unchecked")
-	public DataCache(DatabaseController controller, JavaPlugin plugin) {
-		this.cache = new ConcurrentHashMap<>();
+	public DataRepository(DatabaseController controller, IDataStorage<K, V> cache, JavaPlugin plugin) {
+		this.cache = cache;
 		this.plugin = plugin;
 
 		ParameterizedType type = (ParameterizedType) getClass().getGenericSuperclass();
@@ -66,15 +65,20 @@ public class DataCache<K, V extends ICached<K>> implements ISavableCache<K, V>, 
 		this.dao = controller.getDao(valueClass, keyClass);
 	}
 
-	public DataCache(DatabaseController controller, JavaPlugin plugin, Class<K> keyClass, Class<V> valueClass) {
-		this.cache = new ConcurrentHashMap<>();
+	public DataRepository(DatabaseController controller, IDataStorage<K, V> cache, JavaPlugin plugin, Class<K> keyClass, Class<V> valueClass) {
+		this.cache = cache;
 		this.dao = controller.getDao(valueClass, keyClass);
 		this.plugin = plugin;
 	}
 
 	@Override
+	public IDataStorage<K, V> getCache() {
+		return this.cache;
+	}
+
+	@Override
 	public V get(K key) {
-		return this.contains(key) ?
+		return this.cache.contains(key) ?
 			this.cache.get(key) :
 			this.load(key);
 	}
@@ -85,58 +89,24 @@ public class DataCache<K, V extends ICached<K>> implements ISavableCache<K, V>, 
 	}
 
 	@Override
-	public Set<K> keySet() {
-		return this.cache.keySet();
-	}
-
-	@Override
-	public Collection<V> values() {
-		return this.cache.values();
-	}
-
-	@Override
-	public Set<Map.Entry<K, V>> entrySet() {
-		return this.cache.entrySet();
-	}
-
-	@Override
-	public void set(K key, V value) {
-		this.cache.put(key, value);
-	}
-
-	@Override
-	public void invalidate(K key) {
-		this.cache.remove(key);
-	}
-
-	@Override
-	public void invalidateAll() {
-		this.cache.clear();
-	}
-
-	@Override
-	public boolean contains(K key) {
-		return this.cache.containsKey(key);
-	}
-
-	@Override
 	public void remove(K key) {
 		TryCatchUtil.tryRun(() -> {
 			this.dao.deleteById(key);
-			this.invalidate(key);
+			this.cache.invalidate(key);
 		});
 	}
 
 	@Override
 	public void removeIf(BiPredicate<K, V> predicate) {
-		this.cache.forEach((key, value) -> {
-			if (predicate.test(key, value)) this.remove(key);
-		});
+		this.cache.entrySet()
+			.forEach(entry -> {
+				if (predicate.test(entry.getKey(), entry.getValue())) this.remove(entry.getKey());
+			});
 	}
 
 	@Override
 	public void removeAll() {
-		this.invalidateAll();
+		this.cache.invalidateAll();
 		TryCatchUtil.tryRun(() -> this.dao.deleteBuilder()
 			.delete());
 	}
@@ -159,7 +129,7 @@ public class DataCache<K, V extends ICached<K>> implements ISavableCache<K, V>, 
 		TryCatchUtil.tryOrDefault(this.dao::queryForAll, new ArrayList<V>())
 			.stream()
 			.filter(entity -> {
-				return !ignoreCached || !this.contains(entity.getKey());
+				return !ignoreCached || !this.cache.contains(entity.getKey());
 			})
 			.forEach(value -> {
 				this.loadValueIntoCache(value.getKey(), value);
@@ -167,25 +137,26 @@ public class DataCache<K, V extends ICached<K>> implements ISavableCache<K, V>, 
 		return this.cache.values();
 	}
 
-	protected void loadValue(K key, V value) {
+	protected void processValue(V value) {
+		TryCatchUtil.tryRun(() -> value.setRepository(this));
 		if (value instanceof IForeignMapping) this.dbToJava((IForeignMapping) value);
-		if (value instanceof ISavableLifecycle) ((ISavableLifecycle) value).afterLoad(this.plugin);
+		if (value instanceof IDataEntityLifecycle) ((IDataEntityLifecycle) value).afterLoad(this.plugin);
 	}
 
 	protected void loadValueIntoCache(K key, V value) {
-		this.loadValue(key, value);
-		this.cache.put(key, value);
+		this.processValue(value);
+		this.cache.set(key, value);
 	}
 
 	@Override
 	public void modify(K key, Consumer<V> action) {
-		boolean contains = this.contains(key);
+		boolean contains = this.cache.contains(key);
 		if (!exists(key) && !contains) return;
 
 		action.accept(this.get(key));
 		if (!contains) {
 			this.save(key);
-			this.invalidate(key);
+			this.cache.invalidate(key);
 		}
 	}
 
@@ -194,7 +165,7 @@ public class DataCache<K, V extends ICached<K>> implements ISavableCache<K, V>, 
 		this.loopAll(value -> {
 			if (!keys.contains(value.getKey())) return;
 			action.accept(value);
-			if (!this.contains(value.getKey())) this.saveValue(value);
+			if (!this.cache.contains(value.getKey())) this.saveValue(value);
 		});
 	}
 
@@ -202,7 +173,7 @@ public class DataCache<K, V extends ICached<K>> implements ISavableCache<K, V>, 
 	public void modifyAll(Consumer<V> action) {
 		this.loopAll(value -> {
 			action.accept(value);
-			if (!this.contains(value.getKey())) this.saveValue(value);
+			if (!this.cache.contains(value.getKey())) this.saveValue(value);
 		});
 	}
 
@@ -214,11 +185,11 @@ public class DataCache<K, V extends ICached<K>> implements ISavableCache<K, V>, 
 
 	@Override
 	public Collection<V> loopAll() {
-		Set<V> values = new HashSet<>(this.values());
+		Set<V> values = new HashSet<>(this.cache.values());
 		TryCatchUtil.tryOrDefault(this.dao::queryForAll, new ArrayList<V>())
 			.forEach(entity -> {
-				if (this.contains(entity.getKey())) return;
-				this.loadValue(entity.getKey(), entity);
+				if (this.cache.contains(entity.getKey())) return;
+				this.processValue(entity);
 				values.add(entity);
 			});
 		return values;
@@ -226,7 +197,7 @@ public class DataCache<K, V extends ICached<K>> implements ISavableCache<K, V>, 
 
 	@Override
 	public void save(K key) {
-		if (!contains(key)) return;
+		if (!cache.contains(key)) return;
 		V value = this.get(key);
 		this.saveValue(value);
 	}
@@ -234,7 +205,7 @@ public class DataCache<K, V extends ICached<K>> implements ISavableCache<K, V>, 
 	@Override
 	public void saveAndInvalidate(K key) {
 		this.save(key);
-		this.invalidate(key);
+		this.cache.invalidate(key);
 	}
 
 	@Override
@@ -243,13 +214,13 @@ public class DataCache<K, V extends ICached<K>> implements ISavableCache<K, V>, 
 	}
 
 	protected void createInDb(V value) {
-		if (value instanceof ISavableLifecycle) ((ISavableLifecycle) value).beforeSave(this.plugin);
+		if (value instanceof IDataEntityLifecycle) ((IDataEntityLifecycle) value).beforeSave(this.plugin);
 		if (value instanceof IForeignMapping) this.javaToDb((IForeignMapping) value);
 		TryCatchUtil.tryRun(() -> this.dao.create(value));
 	}
 
 	protected void saveToDb(V value) {
-		if (value instanceof ISavableLifecycle) ((ISavableLifecycle) value).beforeSave(this.plugin);
+		if (value instanceof IDataEntityLifecycle) ((IDataEntityLifecycle) value).beforeSave(this.plugin);
 		if (value instanceof IForeignMapping) this.javaToDb((IForeignMapping) value);
 		TryCatchUtil.tryRun(() -> this.dao.update(value));
 	}
@@ -262,7 +233,7 @@ public class DataCache<K, V extends ICached<K>> implements ISavableCache<K, V>, 
 
 	@Override
 	public V create(K key, V value) {
-		this.set(key, value);
+		this.cache.set(key, value);
 		this.createInDb(value);
 		return this.load(key);
 	}
@@ -281,17 +252,17 @@ public class DataCache<K, V extends ICached<K>> implements ISavableCache<K, V>, 
 
 	@Override
 	public boolean exists(K key) {
-		if (this.contains(key)) return true;
+		if (this.cache.contains(key)) return true;
 		return TryCatchUtil.tryOrDefault(() -> this.dao.idExists(key), false);
 	}
 
 	@Override
 	public void dbToJava(IForeignMapping entity) {
 		entity.getForeignMapping()
-			.forEach(this::addAllForeignToCollection);
+			.forEach((foreign, collection) -> this.addAllForeignToCollection(entity, foreign, collection));
 
 		entity.getForeignMappers()
-			.forEach(this::addAllMapper);
+			.forEach(mapper -> this.addAllMapper(entity, mapper));
 	}
 
 	@Override
@@ -319,34 +290,49 @@ public class DataCache<K, V extends ICached<K>> implements ISavableCache<K, V>, 
 	}
 
 	@Override
-	public void refreshForeign(ForeignCollection<? extends ICached<Integer>> foreign, Collection<? extends ICached<Integer>> collection) {
-		this.addAllForeignToCollection(foreign, collection);
+	public void refreshForeign(IForeignMapping parent, ForeignCollection<? extends AbstractDataEntity<Integer>> foreign, Collection<? extends AbstractDataEntity<Integer>> collection) {
+		this.addAllForeignToCollection(parent, foreign, collection);
 	}
 
 	@Override
-	public void refreshForeign(ForeignMapper<?> mapper) {
-		this.addAllMapper(mapper);
+	public void refreshForeign(IForeignMapping parent, ForeignMapper<?> mapper) {
+		this.addAllMapper(parent, mapper);
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> void addAllForeignToCollection(ForeignCollection<?> foreign, Collection<T> collection) {
+	private <T> void addAllForeignToCollection(IForeignMapping parent, ForeignCollection<?> foreign, Collection<T> collection) {
 		collection.clear();
-		foreign.forEach(entity -> collection.add((T) entity));
+		foreign.forEach(entity -> {
+			this.updateChild(parent, entity, foreign);
+			collection.add((T) entity);
+		});
 	}
 
-	private <T extends ICached<Integer>> void addAllMapper(ForeignMapper<T> mapper) {
+	@SuppressWarnings("unchecked")
+	private <T> void updateChild(IForeignMapping entity, Object child, ForeignCollection<?> collection) {
+		if (child instanceof AbstractRealtimeChild<?>) {
+			AbstractRealtimeChild<T> realtimeChild = (AbstractRealtimeChild<T>) child;
+			realtimeChild.setParentEntity((AbstractDataEntity<T>) entity);
+			realtimeChild.setSourceCollection((ForeignCollection<? extends AbstractDataEntity<T>>) collection);
+		}
+	}
+
+	private <T extends AbstractDataEntity<Integer>> void addAllMapper(IForeignMapping parent, ForeignMapper<T> mapper) {
 		mapper.getCache()
 			.clear();
 		mapper.getForeign()
-			.forEach(e -> mapper.getCache()
-				.put(
-					mapper.getKeyExtractor()
-						.apply(e), e
-				));
+			.forEach(e -> {
+				this.updateChild(parent, e, mapper.getForeign());
+				mapper.getCache()
+					.put(
+						mapper.getKeyExtractor()
+							.apply(e), e
+					);
+			});
 	}
 
 	@SuppressWarnings("unchecked")
-	protected <T extends ICached<Integer>> String extractKeyFromMapper(ForeignMapper<T> mapper, Object obj) {
+	protected <T extends AbstractDataEntity<Integer>> String extractKeyFromMapper(ForeignMapper<T> mapper, Object obj) {
 		return mapper.getKeyExtractor()
 			.apply((T) obj);
 	}

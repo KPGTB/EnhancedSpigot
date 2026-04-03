@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -14,6 +14,18 @@
  *    limitations under the License.
  */
 
-package dev.projectenhanced.enhancedspigot.data.cache.iface;
+package dev.projectenhanced.enhancedspigot.data.repository.entity;
 
-public interface IAsyncSavableCache<K, V extends ICached<K>> extends IAsyncSavable<K, V>, IAsyncCache<K, V> {}
+import com.j256.ormlite.dao.ForeignCollection;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+import java.util.Map;
+import java.util.function.Function;
+
+@Getter @AllArgsConstructor public class ForeignMapper<T extends AbstractDataEntity<Integer>> {
+	private final ForeignCollection<T> foreign;
+	private final Map<String, T> cache;
+	private final Function<T, String> keyExtractor;
+}
+

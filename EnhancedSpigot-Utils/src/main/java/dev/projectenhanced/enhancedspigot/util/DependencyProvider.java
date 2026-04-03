@@ -20,6 +20,7 @@ import dev.projectenhanced.enhancedspigot.common.IDependencyProvider;
 import dev.projectenhanced.enhancedspigot.common.stereotype.lifecycle.IClosable;
 import dev.projectenhanced.enhancedspigot.common.stereotype.lifecycle.IReloadable;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -60,6 +61,7 @@ public class DependencyProvider implements IDependencyProvider {
 			.stream()
 			.filter(obj -> obj instanceof IClosable)
 			.map(obj -> (IClosable) obj)
+			.sorted(Comparator.comparingInt(IClosable::closeOrder))
 			.forEach(IClosable::close);
 	}
 

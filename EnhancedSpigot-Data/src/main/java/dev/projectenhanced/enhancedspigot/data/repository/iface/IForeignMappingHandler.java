@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -14,9 +14,12 @@
  *    limitations under the License.
  */
 
-package dev.projectenhanced.enhancedspigot.data.cache.iface;
+package dev.projectenhanced.enhancedspigot.data.repository.iface;
 
 import com.j256.ormlite.dao.ForeignCollection;
+import dev.projectenhanced.enhancedspigot.data.repository.entity.AbstractDataEntity;
+import dev.projectenhanced.enhancedspigot.data.repository.entity.ForeignMapper;
+import dev.projectenhanced.enhancedspigot.data.repository.entity.IForeignMapping;
 
 import java.util.Collection;
 
@@ -25,7 +28,7 @@ public interface IForeignMappingHandler {
 
 	void javaToDb(IForeignMapping entity);
 
-	void refreshForeign(ForeignCollection<? extends ICached<Integer>> foreign, Collection<? extends ICached<Integer>> collection);
+	void refreshForeign(IForeignMapping parent, ForeignCollection<? extends AbstractDataEntity<Integer>> foreign, Collection<? extends AbstractDataEntity<Integer>> collection);
 
-	void refreshForeign(ForeignMapper<?> mapper);
+	void refreshForeign(IForeignMapping parent, ForeignMapper<?> mapper);
 }

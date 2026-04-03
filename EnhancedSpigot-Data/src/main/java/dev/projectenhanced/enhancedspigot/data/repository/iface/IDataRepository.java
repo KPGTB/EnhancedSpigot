@@ -14,15 +14,24 @@
  *    limitations under the License.
  */
 
-package dev.projectenhanced.enhancedspigot.data.cache.iface;
+package dev.projectenhanced.enhancedspigot.data.repository.iface;
+
+import dev.projectenhanced.enhancedspigot.data.repository.entity.AbstractDataEntity;
+import dev.projectenhanced.enhancedspigot.data.storage.IDataStorage;
 
 import java.util.Collection;
 import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
-public interface ISavable<K, V extends ICached<K>> {
-	V load(K key);
+public interface IDataRepository<K, V extends AbstractDataEntity<K>> {
+	IDataStorage<K, V> getCache();
+
+	V get(K key); // Gets from cache or loads from the source if not present
+
+	V getOrNull(K key); // Gets from cache or returns nulll if not present
+
+	V load(K key); // Always loads from the source
 
 	Collection<V> loadAll();
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -14,8 +14,12 @@
  *    limitations under the License.
  */
 
-package dev.projectenhanced.enhancedspigot.data.cache.iface;
+package dev.projectenhanced.enhancedspigot.data.repository.entity;
 
-public interface ICached<K> {
-	K getKey();
+import org.bukkit.plugin.java.JavaPlugin;
+
+public interface IDataEntityLifecycle {
+	void beforeSave(JavaPlugin plugin);
+
+	void afterLoad(JavaPlugin plugin);
 }

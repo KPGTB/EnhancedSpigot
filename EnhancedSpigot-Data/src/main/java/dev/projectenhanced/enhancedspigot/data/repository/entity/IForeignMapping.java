@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -14,12 +14,16 @@
  *    limitations under the License.
  */
 
-package dev.projectenhanced.enhancedspigot.data.cache;
+package dev.projectenhanced.enhancedspigot.data.repository.entity;
 
-public class DisableLock {
-	/**
-	 * Disable lock for async savable cache
-	 * Set to true when disabling plugin
-	 */
-	public static boolean IS_LOCKED = false;
+import com.j256.ormlite.dao.ForeignCollection;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+public interface IForeignMapping {
+	Map<ForeignCollection<? extends AbstractDataEntity<Integer>>, Collection<? extends AbstractDataEntity<Integer>>> getForeignMapping();
+
+	List<ForeignMapper<?>> getForeignMappers();
 }
