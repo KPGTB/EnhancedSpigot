@@ -18,6 +18,7 @@ package dev.projectenhanced.enhancedspigot.data.service;
 
 import dev.projectenhanced.enhancedspigot.common.IDependencyProvider;
 import dev.projectenhanced.enhancedspigot.common.stereotype.Service;
+import dev.projectenhanced.enhancedspigot.data.DatabaseController;
 import dev.projectenhanced.enhancedspigot.data.repository.entity.AbstractDataEntity;
 import dev.projectenhanced.enhancedspigot.data.repository.iface.IAsyncDataRepository;
 import dev.projectenhanced.enhancedspigot.data.repository.iface.IDataRepository;
@@ -28,9 +29,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public abstract class AbstractDataService<K, V extends AbstractDataEntity<K>> extends Service implements Listener {
-	private IDataStorage<K, V> storage;
-	private IDataRepository<K, V> repository;
-	private SchedulerUtil.Task saveTask;
+	protected DatabaseController databaseController;
+
+	protected IDataStorage<K, V> storage;
+	protected IDataRepository<K, V> repository;
+	protected SchedulerUtil.Task saveTask;
 
 	public AbstractDataService(JavaPlugin plugin) {
 		super(plugin);
@@ -42,6 +45,7 @@ public abstract class AbstractDataService<K, V extends AbstractDataEntity<K>> ex
 
 	public AbstractDataService(IDependencyProvider dependencyProvider) {
 		super(dependencyProvider);
+		this.databaseController = this.dependencyProvider.provide(DatabaseController.class);
 		this.storage = this.initStorage();
 		this.repository = this.initRepository();
 		Bukkit.getPluginManager()
