@@ -310,6 +310,10 @@ public class DataRepository<K, V extends AbstractDataEntity<K>> implements IFore
 
 	@SuppressWarnings("unchecked")
 	private <T> void updateChild(IForeignMapping entity, Object child, ForeignCollection<?> collection) {
+		if (child instanceof AbstractDataEntity<?>) {
+			AbstractDataEntity<T> dataChild = (AbstractDataEntity<T>) child;
+			dataChild.setRepository((IDataRepository<T, ? extends AbstractDataEntity<T>>) this);
+		}
 		if (child instanceof AbstractRealtimeChild<?>) {
 			AbstractRealtimeChild<T> realtimeChild = (AbstractRealtimeChild<T>) child;
 			realtimeChild.setParentEntity((AbstractDataEntity<T>) entity);
