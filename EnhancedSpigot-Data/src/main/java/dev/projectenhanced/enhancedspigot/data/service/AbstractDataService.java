@@ -78,6 +78,6 @@ public abstract class AbstractDataService<K, V extends AbstractDataEntity<K>> ex
 
 	@Override
 	public int closeOrder() {
-		return Integer.MAX_VALUE;
+		return 1_000_000;
 	}
 }

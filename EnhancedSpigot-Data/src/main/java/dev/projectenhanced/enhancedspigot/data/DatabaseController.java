@@ -220,4 +220,9 @@ import java.util.logging.Level;
 		this.handler.close();
 		this.daoMap = new HashMap<>();
 	}
+
+	@Override
+	public int closeOrder() {
+		return 2_000_000;
+	}
 }

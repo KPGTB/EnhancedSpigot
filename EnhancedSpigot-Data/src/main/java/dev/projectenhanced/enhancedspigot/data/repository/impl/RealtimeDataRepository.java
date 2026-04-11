@@ -22,6 +22,7 @@ import dev.projectenhanced.enhancedspigot.data.repository.entity.AbstractDataEnt
 import dev.projectenhanced.enhancedspigot.data.repository.entity.IDataEntityLifecycle;
 import dev.projectenhanced.enhancedspigot.data.storage.IDataStorage;
 import dev.projectenhanced.enhancedspigot.data.util.AsyncPriorityMap;
+import dev.projectenhanced.enhancedspigot.data.util.DisableLock;
 import dev.projectenhanced.enhancedspigot.util.SchedulerUtil;
 import dev.projectenhanced.enhancedspigot.util.TryCatchUtil;
 import lombok.AllArgsConstructor;
@@ -98,7 +99,27 @@ public class RealtimeDataRepository<K, V extends AbstractDataEntity<K>> extends 
 		entityChanges.put(changeKey, change);
 	}
 
+	public void saveAllPendingSync() {
+		this.pendingChanges.keySet()
+			.forEach(this::saveAllPendingSync);
+	}
+
+	public void saveAllPendingSync(K key) {
+		this.pendingChanges.getOrDefault(key, new ConcurrentHashMap<>())
+			.values()
+			.forEach(change -> {
+				change.task.cancel();
+				change.save();
+			});
+		this.pendingChanges.remove(key);
+	}
+
 	public CompletableFuture<Void> saveAllPending(K key, int priority) {
+		if (DisableLock.IS_LOCKED) {
+			this.saveAllPendingSync(key);
+			return CompletableFuture.completedFuture(null);
+		}
+
 		long operationId = System.currentTimeMillis();
 		return CompletableFuture.allOf(this.pendingChanges.getOrDefault(key, new ConcurrentHashMap<>())
 				.values()
