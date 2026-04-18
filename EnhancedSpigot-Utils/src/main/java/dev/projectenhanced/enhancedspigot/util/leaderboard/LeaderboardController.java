@@ -72,16 +72,17 @@ public class LeaderboardController extends Controller {
 	/*
 	leaderboard_<key>_<placeholder>
 	 */
-	public String handlePlaceholder(OfflinePlayer offlinePlayer, String placeholder) {
+	@SuppressWarnings("unchecked")
+	public <T> String handlePlaceholder(OfflinePlayer offlinePlayer, String placeholder, Pair<String, T> defaultValue) {
 		if (!placeholder.startsWith("leaderboard_")) return null;
 		String[] parts = placeholder.split("_", 3);
 		if (parts.length < 3) return null;
 		String key = parts[1];
 		String actualPlaceholder = parts[2];
 
-		LeaderboardData<?> data = this.registeredLeaderboards.get(key);
+		LeaderboardData<T> data = (LeaderboardData<T>) this.registeredLeaderboards.get(key);
 		if (data == null) return null;
-		return data.parsePlaceholder(offlinePlayer, actualPlaceholder);
+		return data.parsePlaceholder(offlinePlayer, actualPlaceholder, defaultValue);
 	}
 
 	public <V> List<String> asText(String key, @Nullable Pair<String, V> yourValue) {

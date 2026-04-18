@@ -187,13 +187,13 @@ import java.util.stream.Collectors;
 	value_me
 	position_me
 	 */
-	public String parsePlaceholder(OfflinePlayer offlinePlayer, String placeholder) {
+	public String parsePlaceholder(OfflinePlayer offlinePlayer, String placeholder, Pair<String, V> defaultValue) {
 		String[] parts = placeholder.split("_", 2);
 		if (parts.length != 2) return null;
 
 		if (parts[1].equalsIgnoreCase("me")) {
 			Pair<String, V> pair = this.placeholderParser.apply(offlinePlayer);
-			if (pair == null) return null;
+			if (pair == null) pair = defaultValue;
 
 			switch (parts[0].toLowerCase()) {
 				case "key":
@@ -210,7 +210,7 @@ import java.util.stream.Collectors;
 		try {
 			int position = Integer.parseInt(parts[1]);
 			Pair<String, V> pair = this.getEntryAtPosition(position);
-			if (pair == null) return null;
+			if (pair == null) pair = defaultValue;
 
 			switch (parts[0].toLowerCase()) {
 				case "key":
