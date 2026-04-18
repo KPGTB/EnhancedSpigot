@@ -58,7 +58,7 @@ public class RealtimeCacheUtil {
 			RealtimeDataRepository<?, ?> lc = (RealtimeDataRepository<?, ?>) cache;
 			lc.runAsync(
 				() -> TryCatchUtil.tryRun(() -> collection.add(foreign)), lc.getAsyncRealtimePriorityMap()
-					.getLiveActionPriority(), System.currentTimeMillis()
+					.getLiveActionPriority(), System.currentTimeMillis(), lc.getWriteExecutor()
 			);
 		}
 	}
@@ -69,7 +69,7 @@ public class RealtimeCacheUtil {
 			lc.runAsync(
 				() -> TryCatchUtil.tryRun(() -> collection.getDao()
 					.delete(foreign)), lc.getAsyncRealtimePriorityMap()
-					.getLiveActionPriority(), System.currentTimeMillis()
+					.getLiveActionPriority(), System.currentTimeMillis(), lc.getWriteExecutor()
 			);
 		}
 	}
@@ -79,7 +79,7 @@ public class RealtimeCacheUtil {
 			RealtimeDataRepository<?, ?> lc = (RealtimeDataRepository<?, ?>) cache;
 			lc.runAsync(
 				() -> TryCatchUtil.tryRun(collection::clear), lc.getAsyncRealtimePriorityMap()
-					.getLiveActionPriority(), System.currentTimeMillis()
+					.getLiveActionPriority(), System.currentTimeMillis(), lc.getWriteExecutor()
 			);
 		}
 	}
