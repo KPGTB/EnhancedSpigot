@@ -96,7 +96,11 @@ public abstract class EnhancedPlugin extends JavaPlugin {
 		if (leaderboardController != null) {
 			leaderboardController.unregisterAll();
 			this.leaderboards()
-				.forEach(leaderboardController::register);
+				.forEach((key, value) -> {
+					leaderboardController.register(key, value);
+					value.refresh(System.currentTimeMillis() + leaderboardController.getRefreshRate()
+						.getMillis());
+				});
 		}
 	}
 
