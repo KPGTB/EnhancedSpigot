@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-version = "2.0.0-SNAPSHOT"
+version = "3.0.0-SNAPSHOT"
 description = "EnhancedSpigot Commands module adds an advanced commands system with auto-generated configs, permissions, parameters etc."
 
 repositories {

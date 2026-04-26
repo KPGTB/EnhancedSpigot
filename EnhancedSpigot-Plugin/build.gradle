@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-version = "2.0.0-SNAPSHOT"
+version = "3.0.0-SNAPSHOT"
 description = "EnhancedSpigot Plugin module adds a simple plugin wrapper"
 
 repositories {
@@ -43,7 +43,7 @@ dependencies {
 }
 
 shadowJar {
-    relocate 'org.bstats', 'dev.projectenhanced.enhancedspigot.plugin.lib.bstats'
+    relocate 'org.bstats', 'com.enhancedprojects.enhancedspigot.plugin.lib.bstats'
 
     dependsOn ':EnhancedSpigot-Commons:shadowJar'
     dependsOn ':EnhancedSpigot-Utils:shadowJar'

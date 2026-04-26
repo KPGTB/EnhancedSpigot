@@ -19,7 +19,7 @@ plugins {
     id 'com.gradle.plugin-publish' version '2.0.0'
 }
 
-group 'dev.projectenhanced'
+group 'com.enhancedprojects'
 version '2.0.0'
 
 repositories {
@@ -32,15 +32,15 @@ dependencies {
 }
 
 gradlePlugin {
-    website = 'https://projectenhanced.dev/category/enhancedspigot'
-    vcsUrl = 'https://github.com/KPGTB/EnhancedSpigot.git'
+    website = 'https://enhancedprojects.com/category/enhancedspigot'
+    vcsUrl = 'https://github.com/EnhancedProjects/EnhancedSpigot.git'
     plugins {
         enhancedSpigotPlugin {
-            id = 'dev.projectenhanced.enhancedspigot'
+            id = 'com.enhancedprojects.enhancedspigot'
             displayName = 'EnhancedSpigot Gradle Plugin'
             description = 'Gradle plugin which automatically generates proper configuration for EnhancedSpigot library'
             tags.set(['EnhancedSpigot', 'Minecraft', 'Spigot'])
-            implementationClass = 'dev.projectenhanced.EnhancedSpigotPlugin'
+            implementationClass = 'com.enhancedprojects.EnhancedSpigotPlugin'
         }
     }
 }

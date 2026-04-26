@@ -23,8 +23,8 @@ plugins {
     id "org.jreleaser" version "1.18.0"
 }
 
-group = "dev.projectenhanced"
-version = "2.0.0-SNAPSHOT"
+group = "com.enhancedprojects"
+version = "3.0.0-SNAPSHOT"
 description = "EnhancedSpigot is an advanced library that enhances the Spigot API for creating powerful Minecraft plugins"
 
 repositories {
@@ -38,7 +38,7 @@ configure(subprojects - project(":EnhancedSpigot-Gradle")) {
     apply plugin: 'maven-publish'
     apply plugin: 'org.jreleaser'
 
-    group = 'dev.projectenhanced'
+    group = 'com.enhancedprojects'
 
     java {
         withSourcesJar()
@@ -59,7 +59,7 @@ configure(subprojects - project(":EnhancedSpigot-Gradle")) {
             archiveFileName = project.name + "-" + project.version + ".jar"
             finalizedBy javadoc;
             finalizedBy sourcesJar;
-            relocate 'net.kyori', "dev.projectenhanced.enhancedspigot.locale.lib"
+            relocate 'net.kyori', "com.enhancedprojects.enhancedspigot.locale.lib"
         }
 
         publishing {
@@ -70,7 +70,7 @@ configure(subprojects - project(":EnhancedSpigot-Gradle")) {
                             username project.nexusUsername
                             password project.nexusPassword
                         }
-                        url "https://nexus.projectenhanced.dev/repository/maven-snapshots"
+                        url "https://nexus.enhancedprojects.com/repository/maven-snapshots"
                     } else {
                         url layout.buildDirectory.dir('staging-deploy')
                     }
@@ -87,7 +87,7 @@ configure(subprojects - project(":EnhancedSpigot-Gradle")) {
                     pom {
                         name = project.name
                         description = project.description
-                        url = 'https://projectenhanced.dev'
+                        url = 'https://enhancedprojects.com'
                         inceptionYear = '2025'
 
                         licenses {
@@ -105,9 +105,9 @@ configure(subprojects - project(":EnhancedSpigot-Gradle")) {
                         }
 
                         scm {
-                            connection = 'scm:git:https://github.com/KPGTB/EnhancedSpigot.git'
-                            developerConnection = 'scm:git:ssh://github.com/KPGTB/EnhancedSpigot.git'
-                            url = 'https://github.com/KPGTB/EnhancedSpigot'
+                            connection = 'scm:git:https://github.com/EnhancedProjects/EnhancedSpigot.git'
+                            developerConnection = 'scm:git:ssh://github.com/EnhancedProjects/EnhancedSpigot.git'
+                            url = 'https://github.com/EnhancedProjects/EnhancedSpigot'
                         }
                     }
                 }

@@ -5,8 +5,8 @@
 </p>
 <h1 align="center">
     EnhancedSpigot<br>
-    <a target="_blank" href="https://central.sonatype.com/artifact/dev.projectenhanced/EnhancedSpigot">
-        <img alt="Maven Central Version" src="https://img.shields.io/maven-central/v/dev.projectenhanced/EnhancedSpigot">
+    <a target="_blank" href="https://central.sonatype.com/artifact/com.enhancedprojects/EnhancedSpigot">
+        <img alt="Maven Central Version" src="https://img.shields.io/maven-central/v/com.enhancedprojects/EnhancedSpigot">
     </a>
     <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/KPGTB/EnhancedSpigot">
     <img alt="GitHub Issues" src="https://img.shields.io/github/issues/KPGTB/EnhancedSpigot">
