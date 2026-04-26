@@ -14,7 +14,6 @@
  *    limitations under the License.
  */
 
-version = "3.0.0-SNAPSHOT"
 description = "EnhancedSpigot Plugin module adds a simple plugin wrapper"
 
 repositories {

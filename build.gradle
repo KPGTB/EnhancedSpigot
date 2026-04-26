@@ -38,6 +38,7 @@ configure(subprojects - project(":EnhancedSpigot-Gradle")) {
     apply plugin: 'maven-publish'
     apply plugin: 'org.jreleaser'
 
+    version = rootProject.version
     group = 'com.enhancedprojects'
 
     java {

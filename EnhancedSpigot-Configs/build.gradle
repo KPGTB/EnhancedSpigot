@@ -14,7 +14,6 @@
  *    limitations under the License.
  */
 
-version = "3.0.0-SNAPSHOT"
 description = "EnhancedSpigot Configs module adds configuration management basing on POJO"
 
 repositories {

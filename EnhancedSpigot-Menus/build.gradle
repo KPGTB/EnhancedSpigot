@@ -14,7 +14,6 @@
  *    limitations under the License.
  */
 
-version = "3.0.0-SNAPSHOT"
 description = "EnhancedSpigot Menus module adds advanced pageable config menus"
 
 repositories {
