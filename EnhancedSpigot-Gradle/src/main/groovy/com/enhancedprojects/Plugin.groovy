@@ -16,36 +16,29 @@
 
 package com.enhancedprojects
 
-import org.gradle.api.Plugin
+
 import org.gradle.api.Project
 import org.gradle.api.tasks.compile.JavaCompile
 
-class EnhancedSpigotPlugin implements Plugin<Project> {
+class Plugin implements org.gradle.api.Plugin<Project> {
     @Override
     void apply(Project project) {
-        def ext = project.extensions.create("enhancedspigot", EnhancedSpigotExtension);
+        def ext = project.extensions.create("enhancedspigot", Extension);
         ext.relocationPath.convention("")
         ext.excludeDependencies.convention(true)
         ext.importVault.convention(false);
         ext.importPapi.convention(false);
-        ext.commandsModule.convention("")
-        ext.configsModule.convention("")
-        ext.dataModule.convention("")
-        ext.itemsModule.convention("")
-        ext.localeModule.convention("")
-        ext.menusModule.convention("")
-        ext.pluginModule.convention("")
-        ext.utilsModule.convention("")
-        ext.commonsModule.convention("")
+        ext.modulesVersion.convention("3.0.0-SNAPSHOT")
+        ext.enabledModules.convention([])
+        ext.overrideVersions.convention(Map.of())
 
         project.getPluginManager().apply("io.freefair.lombok")
         project.getPluginManager().apply("com.gradleup.shadow")
 
-        project.tasks.register("enhancedSpigotLibraries", EnhancedSpigotLibrariesTask) {
+        project.tasks.register("enhancedSpigotLibraries", LibrariesTask) {
             group = 'enhancedspigot'
             description = 'Print all libraries required in plugin.yml'
-            dataModule.set(ext.dataModule)
-            utilsModule.set(ext.utilsModule)
+            enabledModules.set(ext.enabledModules)
             excludeDependencies.set(ext.excludeDependencies)
         }
 
@@ -53,38 +46,38 @@ class EnhancedSpigotPlugin implements Plugin<Project> {
             project.repositories {
                 mavenCentral()
                 mavenLocal()
-                maven { url "https://nexus.projectenhanced.dev/repository/maven-snapshots" }
-                if (!ext.menusModule.get().isEmpty()) maven { url 'https://mvn.wesjd.net/' }
+                maven { url "https://nexus.enhancedprojects.com/repository/maven-snapshots" }
+                if (ext.enabledModules.get().contains(EnhancedModule.Menus)) maven { url 'https://mvn.wesjd.net/' }
                 if (ext.importVault.get()) maven { url 'https://jitpack.io' }
                 if (ext.importPapi.get()) maven { url = 'https://repo.extendedclip.com/releases/' }
             }
 
             project.dependencies {
-                if (!ext.commonsModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Commons:" + ext.commonsModule.get()
-                if (!ext.utilsModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Utils:" + ext.utilsModule.get()
-                if (!ext.configsModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Configs:" + ext.configsModule.get()
-                if (!ext.localeModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Locale:" + ext.localeModule.get()
-                if (!ext.dataModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Data:" + ext.dataModule.get()
-                if (!ext.commandsModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Commands:" + ext.commandsModule.get()
-                if (!ext.menusModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Menus:" + ext.menusModule.get()
-                if (!ext.itemsModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Items:" + ext.itemsModule.get()
-                if (!ext.pluginModule.get().isEmpty()) implementation "dev.projectenhanced:EnhancedSpigot-Plugin:" + ext.pluginModule.get()
+                List<EnhancedModule> enabledModules = ext.enabledModules.get()
+                Map<EnhancedModule, String> overrideVersions = ext.overrideVersions.get()
+
+                for (final def module in EnhancedModule.values()) {
+                    if (enabledModules.contains(module)) implementation "com.enhancedprojects:EnhancedSpigot-" + module.name() + ":" + (
+                            overrideVersions.containsKey(module) ? overrideVersions.get(module) : ext.modulesVersion.get()
+                    )
+                }
 
                 if (ext.importVault.get()) compileOnly "com.github.MilkBowl:VaultAPI:1.7"
                 if (ext.importPapi.get()) compileOnly 'me.clip:placeholderapi:2.11.7'
             }
 
             project.tasks.withType(JavaCompile).configureEach {
-                if (!ext.commandsModule.get().isEmpty()) options.compilerArgs << "-parameters"
+                if (ext.enabledModules.get().contains(EnhancedModule.Commands)) options.compilerArgs << "-parameters"
             }
 
             project.tasks.named("shadowJar").configure {
+                dependsOn project.tasks.named("clean")
+
                 relocate(
-                        "dev.projectenhanced.enhancedspigot",
+                        "com.enhancedprojects.enhancedspigot",
                         ext.relocationPath.get().isEmpty() ?
                                 project.group.toString() + "." + project.name.toLowerCase() + ".lib"
                                 : ext.relocationPath.get()
-
                 )
 
                 if (ext.excludeDependencies.get()) {

@@ -23,6 +23,7 @@ import com.enhancedprojects.enhancedspigot.menu.EnhancedMenu;
 import com.enhancedprojects.enhancedspigot.menu.impl.menu.config.ConfigMenuSettings;
 import com.enhancedprojects.enhancedspigot.menu.item.MenuItem;
 import com.enhancedprojects.enhancedspigot.util.DependencyProvider;
+import com.enhancedprojects.enhancedspigot.util.NumberUtil;
 import com.enhancedprojects.enhancedspigot.util.SchedulerUtil;
 import com.enhancedprojects.enhancedspigot.util.item.EnhancedItemBuilder;
 import lombok.AllArgsConstructor;
@@ -118,8 +119,9 @@ public class EnhancedCountMenu extends EnhancedConfigMenu<EnhancedCountMenu.Conf
 		map.put(
 			"increase-value", (value) -> {
 				ItemStack is = this.menuSettings.getDynamicItems()
-					.getIncreaseValueItem();
-				ColorUtil.modifyItem(is, Placeholder.unparsed("value", String.valueOf(value)));
+					.getIncreaseValueItem()
+					.clone();
+				ColorUtil.modifyItem(is, Placeholder.unparsed("value", NumberUtil.showNumber((double) value)));
 				MenuItem menuItem = new MenuItem(is);
 				menuItem.setClickAction((e, loc) -> {
 					this.changeValue((double) value);
@@ -130,8 +132,9 @@ public class EnhancedCountMenu extends EnhancedConfigMenu<EnhancedCountMenu.Conf
 		map.put(
 			"decrease-value", (value) -> {
 				ItemStack is = this.menuSettings.getDynamicItems()
-					.getDecreaseValueItem();
-				ColorUtil.modifyItem(is, Placeholder.unparsed("value", String.valueOf(value)));
+					.getDecreaseValueItem()
+					.clone();
+				ColorUtil.modifyItem(is, Placeholder.unparsed("value", NumberUtil.showNumber((double) value)));
 				MenuItem menuItem = new MenuItem(is);
 				menuItem.setClickAction((e, loc) -> {
 					this.changeValue(-((double) value));
@@ -185,7 +188,7 @@ public class EnhancedCountMenu extends EnhancedConfigMenu<EnhancedCountMenu.Conf
 			Map<String, StaticItem> map = new HashMap<>();
 
 			map.put(
-				"14", new StaticItem(
+				"13", new StaticItem(
 					new EnhancedItemBuilder(Material.EMERALD).displayName("<gold><value>")
 						.lore("<green><b>Click to accept")
 						.build(), Arrays.asList("[accept]")

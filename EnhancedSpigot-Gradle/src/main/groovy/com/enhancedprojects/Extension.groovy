@@ -18,7 +18,7 @@ package com.enhancedprojects
 
 import org.gradle.api.provider.Property
 
-abstract class EnhancedSpigotExtension {
+abstract class Extension {
     abstract Property<String> getRelocationPath();
 
     abstract Property<Boolean> getExcludeDependencies();
@@ -27,21 +27,9 @@ abstract class EnhancedSpigotExtension {
 
     abstract Property<Boolean> getImportPapi();
 
-    abstract Property<String> getCommandsModule();
+    abstract Property<List<EnhancedModule>> getEnabledModules();
 
-    abstract Property<String> getConfigsModule();
+    abstract Property<String> getModulesVersion();
 
-    abstract Property<String> getDataModule();
-
-    abstract Property<String> getItemsModule();
-
-    abstract Property<String> getLocaleModule();
-
-    abstract Property<String> getMenusModule();
-
-    abstract Property<String> getPluginModule();
-
-    abstract Property<String> getUtilsModule();
-
-    abstract Property<String> getCommonsModule();
+    abstract Property<Map<EnhancedModule, String>> getOverrideVersions();
 }
