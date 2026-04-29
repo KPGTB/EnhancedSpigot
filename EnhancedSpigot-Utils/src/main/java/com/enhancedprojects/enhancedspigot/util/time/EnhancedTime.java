@@ -193,6 +193,6 @@ import java.util.regex.Pattern;
 
 	public static class Configuration {
 		public static String FORMAT = "<days:d ><hours:h ><minutes:m ><seconds:s>";
-		public static String EMPTY_REPLACER = "now";
+		public static String EMPTY_REPLACER = "0s";
 	}
 }
