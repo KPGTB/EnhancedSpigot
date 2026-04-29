@@ -71,8 +71,6 @@ class Plugin implements org.gradle.api.Plugin<Project> {
             }
 
             project.tasks.named("shadowJar").configure {
-                dependsOn project.tasks.named("clean")
-
                 relocate(
                         "com.enhancedprojects.enhancedspigot",
                         ext.relocationPath.get().isEmpty() ?

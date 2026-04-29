@@ -16,6 +16,8 @@
 
 package com.enhancedprojects
 
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 
 abstract class Extension {
@@ -27,9 +29,9 @@ abstract class Extension {
 
     abstract Property<Boolean> getImportPapi();
 
-    abstract Property<List<EnhancedModule>> getEnabledModules();
+    abstract ListProperty<EnhancedModule> getEnabledModules();
 
     abstract Property<String> getModulesVersion();
 
-    abstract Property<Map<EnhancedModule, String>> getOverrideVersions();
+    abstract MapProperty<EnhancedModule, String> getOverrideVersions();
 }

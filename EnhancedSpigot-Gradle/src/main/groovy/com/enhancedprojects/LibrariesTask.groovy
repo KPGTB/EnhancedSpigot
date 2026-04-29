@@ -17,13 +17,14 @@
 package com.enhancedprojects
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
 abstract class LibrariesTask extends DefaultTask {
     @Input
-    abstract Property<List<EnhancedModule>> getEnabledModules();
+    abstract ListProperty<EnhancedModule> getEnabledModules();
 
     @Input
     abstract Property<Boolean> getExcludeDependencies()
