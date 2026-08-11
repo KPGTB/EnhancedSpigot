@@ -78,7 +78,7 @@ public class RealtimeDataRepository<K, V extends AbstractDataEntity<K>> extends 
 		PendingChange<?> change;
 		if (entityChanges.containsKey(changeKey)) {
 			change = entityChanges.get(changeKey);
-			change.task.cancel();
+			change.cancelTask();
 
 			if (System.currentTimeMillis() - change.firstChangeTime >= this.changesMaxWaitingTime) {
 				change.saveAsync(this.asyncRealtimePriorityMap.progressPriority, System.currentTimeMillis());
@@ -89,13 +89,15 @@ public class RealtimeDataRepository<K, V extends AbstractDataEntity<K>> extends 
 			change = new PendingChange<>(foreignValue, foreignCollection, System.currentTimeMillis(), null);
 		}
 
-		SchedulerUtil.Task task = SchedulerUtil.runTaskLater(
-			this.plugin, () -> {
-				change.saveAsync(this.asyncRealtimePriorityMap.progressPriority, System.currentTimeMillis());
-				entityChanges.remove(changeKey);
-			}, this.changesWaitingTIme / 50
-		);
-		change.setTask(task);
+		if (!DisableLock.IS_LOCKED) {
+			SchedulerUtil.Task task = SchedulerUtil.runTaskLater(
+				this.plugin, () -> {
+					change.saveAsync(this.asyncRealtimePriorityMap.progressPriority, System.currentTimeMillis());
+					entityChanges.remove(changeKey);
+				}, this.changesWaitingTIme / 50
+			);
+			change.setTask(task);
+		}
 		entityChanges.put(changeKey, change);
 	}
 
@@ -108,7 +110,7 @@ public class RealtimeDataRepository<K, V extends AbstractDataEntity<K>> extends 
 		this.pendingChanges.getOrDefault(key, new ConcurrentHashMap<>())
 			.values()
 			.forEach(change -> {
-				change.task.cancel();
+				change.cancelTask();
 				change.save();
 			});
 		this.pendingChanges.remove(key);
@@ -125,7 +127,7 @@ public class RealtimeDataRepository<K, V extends AbstractDataEntity<K>> extends 
 				.values()
 				.stream()
 				.map(pendingChange -> {
-					pendingChange.task.cancel();
+					pendingChange.cancelTask();
 					return pendingChange.saveAsync(priority, operationId);
 				})
 				.toArray(CompletableFuture[]::new))
@@ -136,7 +138,7 @@ public class RealtimeDataRepository<K, V extends AbstractDataEntity<K>> extends 
 		if (!this.pendingChanges.containsKey(key)) return;
 		this.pendingChanges.get(key)
 			.forEach((k, change) -> {
-				change.task.cancel();
+				change.cancelTask();
 			});
 		this.pendingChanges.remove(key);
 	}
@@ -147,7 +149,7 @@ public class RealtimeDataRepository<K, V extends AbstractDataEntity<K>> extends 
 			.get(changeKey);
 		if (change == null) return;
 
-		change.task.cancel();
+		change.cancelTask();
 		this.pendingChanges.get(key)
 			.remove(changeKey);
 	}
@@ -217,6 +219,10 @@ public class RealtimeDataRepository<K, V extends AbstractDataEntity<K>> extends 
 		private final ForeignCollection<T> collection;
 		private final long firstChangeTime;
 		private SchedulerUtil.Task task;
+
+		public void cancelTask() {
+			if (this.task != null) this.task.cancel();
+		}
 
 		public void save() {
 			TryCatchUtil.tryAndReturn(() -> this.collection.update(value));
