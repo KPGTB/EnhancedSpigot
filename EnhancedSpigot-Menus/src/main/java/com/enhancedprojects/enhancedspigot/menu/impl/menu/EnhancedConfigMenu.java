@@ -91,6 +91,8 @@ public abstract class EnhancedConfigMenu<T extends ConfigMenuSettings> extends E
 			this.menuSettings.getDynamicSlots()
 				.forEach((key, slots) -> {
 					int left = itemsLeft.get(key);
+					if (left <= 0) return;
+
 					Function<Object, MenuItem> func = this.processObject()
 						.get(key);
 
