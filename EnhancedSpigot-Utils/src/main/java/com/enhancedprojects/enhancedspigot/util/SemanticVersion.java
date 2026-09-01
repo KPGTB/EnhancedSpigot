@@ -56,8 +56,11 @@ import org.bukkit.Bukkit;
 	}
 
 	public static SemanticVersion getMinecraftVersion() {
-		return new SemanticVersion(Bukkit.getBukkitVersion()
-			.split("-")[0]);
+		String mcVersion = Bukkit.getBukkitVersion();
+
+		return new SemanticVersion(mcVersion.split(mcVersion.startsWith("1.") ?
+			"-" :
+			".build")[0]);
 	}
 
 	/**
