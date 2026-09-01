@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ configure(subprojects - project(":EnhancedSpigot-Gradle")) {
                             username project.nexusUsername
                             password project.nexusPassword
                         }
-                        url "https://nexus.projectenhanced.dev/repository/maven-snapshots"
+                        url "https://nexus.enhancedprojects.com/repository/maven-snapshots"
                     } else {
                         url layout.buildDirectory.dir('staging-deploy')
                     }

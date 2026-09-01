@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 KPG-TB
+ * Copyright 2026 KPG-TB
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -20,9 +20,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 
-@Getter
-@EqualsAndHashCode
-public class SemanticVersion {
+@Getter @EqualsAndHashCode public class SemanticVersion {
 	private final int major;
 	private final int minor;
 	private final int patch;
@@ -58,8 +56,11 @@ public class SemanticVersion {
 	}
 
 	public static SemanticVersion getMinecraftVersion() {
-		return new SemanticVersion(Bukkit.getBukkitVersion()
-										 .split("-")[0]);
+		String mcVersion = Bukkit.getBukkitVersion();
+
+		return new SemanticVersion(mcVersion.split(mcVersion.startsWith("1.") ?
+			"-" :
+			".build")[0]);
 	}
 
 	/**
